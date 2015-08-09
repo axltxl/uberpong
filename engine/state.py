@@ -7,6 +7,9 @@ class State():
     def __init__(self, *, machine):
         self.machine = machine
 
+    #
+    #
+    #
     def pop(self):
         self.machine.pop()
 
@@ -22,9 +25,34 @@ class State():
     def on_exit(self):
         pass
 
+    #
+    #
+    #
+    def on_key_press(self, sym, mod):
+        pass
+
+    #
+    #
+    #
+    def on_mouse_motion(self, x, y, dx, dy):
+        pass
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        pass
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        pass
+
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        pass
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        pass
+
+
 class StateMachine(pyglet.event.EventDispatcher):
     """Finite state machine"""
-    def __init__(self):
+    def __init__(self, *, window):
         super().__init__()
 
         #
@@ -35,6 +63,9 @@ class StateMachine(pyglet.event.EventDispatcher):
         #
         self.stack = []
         self.states = {}
+
+        # window
+        self.window = window
 
     def register_state(self, id, cls):
         self.states[id] = cls
@@ -57,12 +88,36 @@ class StateMachine(pyglet.event.EventDispatcher):
         self._attach_events(self.get_current_state())
 
     def _attach_events(self, state):
+        #
         if self._event_stack:
             self.pop_handlers()
+
+        # cleanup window events attached to any current state
+        self.window.on_key_press = None
+
+        self.window.on_mouse_motion = None
+        self.window.on_mouse_drag = None
+        self.window.on_mouse_press = None
+        self.window.on_mouse_release = None
+        self.window.on_mouse_scroll = None
+
+
         if state is not None:
+            #
             self.set_handler('on_begin', state.on_begin)
             self.set_handler('on_run', state.on_run)
             self.set_handler('on_exit', state.on_exit)
+
+            #
+            # window events
+            #
+            self.window.on_key_press = state.on_key_press
+
+            self.window.on_mouse_motion = state.on_mouse_motion
+            self.window.on_mouse_drag = state.on_mouse_drag
+            self.window.on_mouse_press = state.on_mouse_press
+            self.window.on_mouse_release = state.on_mouse_release
+            self.window.on_mouse_scroll = state.on_mouse_scroll
 
     def push_state(self, id):
         #

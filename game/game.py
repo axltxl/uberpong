@@ -1,48 +1,62 @@
 # -*- coding: utf-8 -*-
 
 import pyglet
-import sys, traceback
+import sys, traceback, os
 from engine.state import State, StateMachine
+from engine.entity import EntityManager
 
 class GameSplash(State):
     """Game start state"""
 
     def __init__(self, *, machine):
         super().__init__(machine=machine)
-        self.print_run = False
+        self._print_run = False
 
     def on_begin(self):
         print("on_begin called")
 
     def on_run(self):
-        if not self.print_run:
+        if not self._print_run:
             print("on_run called")
-            self.print_run = True
+            self._print_run = True
 
     def on_exit(self):
         print("on_exit called")
+
+    def on_key_press(self, sym, mod):
+        print("A key has been pressed!")
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        print("The mouse is alive ({x},{y})".format(x=x,y=y))
+
 
 class Game(StateMachine):
     """Game class"""
 
     def __init__(self, argv):
-        super().__init__()
-        self.window = pyglet.window.Window()
-        self.window.on_draw = self.on_draw
-        self.window.on_close = self.on_window_close
+        #
+        self._window = pyglet.window.Window()
+        self._window.on_draw = self.on_draw
+        self._window.on_close = self.on_window_close
+
+        #
+        super().__init__(window=self._window)
 
         #
         self.register_state('game_splash', GameSplash)
 
         #
-        self.shutdown = False
+        self._shutdown = False
+
+        #
+        self._ent_mgr = EntityManager()
 
 
     def on_window_close(self):
-        self.shutdown = True
+        self._shutdown = True
 
     def on_draw(self):
-        self.window.clear()
+        self._window.clear()
 
     def _handle_except(self, e):
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -59,9 +73,12 @@ class Game(StateMachine):
             self.push_state('game_splash')
 
             # Run the thing!
-            while not self.shutdown:
+            while not self._shutdown:
                 #
                 pyglet.clock.tick()
+
+                #
+                self._ent_mgr.dispatch_messages()
 
                 #
                 self.run_state()
@@ -77,10 +94,10 @@ class Game(StateMachine):
             self._handle_except(e)
 
         finally:
-            self.__cleanup()
+            self._cleanup()
 
         return 0
 
-    def __cleanup(self):
+    def _cleanup(self):
         """House keeping after all's been done"""
         self.purge_stack()
