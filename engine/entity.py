@@ -21,7 +21,7 @@ class EntityManager:
         while len(self._msg_queue):
             msg = self._msg_queue.pop()
             entity_dst = self._ents[msg['to']]
-            entity.on_message(msg)
+            entity_dst.on_message(msg)
 
     def queue_message(self, msg):
         self._msg_queue.append(msg)

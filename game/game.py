@@ -5,6 +5,9 @@ import sys, traceback, os
 from engine.state import State, StateMachine
 from engine.entity import EntityManager
 
+GAME_NAME = "PONG!"
+GAME_VER = "0.1a"
+
 class GameSplash(State):
     """Game start state"""
 
@@ -35,7 +38,12 @@ class Game(StateMachine):
 
     def __init__(self, argv):
         #
-        self._window = pyglet.window.Window()
+        # Set up window
+        #
+        self._window = pyglet.window.Window(
+            style=self._window.Window.WINDOW_STYLE_DIALOG,
+            caption="{name} - {version}".format(name=GAME_NAME, version=GAME_VER)
+        )
         self._window.on_draw = self.on_draw
         self._window.on_close = self.on_window_close
 
