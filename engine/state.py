@@ -19,7 +19,7 @@ class State():
     def on_begin(self):
         pass
 
-    def on_run(self):
+    def on_update(self):
         pass
 
     def on_exit(self):
@@ -57,7 +57,7 @@ class StateMachine(pyglet.event.EventDispatcher):
 
         #
         self.register_event_type('on_begin')
-        self.register_event_type('on_run')
+        self.register_event_type('on_update')
         self.register_event_type('on_exit')
 
         #
@@ -65,7 +65,11 @@ class StateMachine(pyglet.event.EventDispatcher):
         self._states = {}
 
         # window
-        self.window = window
+        self._window = window
+
+    @property
+    def window(self):
+        return self._window
 
     def register_state(self, id, cls):
         self._states[id] = cls
@@ -75,8 +79,8 @@ class StateMachine(pyglet.event.EventDispatcher):
             return self._stack[0]
         return None
 
-    def run_state(self):
-        self.dispatch_event('on_run')
+    def update_state(self):
+        self.dispatch_event('on_update')
 
     def purge_stack(self):
         while len(self._stack):
@@ -93,31 +97,31 @@ class StateMachine(pyglet.event.EventDispatcher):
             self.pop_handlers()
 
         # cleanup window events attached to any current state
-        self.window.on_key_press = None
+        self._window.on_key_press = None
 
-        self.window.on_mouse_motion = None
-        self.window.on_mouse_drag = None
-        self.window.on_mouse_press = None
-        self.window.on_mouse_release = None
-        self.window.on_mouse_scroll = None
+        self._window.on_mouse_motion = None
+        self._window.on_mouse_drag = None
+        self._window.on_mouse_press = None
+        self._window.on_mouse_release = None
+        self._window.on_mouse_scroll = None
 
 
         if state is not None:
             #
             self.set_handler('on_begin', state.on_begin)
-            self.set_handler('on_run', state.on_run)
+            self.set_handler('on_update', state.on_update)
             self.set_handler('on_exit', state.on_exit)
 
             #
             # window events
             #
-            self.window.on_key_press = state.on_key_press
+            self._window.on_key_press = state.on_key_press
 
-            self.window.on_mouse_motion = state.on_mouse_motion
-            self.window.on_mouse_drag = state.on_mouse_drag
-            self.window.on_mouse_press = state.on_mouse_press
-            self.window.on_mouse_release = state.on_mouse_release
-            self.window.on_mouse_scroll = state.on_mouse_scroll
+            self._window.on_mouse_motion = state.on_mouse_motion
+            self._window.on_mouse_drag = state.on_mouse_drag
+            self._window.on_mouse_press = state.on_mouse_press
+            self._window.on_mouse_release = state.on_mouse_release
+            self._window.on_mouse_scroll = state.on_mouse_scroll
 
     def push_state(self, id):
         #

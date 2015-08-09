@@ -13,15 +13,34 @@ class GameSplash(State):
 
     def __init__(self, *, machine):
         super().__init__(machine=machine)
-        self._print_run = False
+
+        pyglet.font.add_file('assets/fonts/8bitOperatorPlus-Regular.ttf')
+        font_8bit_operator = pyglet.font.load('8-bit Operator+')
+
+        # Title label
+        self._title_label = pyglet.text.Label(
+            GAME_NAME, font_name='8-bit Operator+', font_size=72,
+            x=machine.window.width//2, y=machine.window.height//2,
+            anchor_x='center', anchor_y='center'
+        )
+
+        # Companion label
+        self._comp_label = pyglet.text.Label(
+            "Press ANY KEY to play!", font_name='8-bit Operator+', font_size=24,
+            x=machine.window.width//2, y=machine.window.height//2 - 64,
+            anchor_x='center', anchor_y='center'
+        )
+
+    def tick(self, dt):
+        print("tick!")
 
     def on_begin(self):
         print("on_begin called")
+        pyglet.clock.schedule_interval(self.tick, 1.0/60)
 
-    def on_run(self):
-        if not self._print_run:
-            print("on_run called")
-            self._print_run = True
+    def on_update(self):
+        self._title_label.draw()
+        self._comp_label.draw()
 
     def on_exit(self):
         print("on_exit called")
@@ -66,6 +85,7 @@ class Game(StateMachine):
 
     def on_draw(self):
         self._window.clear()
+        self.update_state()
 
     def _handle_except(self, e):
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -90,7 +110,7 @@ class Game(StateMachine):
                 self._ent_mgr.dispatch_messages()
 
                 #
-                self.run_state()
+                #self.run_state()
 
                 #
                 for window in pyglet.app.windows:
@@ -98,6 +118,7 @@ class Game(StateMachine):
                     window.dispatch_events()
                     window.dispatch_event('on_draw')
                     window.flip()
+
 
         except Exception as e:
             self._handle_except(e)
