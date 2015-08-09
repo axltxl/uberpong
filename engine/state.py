@@ -5,16 +5,16 @@ import pyglet
 class State():
     """State implementation"""
     def __init__(self, *, machine):
-        self.machine = machine
+        self._machine = machine
 
     #
     #
     #
     def pop(self):
-        self.machine.pop()
+        self._machine.pop()
 
     def push(self, id):
-        self.machine.push(id)
+        self._machine.push(id)
 
     def on_begin(self):
         pass
@@ -61,30 +61,30 @@ class StateMachine(pyglet.event.EventDispatcher):
         self.register_event_type('on_exit')
 
         #
-        self.stack = []
-        self.states = {}
+        self._stack = []
+        self._states = {}
 
         # window
         self.window = window
 
     def register_state(self, id, cls):
-        self.states[id] = cls
+        self._states[id] = cls
 
     def get_current_state(self):
-        if len(self.stack):
-            return self.stack[0]
+        if len(self._stack):
+            return self._stack[0]
         return None
 
     def run_state(self):
         self.dispatch_event('on_run')
 
     def purge_stack(self):
-        while len(self.stack):
+        while len(self._stack):
             self.pop_state()
 
     def pop_state(self):
         self.dispatch_event('on_exit')
-        self.stack.pop(0)
+        self._stack.pop(0)
         self._attach_events(self.get_current_state())
 
     def _attach_events(self, state):
@@ -126,10 +126,10 @@ class StateMachine(pyglet.event.EventDispatcher):
             self.dispatch_event('on_exit')
 
         #
-        state = self.states[id](machine=self)
+        state = self._states[id](machine=self)
 
         #
-        self.stack.insert(0, state)
+        self._stack.insert(0, state)
         self._attach_events(state)
 
         #

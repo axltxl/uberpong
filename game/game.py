@@ -41,7 +41,8 @@ class Game(StateMachine):
         # Set up window
         #
         self._window = pyglet.window.Window(
-            style=self._window.Window.WINDOW_STYLE_DIALOG,
+            640, 480,
+            style=pyglet.window.Window.WINDOW_STYLE_DIALOG,
             caption="{name} - {version}".format(name=GAME_NAME, version=GAME_VER)
         )
         self._window.on_draw = self.on_draw
