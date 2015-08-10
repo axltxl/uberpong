@@ -8,21 +8,32 @@ from engine.entity import EntityManager
 GAME_NAME = "PONG!"
 GAME_VER = "0.1a"
 
+
 class GameSplash(State):
     """Game start state"""
 
     def __init__(self, *, machine):
+        """Constructor
+
+        Kwargs:
+            machine(StateMachine): parent state machine
+        """
+
+        # Call my parent
         super().__init__(machine=machine)
 
-        self._show_press_start = True
+        # Toggle flags
+        self._show_press_start = True # This is used for _comp_label animation
+        self._key_pressed = False # has been a key pressed?
 
+        # This should be moved to another level
         pyglet.font.add_file('assets/fonts/8bitOperatorPlus-Regular.ttf')
         font_8bit_operator = pyglet.font.load('8-bit Operator+')
 
         # Title label
         self._title_label = pyglet.text.Label(
             GAME_NAME, font_name='8-bit Operator+', font_size=72,
-            x=machine.window.width//2, y=machine.window.height//2,
+            x=machine.window.width//2, y=machine.window.height//2 + 16,
             anchor_x='center', anchor_y='center'
         )
 
@@ -33,26 +44,30 @@ class GameSplash(State):
             anchor_x='center', anchor_y='center'
         )
 
-    def toggle_press_start(self, dt):
-        self._show_press_start = not self._show_press_start
+
+    def _toggle_press_start(self, dt):
+        """Toggle _show_press_start flag"""
+        self._show_press_start ^= True
+
+    #
+    # pyglet event callbacks
+    #
 
     def on_begin(self):
-        print("on_begin called")
-        pyglet.clock.schedule_interval(self.toggle_press_start, 0.5)
+        pyglet.clock.schedule_interval(self._toggle_press_start, 0.5)
+
 
     def on_update(self):
+        # Draw labels
         self._title_label.draw()
         if self._show_press_start:
             self._comp_label.draw()
 
-    def on_exit(self):
-        print("on_exit called")
 
     def on_key_press(self, sym, mod):
-        print("A key has been pressed!")
-
-    def on_mouse_motion(self, x, y, dx, dy):
-        print("The mouse is alive ({x},{y})".format(x=x,y=y))
+        pyglet.clock.unschedule(self._toggle_press_start)
+        self._key_pressed = True
+        self._show_press_start = False
 
 
 class Game(StateMachine):
