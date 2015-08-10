@@ -14,6 +14,8 @@ class GameSplash(State):
     def __init__(self, *, machine):
         super().__init__(machine=machine)
 
+        self._show_press_start = True
+
         pyglet.font.add_file('assets/fonts/8bitOperatorPlus-Regular.ttf')
         font_8bit_operator = pyglet.font.load('8-bit Operator+')
 
@@ -31,16 +33,17 @@ class GameSplash(State):
             anchor_x='center', anchor_y='center'
         )
 
-    def tick(self, dt):
-        print("tick!")
+    def toggle_press_start(self, dt):
+        self._show_press_start = not self._show_press_start
 
     def on_begin(self):
         print("on_begin called")
-        pyglet.clock.schedule_interval(self.tick, 1.0/60)
+        pyglet.clock.schedule_interval(self.toggle_press_start, 0.5)
 
     def on_update(self):
         self._title_label.draw()
-        self._comp_label.draw()
+        if self._show_press_start:
+            self._comp_label.draw()
 
     def on_exit(self):
         print("on_exit called")
