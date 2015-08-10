@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import pyglet
-import sys, traceback, os
+import sys
+import traceback
+import os
 from engine.state import State, StateMachine
 from engine.entity import EntityManager
 
@@ -23,8 +25,8 @@ class GameSplash(State):
         super().__init__(machine=machine)
 
         # Toggle flags
-        self._show_press_start = True # This is used for _comp_label animation
-        self._key_pressed = False # has been a key pressed?
+        self._show_press_start = True  # This is used for _comp_label animation
+        self._key_pressed = False  # has been a key pressed?
 
         # This should be moved to another level
         pyglet.font.add_file('assets/fonts/8bitOperatorPlus-Regular.ttf')
@@ -86,24 +88,27 @@ class Game(StateMachine):
         self._window = pyglet.window.Window(
             640, 480,
             style=pyglet.window.Window.WINDOW_STYLE_DIALOG,
-            caption="{name} - {version}".format(name=GAME_NAME, version=GAME_VER)
+            caption="{name} - {version}"
+            .format(name=GAME_NAME, version=GAME_VER)
         )
         self._window.on_draw = self.on_draw
         self._window.on_close = self.on_window_close
 
-        #
+        # Call the parent
         super().__init__(window=self._window)
 
-        #
+        # Register states
         self.register_state('game_splash', GameSplash)
 
-        #
+        # Shutdown flag
         self._shutdown = False
 
-        #
+        # Set up the actual EntityManager
         self._ent_mgr = EntityManager()
 
-
+    #
+    # pyglet.window event methods
+    #
     def on_window_close(self):
         self._shutdown = True
 
@@ -112,6 +117,7 @@ class Game(StateMachine):
         self.update_state()
 
     def _handle_except(self, e):
+        """Exception handler"""
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("Unhandled {e} at {file}:{line}: '{msg}'"
@@ -130,13 +136,11 @@ class Game(StateMachine):
                 #
                 pyglet.clock.tick()
 
-                #
+                # Tell the EntityManager to deliver all
+                # pending messages (if there are any)
                 self._ent_mgr.dispatch_messages()
 
-                #
-                #self.run_state()
-
-                #
+                # pyglet.window bit
                 for window in pyglet.app.windows:
                     window.switch_to()
                     window.dispatch_events()
