@@ -30,6 +30,9 @@ class GameSplash(State):
         pyglet.font.add_file('assets/fonts/8bitOperatorPlus-Regular.ttf')
         font_8bit_operator = pyglet.font.load('8-bit Operator+')
 
+        # and this as well
+        self.snd_begin = pyglet.media.load('assets/sounds/begin.wav', streaming=False)
+
         # Title label
         self._title_label = pyglet.text.Label(
             GAME_NAME, font_name='8-bit Operator+', font_size=72,
@@ -68,6 +71,9 @@ class GameSplash(State):
         pyglet.clock.unschedule(self._toggle_press_start)
         self._key_pressed = True
         self._show_press_start = False
+
+        #
+        self.snd_begin.play()
 
 
 class Game(StateMachine):
