@@ -12,6 +12,7 @@ See LICENSE for more details.
 
 import pyglet
 
+
 class State():
     """State implementation"""
     def __init__(self, *, machine):
@@ -99,6 +100,14 @@ class StateMachine(pyglet.event.EventDispatcher):
         # window
         self._window = window
 
+        # Attach pyglet.window input events to this state machine
+        self._window.on_key_press = self._window_on_key_press
+        self._window.on_mouse_motion = self._window_on_mouse_motion
+        self._window.on_mouse_drag = self._window_on_mouse_drag
+        self._window.on_mouse_press = self._window_on_mouse_press
+        self._window.on_mouse_release = self._window_on_mouse_release
+        self._window.on_mouse_scroll = self._window_on_mouse_scroll
+
     @property
     def window(self):
         return self._window
@@ -146,12 +155,12 @@ class StateMachine(pyglet.event.EventDispatcher):
             self.pop_handlers()
 
         # Clean up window events attached to any current state
-        self._window.on_key_press = None
-        self._window.on_mouse_motion = None
-        self._window.on_mouse_drag = None
-        self._window.on_mouse_press = None
-        self._window.on_mouse_release = None
-        self._window.on_mouse_scroll = None
+        self._state_on_key_press = None
+        self._state_on_mouse_motion = None
+        self._state_on_mouse_drag = None
+        self._state_on_mouse_press = None
+        self._state_on_mouse_release = None
+        self._state_on_mouse_scroll = None
 
         if state is not None:
             # Assign this machine's events
@@ -159,7 +168,7 @@ class StateMachine(pyglet.event.EventDispatcher):
             self.set_handler('on_update', state.on_update)
             self.set_handler('on_exit', state.on_exit)
 
-            # Assign window events
+            # Assign state machine input events to the current state
             self._state_on_key_press = state.on_key_press
             self._state_on_mouse_motion = state.on_mouse_motion
             self._state_on_mouse_drag = state.on_mouse_drag
@@ -188,3 +197,60 @@ class StateMachine(pyglet.event.EventDispatcher):
 
         # Trigger an on_begin event on new state
         self.dispatch_event('on_begin')
+
+    #
+    # Internal callbacks to be invoked by pyglet.window
+    # input events
+    #
+
+    def _window_on_key_press(self, sym, mod):
+        self.on_key_press(sym, mod)
+        if self._state_on_key_press is not None:
+            self._state_on_key_press(sym, mod)
+
+    def _window_on_mouse_motion(self, x, y, dx, dy):
+        self.on_mouse_motion(x, y, dx, dy)
+        if self._state_on_mouse_motion is not None:
+            self._state_on_mouse_motion(x, y, dx, dy)
+
+    def _window_on_mouse_press(self, x, y, button, modifiers):
+        self.on_mouse_press(x, y, button, modifiers)
+        if self._state_on_mouse_press is not None:
+            self._state_on_mouse_press(x, y, button, modifiers)
+
+    def _window_on_mouse_release(self, x, y, button, modifiers):
+        self.on_mouse_release(x, y, button, modifiers)
+        if self._state_on_mouse_release is not None:
+            self._state_on_mouse_release(x, y, button, modifiers)
+
+    def _window_on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        self.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+        if self._state_on_mouse_drag is not None:
+            self._state_on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+
+    def _window_on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        self.on_key_press(x, y, scroll_x, scroll_y)
+        if self._state_on_key_press:
+            self._state_on_key_press(sym, mod)
+
+    #
+    # Input-related callbacks to be invoked by pyglet.window
+    #
+
+    def on_key_press(self, sym, mod):
+        pass
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        pass
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        pass
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        pass
+
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        pass
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        pass
