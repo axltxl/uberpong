@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 
+"""
+engine.entity
+~~~~~~~~
+A simple entity system
+
+(c) 2015 by Alejandro Ricoveri
+See LICENSE for more details.
+"""
+
 import uuid
 
 

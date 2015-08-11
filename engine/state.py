@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
 
+"""
+engine.system
+~~~~~~~~
+A simple state system
+
+(c) 2015 by Alejandro Ricoveri
+See LICENSE for more details.
+"""
+
+
 import pyglet
 
 class State():
