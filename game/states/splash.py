@@ -14,7 +14,7 @@ import pyglet
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
-class GameSplash(State):
+class SplashState(State):
     """Game start state"""
 
     def __init__(self, *, machine):

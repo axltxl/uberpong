@@ -17,7 +17,8 @@ import os
 from engine.state import State, StateMachine
 from engine.entity import EntityManager
 from engine.spot import spot_set, spot_get
-from .states import splash
+from .states.splash import SplashState
+from .states.game import GameState
 
 # Set initial SPOT values
 spot_set('game_name', "PONG!")
@@ -45,7 +46,8 @@ class Game(StateMachine):
         super().__init__(window=self._window)
 
         # Register states
-        self.register_state('state_splash', splash.GameSplash)
+        self.register_state('state_splash', SplashState)
+        self.register_state('state_game', GameState)
 
         # Shutdown flag
         self._shutdown = False
