@@ -23,6 +23,7 @@ from .states import splash
 spot_set('game_name', "PONG!")
 spot_set('game_version', "0.1a")
 
+
 class Game(StateMachine):
     """Game class"""
 
@@ -34,8 +35,9 @@ class Game(StateMachine):
             640, 480,
             style=pyglet.window.Window.WINDOW_STYLE_DIALOG,
             caption="{name} - {version}"
-            .format(name=spot_get('game_name'), version=spot_get('game_version'))
-        )
+            .format(name=spot_get('game_name'),
+                    version=spot_get('game_version'))
+            )
         self._window.on_draw = self.on_draw
         self._window.on_close = self.on_window_close
 
@@ -63,6 +65,11 @@ class Game(StateMachine):
     def on_draw(self):
         self._window.clear()
         self.update_state()
+
+    def on_key_press(self, sym, mod):
+        """Exit the game if F12 has been pressed"""
+        if sym == pyglet.window.key.F12:
+            self.exit()
 
     def _handle_except(self, e):
         """Exception handler"""
@@ -98,7 +105,6 @@ class Game(StateMachine):
                     window.dispatch_events()
                     window.dispatch_event('on_draw')
                     window.flip()
-
 
         except Exception as e:
             self._handle_except(e)
