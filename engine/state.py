@@ -229,9 +229,9 @@ class StateMachine(pyglet.event.EventDispatcher):
             self._state_on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 
     def _window_on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        self.on_key_press(x, y, scroll_x, scroll_y)
-        if self._state_on_key_press:
-            self._state_on_key_press(sym, mod)
+        self.on_mouse_scroll(x, y, scroll_x, scroll_y)
+        if self._state_on_mouse_scroll:
+            self._state_on_mouse_scroll(x, y, scroll_x, scroll_y)
 
     #
     # Input-related callbacks to be invoked by pyglet.window
