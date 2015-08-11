@@ -58,7 +58,7 @@ class Game(StateMachine):
     # pyglet.window event methods
     #
     def on_window_close(self):
-        self._shutdown = True
+        self.exit()
 
     def on_draw(self):
         self._window.clear()
@@ -72,6 +72,10 @@ class Game(StateMachine):
               .format(e=exc_type.__name__, file=fname,
               line=exc_tb.tb_lineno,  msg=e))
         print(traceback.format_exc())
+
+    def exit(self):
+        """Exit the game"""
+        self._shutdown = True
 
     def go(self):
         """Main entry point"""
