@@ -58,7 +58,8 @@ class GameSplash(State):
         self._show_press_start ^= True
 
     def _get_going(self, dt):
-        self.pop()
+        """Switch to next state"""
+        self.push('state_game')
 
     #
     # pyglet event callbacks
