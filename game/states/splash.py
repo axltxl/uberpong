@@ -77,13 +77,17 @@ class GameSplash(State):
 
 
     def on_key_press(self, sym, mod):
+        # Evade key redundancy
         if self._key_pressed:
             return
 
+        # Stop "press start" animation
         pyglet.clock.unschedule(self._toggle_press_start)
         self._key_pressed = True
         self._show_press_start = False
 
-        #
+        # Play begin sound
         self.snd_begin.play()
+
+        # Schedule a new state onto the stack after the sound has been played
         pyglet.clock.schedule_interval(self._get_going, self.snd_begin.duration + 1)
