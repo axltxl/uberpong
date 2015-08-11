@@ -17,3 +17,4 @@ def spot_get(key):
 def spot_set(key, value):
     global _spot
     _spot[key] = value
+    return value
