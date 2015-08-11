@@ -26,10 +26,10 @@ class State():
     # Operations done on parent machine
     #
     def pop(self):
-        self._machine.pop()
+        self._machine.pop_state()
 
     def push(self, id):
-        self._machine.push(id)
+        self._machine.push_state(id)
 
     #
     # Callbacks to be invoked by events in the parent machine
@@ -133,9 +133,10 @@ class StateMachine(pyglet.event.EventDispatcher):
 
     def pop_state(self):
         """Pop the state on top of the stack"""
-        self.dispatch_event('on_exit')
-        self._stack.pop(0)
-        self._attach_events(self.get_current_state())
+        if len(self._stack):
+            self.dispatch_event('on_exit')
+            self._stack.pop(0)
+            self._attach_events(self.get_current_state())
 
     def _attach_events(self, state):
         """Attach events (including window events) on state"""
@@ -159,12 +160,12 @@ class StateMachine(pyglet.event.EventDispatcher):
             self.set_handler('on_exit', state.on_exit)
 
             # Assign window events
-            self._window.on_key_press = state.on_key_press
-            self._window.on_mouse_motion = state.on_mouse_motion
-            self._window.on_mouse_drag = state.on_mouse_drag
-            self._window.on_mouse_press = state.on_mouse_press
-            self._window.on_mouse_release = state.on_mouse_release
-            self._window.on_mouse_scroll = state.on_mouse_scroll
+            self._state_on_key_press = state.on_key_press
+            self._state_on_mouse_motion = state.on_mouse_motion
+            self._state_on_mouse_drag = state.on_mouse_drag
+            self._state_on_mouse_press = state.on_mouse_press
+            self._state_on_mouse_release = state.on_mouse_release
+            self._state_on_mouse_scroll = state.on_mouse_scroll
 
     def push_state(self, class_id):
         """Push a new state onto the stack
