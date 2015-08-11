@@ -45,7 +45,7 @@ class Game(StateMachine):
         super().__init__(window=self._window)
 
         # Register states
-        self.register_state('game_splash', splash.GameSplash)
+        self.register_state('state_splash', splash.GameSplash)
 
         # Shutdown flag
         self._shutdown = False
@@ -88,7 +88,7 @@ class Game(StateMachine):
         """Main entry point"""
         try:
             # Push first State
-            self.push_state('game_splash')
+            self.push_state('state_splash')
 
             # Run the thing!
             while not self._shutdown:
