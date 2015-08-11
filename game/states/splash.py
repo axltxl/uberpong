@@ -36,7 +36,7 @@ class GameSplash(State):
         font_8bit_operator = pyglet.font.load('8-bit Operator+')
 
         # and this as well
-        self.snd_begin = pyglet.media.load('assets/sounds/begin.wav', streaming=False)
+        self.snd_begin = pyglet.media.load('assets/sounds/begin.wav')
 
         # Title label
         self._title_label = pyglet.text.Label(
@@ -56,6 +56,9 @@ class GameSplash(State):
     def _toggle_press_start(self, dt):
         """Toggle _show_press_start flag"""
         self._show_press_start ^= True
+
+    def _get_going(self, dt):
+        self.pop()
 
     #
     # pyglet event callbacks
@@ -82,3 +85,4 @@ class GameSplash(State):
 
         #
         self.snd_begin.play()
+        pyglet.clock.schedule_interval(self._get_going, self.snd_begin.duration + 1)
