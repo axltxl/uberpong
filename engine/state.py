@@ -150,10 +150,6 @@ class StateMachine(pyglet.event.EventDispatcher):
     def _attach_events(self, state):
         """Attach events (including window events) on state"""
 
-        # Workaround to know whether events should be disposed first
-        if self._event_stack:
-            self.pop_handlers()
-
         # Clean up window events attached to any current state
         self._state_on_key_press = None
         self._state_on_mouse_motion = None
