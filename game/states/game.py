@@ -64,6 +64,10 @@ class GameState(State):
     # All input events are handled directly by the client
     #######################################################
 
-    def on_key_press(self, sym, mod):
+    def on_key_press(self, symbol, modifiers):
         # Update data on client
-        self._player.on_key_press(sym, mod)
+        self._player.on_key_press(symbol, modifiers)
+
+    def on_key_release(self, symbol, modifiers):
+        # Update data on client
+        self._player.on_key_release(symbol, modifiers)

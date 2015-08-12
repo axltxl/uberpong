@@ -57,7 +57,10 @@ class State():
     # Input-related callbacks to be invoked by pyglet.window
     #
 
-    def on_key_press(self, sym, mod):
+    def on_key_press(self, symbol, modifiers):
+        pass
+
+    def on_key_release(self, symbol, modifiers):
         pass
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -102,6 +105,7 @@ class StateMachine(pyglet.event.EventDispatcher):
 
         # Attach pyglet.window input events to this state machine
         self._window.on_key_press = self._window_on_key_press
+        self._window.on_key_release = self._window_on_key_release
         self._window.on_mouse_motion = self._window_on_mouse_motion
         self._window.on_mouse_drag = self._window_on_mouse_drag
         self._window.on_mouse_press = self._window_on_mouse_press
@@ -166,6 +170,7 @@ class StateMachine(pyglet.event.EventDispatcher):
 
             # Assign state machine input events to the current state
             self._state_on_key_press = state.on_key_press
+            self._state_on_key_release = state.on_key_release
             self._state_on_mouse_motion = state.on_mouse_motion
             self._state_on_mouse_drag = state.on_mouse_drag
             self._state_on_mouse_press = state.on_mouse_press
@@ -199,10 +204,15 @@ class StateMachine(pyglet.event.EventDispatcher):
     # input events
     #
 
-    def _window_on_key_press(self, sym, mod):
-        self.on_key_press(sym, mod)
+    def _window_on_key_press(self, symbol, modifiers):
+        self.on_key_press(symbol, modifiers)
         if self._state_on_key_press is not None:
-            self._state_on_key_press(sym, mod)
+            self._state_on_key_press(symbol, modifiers)
+
+    def _window_on_key_release(self, symbol, modifiers):
+        self.on_key_release(symbol, modifiers)
+        if self._state_on_key_release is not None:
+            self._state_on_key_release(symbol, modifiers)
 
     def _window_on_mouse_motion(self, x, y, dx, dy):
         self.on_mouse_motion(x, y, dx, dy)
@@ -233,7 +243,10 @@ class StateMachine(pyglet.event.EventDispatcher):
     # Input-related callbacks to be invoked by pyglet.window
     #
 
-    def on_key_press(self, sym, mod):
+    def on_key_press(self, symbol, modifiers):
+        pass
+
+    def on_key_release(self, symbol, modifiers):
         pass
 
     def on_mouse_motion(self, x, y, dx, dy):
