@@ -47,6 +47,11 @@ class Channel:
         # Put the data on the wire as an UTF-8 JSON string
         self.sock.sendto(bytes(json.dumps(data), NET_ENCODING), (host, port))
 
+    def close(self):
+        """Close socket"""
+        if self.sock:
+            self.sock.close()
+
     def on_data_received(self, data, host, port):
         pass
 

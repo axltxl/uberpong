@@ -44,6 +44,10 @@ class GameState(State):
         # Connect client to server
         pass
 
+    def on_exit(self):
+        self._board.close()
+        self._player.close()
+
     def on_update(self):
         # Update client with data from server (unless the client is event-driven)
         # Perform actions inside the client based on new data (client.update or something)
