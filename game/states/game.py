@@ -11,22 +11,10 @@ See LICENSE for more details.
 
 
 import pyglet
+import socket
 from engine.state import State
 from engine.spot import spot_set, spot_get
-
-import PodSixNet.Channel
-import PodSixNet.Server
-
-class ClientChannel(PodSixNet.Channel.Channel):
-    def Network(self, data):
-        print data
-
-class Server(PodSixNet.Server.Server):
-
-    channelClass = ClientChannel
-
-    def Connected(self, channel, addr):
-        print 'new connection:', channel
+from engine.net import Client, Server
 
 
 class GameState(State):
@@ -60,7 +48,7 @@ class GameState(State):
         # Send data from client to server (client.sent_data or something)
         # Render all the things on client! (client.draw)
         # Update server!
-        self._server.Pump()
+        self._server.pump()
 
     #######################################################
     # All input events are handled directly by the client
