@@ -14,8 +14,8 @@ import pyglet
 import socket
 from engine.state import State
 from engine.spot import spot_set, spot_get
-from engine.net import Client, Server
-
+from game.player import Player
+from game.board import Board
 
 class GameState(State):
     """Game start state"""
@@ -31,7 +31,9 @@ class GameState(State):
         super().__init__(machine=machine)
 
         # Create a single client and server
-        self._server = Server()
+        self._board = Board(port=5000)
+        self._player = Player(port=5000)
+
 
     #
     # pyglet event callbacks
@@ -47,8 +49,12 @@ class GameState(State):
         # Perform actions inside the client based on new data (client.update or something)
         # Send data from client to server (client.sent_data or something)
         # Render all the things on client! (client.draw)
+
+        # Update client!
+        self._player.pump()
+
         # Update server!
-        self._server.pump()
+        self._board.pump()
 
     #######################################################
     # All input events are handled directly by the client
@@ -56,5 +62,4 @@ class GameState(State):
 
     def on_key_press(self, sym, mod):
         # Update data on client
-        # maybe send packets to the server as the player hits buttons
-        pass
+        self._player.on_key_press(sym, mod)
