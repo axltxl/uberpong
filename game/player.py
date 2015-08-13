@@ -2,7 +2,7 @@
 
 from engine.net import Client
 
-class Player(Client):
+class PlayerClient(Client):
     def on_data_received(self, data, host, port):
         print(data)
 

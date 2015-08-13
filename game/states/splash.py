@@ -90,4 +90,4 @@ class SplashState(State):
         self.snd_begin.play()
 
         # Schedule a new state onto the stack after the sound has been played
-        pyglet.clock.schedule_interval(self._get_going, self.snd_begin.duration + 1)
+        pyglet.clock.schedule_once(self._get_going, self.snd_begin.duration + 1)

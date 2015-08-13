@@ -14,11 +14,13 @@ import pyglet
 import sys
 import traceback
 import os
+
 from engine.state import State, StateMachine
 from engine.entity import EntityManager
 from engine.spot import spot_set, spot_get
-from .states.splash import SplashState
-from .states.game import GameState
+
+from game.states.splash import SplashState
+from game.states.game import GameState
 
 # Set initial SPOT values
 spot_set('game_name', "PONG!")
@@ -54,6 +56,7 @@ class Game(StateMachine):
 
         # Set up the actual EntityManager
         self._ent_mgr = EntityManager()
+        spot_set('game_entity_manager', self._ent_mgr)
 
         # Register this object onto the SPOT
         spot_set('game_object', self)

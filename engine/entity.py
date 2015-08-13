@@ -33,13 +33,13 @@ class EntityManager:
             The new created entity
         """
         # uuid for this new entity
-        uuid = uuid.uuid4().hex
+        new_uuid = uuid.uuid4().hex
 
         # create the actual entity
-        entity = self._classes[id](uuid, manager=self, **kwargs)
+        entity = self._classes[id](new_uuid, manager=self, **kwargs)
 
         # map the entity
-        self._ents[uuid] = entity
+        self._ents[new_uuid] = entity
 
         # give the new entity back
         return entity
@@ -57,7 +57,7 @@ class EntityManager:
 
 
 class Entity:
-    def __init__(self, uuid, *, manager):
+    def __init__(self, uuid, *, manager, x=0, y=0, a=32, b=32):
         """Constructor
 
         Args:
@@ -68,6 +68,12 @@ class Entity:
 
         self._manager = manager
         self._uuid = uuid
+
+        # Position + boundary box
+        self.x = x
+        self.y = y
+        self.a = a
+        self.b = b
 
         #
         # Contacts directory:

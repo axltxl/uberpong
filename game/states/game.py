@@ -12,10 +12,12 @@ See LICENSE for more details.
 
 import pyglet
 import socket
+
 from engine.state import State
 from engine.spot import spot_set, spot_get
-from game.player import Player
-from game.board import Board
+
+from game.player import PlayerClient
+from game.board import Scene
 
 class GameState(State):
     """Game start state"""
@@ -31,8 +33,10 @@ class GameState(State):
         super().__init__(machine=machine)
 
         # Create a single client and server
-        self._board = Board(port=5000)
-        self._player = Player(port=5000)
+        self._scene = Scene(port=5000,
+                            width=machine.window.width,
+                            height=machine.window.height)
+        self._player = PlayerClient(port=5000)
 
 
     #
@@ -45,7 +49,7 @@ class GameState(State):
         pass
 
     def on_exit(self):
-        self._board.close()
+        self._scene.close()
         self._player.close()
 
     def on_update(self):
@@ -58,7 +62,7 @@ class GameState(State):
         self._player.pump()
 
         # Update server!
-        self._board.pump()
+        self._scene.pump()
 
     #######################################################
     # All input events are handled directly by the client
