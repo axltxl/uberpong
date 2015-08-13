@@ -32,12 +32,9 @@ class GameState(State):
         # Call my parent
         super().__init__(machine=machine)
 
-        # Create a single client and server
-        self._scene = Scene(port=5000,
-                            width=machine.window.width,
-                            height=machine.window.height)
-        self._player = PlayerClient(port=5000)
-
+        #
+        self._scene = None
+        self._player = None
 
     #
     # pyglet event callbacks
@@ -55,12 +52,17 @@ class GameState(State):
                                 height=self._machine.window.height)
         else:
             server_addr = options["--connect"]
+
         # Connect client to server
-        pass
+        self._player = PlayerClient(host=server_addr, port=5000)
+        self._player.connect()
 
     def on_exit(self):
-        self._scene.close()
-        self._player.close()
+        if self._player:
+            self._player.close()
+        if self._scene:
+            self._scene.close()
+
 
     def on_update(self):
         # Update client with data from server (unless the client is event-driven)
@@ -69,10 +71,12 @@ class GameState(State):
         # Render all the things on client! (client.draw)
 
         # Update client!
-        self._player.pump()
+        if self._player:
+            self._player.pump()
 
-        # Update server!
-        self._scene.pump()
+        # Update server (if created)
+        if self._scene:
+            self._scene.pump()
 
     #######################################################
     # All input events are handled directly by the client
