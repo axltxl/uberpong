@@ -6,11 +6,9 @@ from engine.entity import Entity
 
 from game.net.packet import PacketRequest, PacketResponse
 
-MAX_PLAYERS = 2
-
 class PlayerEntity(Entity):
     def __init__(self, uuid, **kwargs):
-        super().__init__(uuid, a=32, b=64, **kwargs)
+        super().__init__(uuid, size=(32, 64), **kwargs)
 
 class BallEntity(Entity):
     pass
@@ -19,6 +17,8 @@ class BoardEntity(Entity):
     pass
 
 class Scene(Server):
+    MAX_PLAYERS = 2
+
     def __init__(self, *, width, height, **kwargs):
         super().__init__(**kwargs)
 
@@ -32,13 +32,17 @@ class Scene(Server):
         # Register entities
         self._ent_mgr.register_class('ent_player', PlayerEntity)
 
-    def create_player(self):
+    def create_player(self, host, port):
         #
         player = self._ent_mgr.create_entity('ent_player')
-        player.y = (self._window_height - player.b)//2
+        player.move_abs(0, (self._window_height - player.height)//2)
 
         #
-        self._players[player.get_uuid()] = player
+        self._players[player.get_uuid()] = {
+            "entity": player,
+            "host": host,
+            "port": port
+        }
 
         #
         return player
@@ -46,14 +50,20 @@ class Scene(Server):
     def on_data_received(self, data, host, port):
         #
         req = PacketRequest(data)
+
         res = PacketResponse()
+        res.response = PacketResponse.RES_NOT_OK
+
+        import ipdb; ipdb.set_trace()
 
         #
         if req.command is not None:
-            if req.command == NetRequest.CMD_CONNECT:
-                if len(self._players) < MAX_PLAYERS:
+            if req.command == PacketRequest.CMD_CONNECT:
+                if len(self._players) < self.MAX_PLAYERS:
                     res.response = PacketResponse.RES_OK
-                    res.player_id = self.create_player().get_uuid()
+                    res.player_id = self.create_player(host, port).get_uuid()
+                else:
+                    res.reason = PacketResponse.REASON_CONN_REFUSED
 
         #
         self.send(res.data, host, port)
