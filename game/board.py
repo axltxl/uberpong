@@ -54,8 +54,6 @@ class Scene(Server):
         res = PacketResponse()
         res.response = PacketResponse.RES_NOT_OK
 
-        import ipdb; ipdb.set_trace()
-
         #
         if req.command is not None:
             if req.command == PacketRequest.CMD_CONNECT:

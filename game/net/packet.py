@@ -2,7 +2,9 @@
 
 class PacketRequest:
     CMD_CONNECT = 'connect'
-    def __init__(self, data={}):
+    def __init__(self, data=None):
+        if data is None:
+            data = {}
         self._req = data
 
     @property
@@ -26,7 +28,9 @@ class PacketResponse:
 
     REASON_CONN_REFUSED = "conn_refused"
 
-    def __init__(self, data={}):
+    def __init__(self, data=None):
+        if data is None:
+            data = {}
         self._res = data
 
     @property
