@@ -1,68 +1,66 @@
 # -*- coding: utf-8 -*-
 
-class PacketRequest:
-    CMD_CONNECT = 'connect'
+class Packet:
     def __init__(self, data=None):
         if data is None:
             data = {}
-        self._req = data
+        self._data = data
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    @property
+    def player_id(self):
+        if 'player_id' in self.data:
+            return self.data['player_id']
+        return None
+
+    @player_id.setter
+    def player_id(self, id):
+        self.data['player_id'] = id
+
+
+class PacketRequest(Packet):
+    CMD_CONNECT = 'connect'
 
     @property
     def command(self):
-        if 'cmd' in self._req:
-            return self._req['cmd']
+        if 'cmd' in self.data:
+            return self.data['cmd']
         return None
 
     @command.setter
     def command(self, value):
-        self._req['cmd'] = value
-
-    @property
-    def data(self):
-        return self._req
+        self.data['cmd'] = value
 
 
-class PacketResponse:
+class PacketResponse(Packet):
     RES_OK = 'OK'
     RES_NOT_OK = 'NOT_OK'
 
     REASON_CONN_REFUSED = "conn_refused"
 
-    def __init__(self, data=None):
-        if data is None:
-            data = {}
-        self._res = data
-
     @property
     def response(self):
-        if 'res' in self._res:
-            return self._res['res']
+        if 'res' in self.data:
+            return self.data['res']
         return None
 
     @response.setter
     def response(self, value):
-        self._res['res'] = value
+        self.data['res'] = value
 
     @property
     def reason(self):
-        if 'reason' in self._res:
-            return self._res['reason']
+        if 'reason' in self.data:
+            return self.data['reason']
         return None
 
     @reason.setter
     def reason(self, value):
-        self._res['reason'] = value
-
-    @property
-    def player_id(self):
-        if 'player_id' in self._res:
-            return self._res['player_id']
-        return None
-
-    @player_id.setter
-    def player_id(self, id):
-        self._res['player_id'] = id
-
-    @property
-    def data(self):
-        return self._res
+        self.data['reason'] = value

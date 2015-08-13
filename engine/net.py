@@ -24,7 +24,7 @@ class Channel:
         #########################################################
         self.sock.setblocking(False)
 
-        #
+        # LZ4 compression flag
         self._use_lz4 = False
 
     @property

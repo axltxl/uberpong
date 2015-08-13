@@ -16,8 +16,8 @@ import socket
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
-from game.player import PlayerClient
-from game.board import Scene
+from game.net.player import PlayerClient
+from game.net.scene import Scene
 
 class GameState(State):
     """Game start state"""
