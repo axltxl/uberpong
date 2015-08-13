@@ -57,7 +57,8 @@ class EntityManager:
 
 
 class Entity:
-    def __init__(self, uuid, *, manager, x=0, y=0, a=32, b=32):
+    def __init__(self, uuid, *, manager,
+                 position=(0, 0), size=(32, 32), anchor=(0, 0)):
         """Constructor
 
         Args:
@@ -69,11 +70,11 @@ class Entity:
         self._manager = manager
         self._uuid = uuid
 
+        # size
+        self._width, self._height = size
+
         # Position + boundary box
-        self.x = x
-        self.y = y
-        self.a = a
-        self.b = b
+        self._update_box(position)
 
         #
         # Contacts directory:
@@ -83,6 +84,36 @@ class Entity:
         # much like having a contact list on your smartphone. With this
         # approach, any entity can easily send messages to another one
         self._directory = {}
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        self._width = value
+        self._update_box()
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        self._height = value
+        self._update_box()
+
+    def _update_box(self, position=None):
+        if position is not None:
+            self._a, self._b = position
+        self._c = self._a + self._width
+        self._d = self._b + self._height
+
+    def move_abs(self, x=0, y=0):
+        self._update_box((x, y))
+
+    def move_rel(self, dx=0, dy=0):
+        self._update_box((self._a + dx, self._b + dy))
 
     def get_uuid(self):
         """Get UUID of this entity"""
