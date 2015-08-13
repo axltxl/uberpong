@@ -45,16 +45,17 @@ class GameState(State):
 
 
         # Initialise server
-        if options['--connect'] is None:
+        if options['--host'] is None:
             server_addr = 'localhost'
             self._scene = Scene(port=5000,
                                 width=self._machine.window.width,
                                 height=self._machine.window.height)
+
             # Activate LZ4 compression on client
             if options['--lz4'] is not None:
                 self._scene.use_lz4 = True
         else:
-            server_addr = options["--connect"]
+            server_addr = options["--host"]
 
         # Create client
         self._player = PlayerClient(host=server_addr, port=5000)

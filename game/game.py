@@ -69,13 +69,14 @@ class Game(StateMachine):
         """pong
 
         Usage:
-            pong [-c <ip_address> | --connect <ip_address>]
+            pong [-H <ip_address> | --host <ip_address>] [--port <port> | -p <port>] [--lz4 | -z]
             pong -h | --help
             pong --version
 
         Options:
-          -c --connect <ip_address>   Connect to server at ip_address
           -z --lz4                    Use LZ4 compression algorithm
+          -H --host <ip_address>   Server to connect to
+          -p --port <port>            Port to connect to
           -h --help                   Show this screen.
           --version                   Show version.
         """
