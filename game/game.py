@@ -14,6 +14,7 @@ import pyglet
 import sys
 import traceback
 import os
+from docopt import docopt
 
 from engine.state import State, StateMachine
 from engine.entity import EntityManager
@@ -31,6 +32,9 @@ class Game(StateMachine):
     """Game class"""
 
     def __init__(self, argv):
+        # Parse command line arguments
+        self.parse_args(argv)
+
         #
         # Set up window
         #
@@ -60,6 +64,22 @@ class Game(StateMachine):
 
         # Register this object onto the SPOT
         spot_set('game_object', self)
+
+    def parse_args(self, argv):
+        """pong
+
+        Usage:
+            pong [-c <ip_address> | --connect <ip_address>]
+            pong -h | --help
+            pong --version
+
+        Options:
+          -c --connect <ip_address>   Connect to server at ip_address
+          -h --help                   Show this screen.
+          --version                   Show version.
+        """
+        spot_set("argv", docopt(self.parse_args.__doc__,
+                 argv=argv, version=spot_get('game_version')))
 
     #
     # pyglet.window event methods

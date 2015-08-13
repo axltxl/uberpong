@@ -44,7 +44,17 @@ class GameState(State):
     #
 
     def on_begin(self):
+        options = spot_get('argv')
+
+
         # Initialise server
+        if options['--connect'] is None:
+            server_addr = 'localhost'
+            self._scene = Scene(port=5000,
+                                width=self._machine.window.width,
+                                height=self._machine.window.height)
+        else:
+            server_addr = options["--connect"]
         # Connect client to server
         pass
 
