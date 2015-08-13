@@ -75,6 +75,7 @@ class Game(StateMachine):
 
         Options:
           -c --connect <ip_address>   Connect to server at ip_address
+          -z --lz4                    Use LZ4 compression algorithm
           -h --help                   Show this screen.
           --version                   Show version.
         """

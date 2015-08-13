@@ -3,6 +3,7 @@
 import socket
 import json
 import sys
+import lz4
 
 NET_MAX_BYTES = 512
 NET_ENCODING = 'utf-8'
@@ -23,6 +24,20 @@ class Channel:
         #########################################################
         self.sock.setblocking(False)
 
+        #
+        self._use_lz4 = False
+
+    @property
+    def use_lz4(self):
+        """LZ4 compression algorithm flag"""
+        return self._use_lz4
+
+    @use_lz4.setter
+    def use_lz4(self, value):
+        """Activate/deactivate use of LZ4 compression"""
+        self._use_lz4 = value
+
+
     def pump(self):
         """Receive raw data from socket and decode it as a dict"""
         data = {}  # fancy data
@@ -31,7 +46,11 @@ class Channel:
         # convert it into a dict (if possible)
         try:
             data_raw, addr = self.sock.recvfrom(NET_MAX_BYTES)
-            data = json.loads(data_raw.decode(NET_ENCODING))
+            if self._use_lz4:
+                data_str = lz4.uncompress(data_raw).decode(NET_ENCODING)
+            else:
+                data_str = data_raw.decode(NET_ENCODING)
+            data = json.loads(data_str)
         except Exception:
             pass
 
@@ -44,8 +63,14 @@ class Channel:
         if type(data) is not dict:
             raise TypeError("data must be a dictionary")
 
+        # Getting raw data
+        if self._use_lz4:
+            data_raw = lz4.compress(bytes(json.dumps(data), NET_ENCODING))
+        else:
+            data_raw = bytes(json.dumps(data), NET_ENCODING)
+
         # Put the data on the wire as an UTF-8 JSON string
-        self.sock.sendto(bytes(json.dumps(data), NET_ENCODING), (host, port))
+        self.sock.sendto(data_raw, (host, port))
 
     def close(self):
         """Close socket"""

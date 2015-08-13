@@ -50,11 +50,20 @@ class GameState(State):
             self._scene = Scene(port=5000,
                                 width=self._machine.window.width,
                                 height=self._machine.window.height)
+            # Activate LZ4 compression on client
+            if options['--lz4'] is not None:
+                self._scene.use_lz4 = True
         else:
             server_addr = options["--connect"]
 
-        # Connect client to server
+        # Create client
         self._player = PlayerClient(host=server_addr, port=5000)
+
+        # Activate LZ4 compression on client
+        if options['--lz4'] is not None:
+            self._player.use_lz4 = True
+
+        # Connect client to server
         self._player.connect()
 
     def on_exit(self):
