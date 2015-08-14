@@ -9,7 +9,7 @@ Client implementation for a player
 See LICENSE for more details.
 """
 
-import pyglet.window.key
+import pyglet
 from engine.net import Client
 from game.net.packet import Packet, Request, Response
 
@@ -25,6 +25,8 @@ class PlayerClient(Client):
         # This will hold the UUID assigned by a server
         # and used on further requests
         self._id = None
+        self._img = pyglet.image.load('assets/images/glasspaddle2.png')
+        self._sprite = pyglet.sprite.Sprite(self._img, x=50, y=50)
 
     def connect(self):
         """Connect to server
@@ -50,6 +52,11 @@ class PlayerClient(Client):
         """
         request.player_id = self._id  # Set player uuid on request
         super().send(request.data)  # Send request to server
+
+
+    def pump(self):
+        self._sprite.draw()
+        super().pump()
 
     def on_data_received(self, data, host, port):
         """Response pump for this client"""
