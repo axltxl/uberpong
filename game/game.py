@@ -14,10 +14,14 @@ import pyglet
 import sys
 import traceback
 import os
+from docopt import docopt
+
 from engine.state import State, StateMachine
 from engine.entity import EntityManager
 from engine.spot import spot_set, spot_get
-from .states import splash
+
+from game.states.splash import SplashState
+from game.states.game import GameState
 
 # Set initial SPOT values
 spot_set('game_name', "PONG!")
@@ -28,11 +32,14 @@ class Game(StateMachine):
     """Game class"""
 
     def __init__(self, argv):
+        # Parse command line arguments
+        self.parse_args(argv)
+
         #
         # Set up window
         #
         self._window = pyglet.window.Window(
-            640, 480,
+            1024, 768,
             style=pyglet.window.Window.WINDOW_STYLE_DIALOG,
             caption="{name} - {version}"
             .format(name=spot_get('game_name'),
@@ -45,16 +52,36 @@ class Game(StateMachine):
         super().__init__(window=self._window)
 
         # Register states
-        self.register_state('state_splash', splash.GameSplash)
+        self.register_state('state_splash', SplashState)
+        self.register_state('state_game', GameState)
 
         # Shutdown flag
         self._shutdown = False
 
         # Set up the actual EntityManager
         self._ent_mgr = EntityManager()
+        spot_set('game_entity_manager', self._ent_mgr)
 
         # Register this object onto the SPOT
         spot_set('game_object', self)
+
+    def parse_args(self, argv):
+        """pong
+
+        Usage:
+            pong [-H <ip_address> | --host <ip_address>] [--port <port> | -p <port>] [--lz4 | -z]
+            pong -h | --help
+            pong --version
+
+        Options:
+          -z --lz4                    Use LZ4 compression algorithm
+          -H --host <ip_address>      Server to connect to
+          -p --port <port>            Port to connect to
+          -h --help                   Show this screen.
+          --version                   Show version.
+        """
+        spot_set("argv", docopt(self.parse_args.__doc__,
+                 argv=argv, version=spot_get('game_version')))
 
     #
     # pyglet.window event methods
