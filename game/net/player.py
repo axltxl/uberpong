@@ -104,4 +104,29 @@ class PlayerClient(Client):
             self.send(request)
 
     def on_key_release(self, symbol, modifiers):
-        pass
+        #
+        # Create a new Request
+        #
+        request = Request()
+
+        #
+        # Whether to send the packet or not
+        #
+        send_pkt = False
+
+        #
+        # move down
+        #
+        if symbol == pyglet.window.key.W:
+            request.command = Request.CMD_MV_DN
+            send_pkt = True
+
+        #
+        # move up
+        #
+        elif symbol == pyglet.window.key.S:
+            request.command = Request.CMD_MV_UP
+            send_pkt = True
+
+        if send_pkt:
+            self.send(request)

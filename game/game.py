@@ -17,7 +17,6 @@ import os
 from docopt import docopt
 
 from engine.state import State, StateMachine
-from engine.entity import EntityManager
 from engine.spot import spot_set, spot_get
 
 from game.states.splash import SplashState
@@ -57,10 +56,6 @@ class Game(StateMachine):
 
         # Shutdown flag
         self._shutdown = False
-
-        # Set up the actual EntityManager
-        self._ent_mgr = EntityManager()
-        spot_set('game_entity_manager', self._ent_mgr)
 
         # Register this object onto the SPOT
         spot_set('game_object', self)
@@ -121,10 +116,6 @@ class Game(StateMachine):
             while not self._shutdown:
                 #
                 pyglet.clock.tick()
-
-                # Tell the EntityManager to deliver all
-                # pending messages (if there are any)
-                self._ent_mgr.dispatch_messages()
 
                 # pyglet.window bit
                 for window in pyglet.app.windows:

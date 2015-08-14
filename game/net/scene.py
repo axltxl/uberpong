@@ -11,6 +11,7 @@ See LICENSE for more details.
 
 from engine.spot import spot_set, spot_get
 from engine.net import Server
+from engine.entity import EntityManager
 
 from game.net.packet import Packet, Request, Response
 from game.entities.player import PlayerEntity
@@ -44,8 +45,10 @@ class Scene(Server):
         # Players (and their related information) will be held in here
         self._players = {}
 
-        # Get the entity manager
-        self._ent_mgr = spot_get('game_entity_manager')
+        # Set up the actual EntityManager
+        self._ent_mgr = EntityManager()
+        self._ent_mgr.gravity = 0, 0  # set gravity
+
 
         # Register entities
         self._ent_mgr.register_class('ent_player', PlayerEntity)
@@ -63,7 +66,7 @@ class Scene(Server):
 
         # Set initial position for this player
         #player.move_abs(0, (self._window_height - player.height)//2)
-        player.move_abs(0, 0)
+        #player.move_abs(0, 0)
 
         # Save information for this new player
         self._players[player.uuid] = {
@@ -74,6 +77,15 @@ class Scene(Server):
 
         # Return the thing
         return player
+
+    def pump(self):
+        # Tell the EntityManager to deliver all
+        # pending messages (if there are any)
+        self._ent_mgr.step(0.02)
+        self._ent_mgr.dispatch_messages()
+
+        #
+        super().pump()
 
     def on_data_received(self, data, host, port):
         """Pump network requests from clients
@@ -130,18 +142,26 @@ class Scene(Server):
 
                 # +move command
                 if command == Request.CMD_MV_UP:
-                    player.move_rel(dy=1)
+                    player.apply_force((0 ,1))
 
                 # -move command
                 elif command == Request.CMD_MV_DN:
-                    player.move_rel(dy=-1)
+                    player.apply_force((0, -1))
 
-                # TEMP
-                print(player.coordinates)
+                # poor implementation of response
+                request.data['players'] = {}
+                request.data['players']['you'] = {}
+                request.data['players']['you']['position'] = {
+                    'x': player.position.x,
+                    'y': player.position.y
+                }
 
                 # Set the answer as accepted
                 response.status = Response.STATUS_OK
                 response.reason = Response.REASON_ACCEPTED
+
+                # TEMP
+                print(request.data)
 
         # Send the packet to the client
         self.send(response.data, host, port)

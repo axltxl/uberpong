@@ -18,3 +18,4 @@ class PlayerEntity(Entity):
     def __init__(self, uuid, **kwargs):
         """Constructor"""
         super().__init__(uuid, size=(32, 64), **kwargs)
+        self.friction = 2.0
