@@ -58,13 +58,26 @@ class EntityManager:
 
 class Entity:
     def __init__(self, uuid, *, manager,
-                 position=(0, 0), size=(32, 32), anchor=(0, 0)):
+                 position=(0, 0), size=(32, 32)):
         """Constructor
 
         Args:
             uuid(str): uuid assigned to this entity
         Kwargs:
             manager(EntityManager): this entity's manager
+
+            # TODO: DOCUMENT THIS
+            (a,b)
+              *-----------------------*
+              |                       |
+              |                       |
+              |                       |
+              |                       |
+              |                       |
+              |                       |
+              |                       |
+              *-----------------------*
+                                    (c,d)
         """
 
         self._manager = manager
@@ -103,6 +116,10 @@ class Entity:
         self._height = value
         self._update_box()
 
+    @property
+    def coordinates(self):
+        return (self._a, self._b, self._c, self._d)
+
     def _update_box(self, position=None):
         if position is not None:
             self._a, self._b = position
@@ -115,7 +132,8 @@ class Entity:
     def move_rel(self, dx=0, dy=0):
         self._update_box((self._a + dx, self._b + dy))
 
-    def get_uuid(self):
+    @property
+    def uuid(self):
         """Get UUID of this entity"""
         return self._uuid
 

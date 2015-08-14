@@ -1,14 +1,25 @@
 # -*- coding: utf-8 -*-
 
 class Packet:
+
+    # Protocol version
+    PROTO_VERSION = 1
+
+
     def __init__(self, data=None):
         if data is None:
             data = {}
         self._data = data
 
+        self._data['version'] = self.PROTO_VERSION
+
     @property
     def data(self):
         return self._data
+
+    @property
+    def proto_version(self):
+        return self._data['version']
 
     @data.setter
     def data(self, value):
@@ -26,7 +37,11 @@ class Packet:
 
 
 class PacketRequest(Packet):
-    CMD_CONNECT = 'connect'
+    CMD_CONNECT = '+connect'
+    CMD_DISCONNECT = '-connect'
+
+    CMD_MV_UP = '+move'
+    CMD_MV_DN = '-move'
 
     @property
     def command(self):
@@ -40,20 +55,30 @@ class PacketRequest(Packet):
 
 
 class PacketResponse(Packet):
-    RES_OK = 'OK'
-    RES_NOT_OK = 'NOT_OK'
 
-    REASON_CONN_REFUSED = "conn_refused"
+    #
+    # Status codes
+    #
+    STATUS_OK = 'OK'
+    STATUS_UNAUTHORIZED = 'Unauthorized'
+
+    #
+    # Reasons
+    #
+    REASON_VERSION_NOT_SUPPORTED = 'Version Not Supported'
+    REASON_CONN_REFUSED = "Connection Refused"
+    REASON_CONN_GRANTED = 'Connection Granted'
+    REASON_ACCEPTED = 'Accepted'
 
     @property
-    def response(self):
-        if 'res' in self.data:
-            return self.data['res']
+    def status(self):
+        if 'status' in self.data:
+            return self.data['status']
         return None
 
-    @response.setter
-    def response(self, value):
-        self.data['res'] = value
+    @status.setter
+    def status(self, value):
+        self.data['status'] = value
 
     @property
     def reason(self):

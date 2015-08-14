@@ -52,7 +52,7 @@ class GameState(State):
                                 height=self._machine.window.height)
 
             # Activate LZ4 compression on client
-            if options['--lz4'] is not None:
+            if options['--lz4']:
                 self._scene.use_lz4 = True
         else:
             server_addr = options["--host"]
@@ -61,7 +61,7 @@ class GameState(State):
         self._player = PlayerClient(host=server_addr, port=5000)
 
         # Activate LZ4 compression on client
-        if options['--lz4'] is not None:
+        if options['--lz4']:
             self._player.use_lz4 = True
 
         # Connect client to server
