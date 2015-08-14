@@ -39,7 +39,7 @@ class Game(StateMachine):
         # Set up window
         #
         self._window = pyglet.window.Window(
-            640, 480,
+            1024, 768,
             style=pyglet.window.Window.WINDOW_STYLE_DIALOG,
             caption="{name} - {version}"
             .format(name=spot_get('game_name'),
