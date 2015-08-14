@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 
+"""
+engine.net
+~~~~~~~~
+A series of simple UDP networking utilities
+
+(c) 2015 by Alejandro Ricoveri
+See LICENSE for more details.
+"""
+
 import socket
 import json
 import sys
@@ -78,6 +87,7 @@ class Channel:
             self.sock.close()
 
     def on_data_received(self, data, host, port):
+        """This will be called each time a packet arrives"""
         pass
 
 
@@ -85,15 +95,27 @@ class Client(Channel):
     """
     Network client implementation
     """
-    def __init__(self, *, host='localhost', port):
+    def __init__(self, *, address='localhost', port):
         """Constructor"""
         super().__init__()
-        self._server_host = host
+
+        # Save both server's address and port
+        self._server_addr = address
         self._server_port = port
 
     def send(self, data):
         """Send raw data to the server"""
-        super().send(data, self._server_host, self._server_port)
+        super().send(data, self._server_addr, self._server_port)
+
+    @property
+    def server_address(self):
+        """Get server address"""
+        return self._server_addr
+
+    @property
+    def server_port(self):
+        """Get server port"""
+        return self._server_port
 
 
 class Server(Channel):
@@ -103,6 +125,8 @@ class Server(Channel):
     def __init__(self, *, port):
         """Constructor"""
         super().__init__()
+
+        # Bind socket to port
         self.sock.bind(("", port))
 
     def send_default(self, data, host, port):

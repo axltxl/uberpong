@@ -41,10 +41,15 @@ class GameState(State):
     #
 
     def on_begin(self):
+
+        #
+        # Get argv parsed options
+        #
         options = spot_get('argv')
 
-
+        #
         # Initialise server
+        #
         if options['--host'] is None:
             server_addr = 'localhost'
             self._scene = Scene(port=5000,
@@ -57,19 +62,28 @@ class GameState(State):
         else:
             server_addr = options["--host"]
 
+        #
         # Create client
-        self._player = PlayerClient(host=server_addr, port=5000)
+        #
+        self._player = PlayerClient(address=server_addr, port=5000)
 
+        #
         # Activate LZ4 compression on client
+        #
         if options['--lz4']:
             self._player.use_lz4 = True
 
+        #
         # Connect client to server
+        #
         self._player.connect()
 
     def on_exit(self):
+        # Client disconnection
         if self._player:
             self._player.close()
+
+        # Scene server disconnection
         if self._scene:
             self._scene.close()
 

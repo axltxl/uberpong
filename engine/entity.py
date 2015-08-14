@@ -13,22 +13,24 @@ import uuid
 
 
 class EntityManager:
-    """Lord of all entities"""
+    """
+    Lord of all entities
+    """
     def __init__(self):
         """Constructor"""
         self._ents = {}
         self._classes = {}
         self._msg_queue = []
 
-    def register_class(self, id, cls):
+    def register_class(self, class_id, cls):
         """Register an Entity class"""
-        self._classes[id] = cls
+        self._classes[class_id] = cls
 
-    def create_entity(self, id, **kwargs):
+    def create_entity(self, class_id, **kwargs):
         """Create new entity instance
 
         Args:
-            id(str): class id
+            class_id(str): class id
         Returns:
             The new created entity
         """
@@ -36,7 +38,7 @@ class EntityManager:
         new_uuid = uuid.uuid4().hex
 
         # create the actual entity
-        entity = self._classes[id](new_uuid, manager=self, **kwargs)
+        entity = self._classes[class_id](new_uuid, manager=self, **kwargs)
 
         # map the entity
         self._ents[new_uuid] = entity
@@ -57,6 +59,33 @@ class EntityManager:
 
 
 class Entity:
+    """
+    Entity unit
+
+    A general purpose object which is meant to be put
+    into game scene. This object only holds an UUID,
+    a boundary box and a series of arbitrary attributes
+    (e.g. "cg_color", "glow", etc.).
+
+    An entity holds a boundary box made by four integer points
+    to be used in a plane. Points a and b are the coordinates of
+    the upper left corner of the entity's boundary box whereas
+    c and d represent coordinates in its lower right corner, like so:
+
+                   (a,b)
+                     *----------------*
+                     |                |
+                     |                |
+                     |                |
+                     |                |
+                     *----------------*
+                                    (c,d)
+
+    An entity is not meant to be used as a unit performing logic
+    on its behalf but rather a simple object holding information
+    to be used by its manager.
+
+    """
     def __init__(self, uuid, *, manager,
                  position=(0, 0), size=(32, 32)):
         """Constructor
@@ -66,20 +95,9 @@ class Entity:
         Kwargs:
             manager(EntityManager): this entity's manager
 
-            # TODO: DOCUMENT THIS
-            (a,b)
-              *-----------------------*
-              |                       |
-              |                       |
-              |                       |
-              |                       |
-              |                       |
-              |                       |
-              |                       |
-              *-----------------------*
-                                    (c,d)
         """
 
+        # Assign manager and UUID for this entity
         self._manager = manager
         self._uuid = uuid
 
@@ -100,24 +118,29 @@ class Entity:
 
     @property
     def width(self):
+        """Boundary box width"""
         return self._width
 
     @width.setter
     def width(self, value):
+        """Boundary box width"""
         self._width = value
         self._update_box()
 
     @property
     def height(self):
+        """Boundary box height"""
         return self._height
 
     @height.setter
     def height(self, value):
+        """Boundary box height"""
         self._height = value
         self._update_box()
 
     @property
     def coordinates(self):
+        """Boundary box coordinates"""
         return (self._a, self._b, self._c, self._d)
 
     def _update_box(self, position=None):
@@ -127,9 +150,11 @@ class Entity:
         self._d = self._b + self._height
 
     def move_abs(self, x=0, y=0):
+        """Move to an absolute position"""
         self._update_box((x, y))
 
     def move_rel(self, dx=0, dy=0):
+        """Move this entity dx/dy units relative to its current position"""
         self._update_box((self._a + dx, self._b + dy))
 
     @property
