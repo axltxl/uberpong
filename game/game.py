@@ -25,7 +25,8 @@ from game.states.game import GameState
 # Set initial SPOT values
 spot_set('game_name', "PONG!")
 spot_set('game_version', "0.1a")
-
+spot_set('timescale', 1.0/60.0)
+spot_set('cl_fullscreen', False)
 
 class Game(StateMachine):
     """Game class"""
@@ -33,6 +34,12 @@ class Game(StateMachine):
     def __init__(self, argv):
         # Parse command line arguments
         self.parse_args(argv)
+
+        # Parsed command line options
+        options = spot_get('argv')
+
+        # full screen mode?
+        spot_set('cl_fullscreen', options['-x'])
 
         #
         # Set up window
@@ -44,6 +51,10 @@ class Game(StateMachine):
             .format(name=spot_get('game_name'),
                     version=spot_get('game_version'))
             )
+        # Whether to set the game on full screen mode
+        self._window.set_fullscreen(spot_get('cl_fullscreen'))
+
+        #
         self._window.on_draw = self.on_draw
         self._window.on_close = self.on_window_close
 
@@ -64,11 +75,12 @@ class Game(StateMachine):
         """pong
 
         Usage:
-            pong [-H <ip_address> | --host <ip_address>] [--port <port> | -p <port>] [--lz4 | -z]
+            pong [-x] [-H <ip_address> | --host <ip_address>] [--port <port> | -p <port>] [--lz4 | -z]
             pong -h | --help
             pong --version
 
         Options:
+          -x                          Fullscreen mode
           -z --lz4                    Use LZ4 compression algorithm
           -H --host <ip_address>      Server to connect to
           -p --port <port>            Port to connect to

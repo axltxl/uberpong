@@ -54,13 +54,13 @@ First of all, in order for a client to have communication with a server,
 it will need to acquire a valid player id. For this to happen,
 a client must first handshake with a server, like so:
 
-    client ~~>
+    (client) ~~>
         {
             'version': 1,
             'cmd': '+connect'
         }
 
-    <~~ server
+    <~~ (server)
         {
             'version': 1,
             'status': 'OK',
@@ -71,14 +71,28 @@ a client must first handshake with a server, like so:
 Once the server has acknowledged a client, the latter receives a valid
 player id from which further requests can be made:
 
-    client ~~>
+    (client) ~~>
         {
             'version': 1,
             'cmd': '+move',
             'player_id': '25aee061a5f34977bf672d4ff59fdc36'
         }
 
-    <~~ server
+    <~~ (server)
+        {
+            'version': 1,
+            'status': 'OK',
+            'reason': 'Accepted',
+        }
+
+    (client) ~~>
+        {
+            'version': 1,
+            'cmd': 'update',
+            'player_id': '25aee061a5f34977bf672d4ff59fdc36'
+        }
+
+    <~~ (server)
         {
             'version': 1,
             'status': 'OK',
@@ -102,39 +116,6 @@ player id from which further requests can be made:
                 'x': 12, 'y': 4
             }
         }
-
-    client ~~>
-        {
-            'version': 1,
-            'cmd': '+move',
-            'player_id': '25aee061a5f34977bf672d4ff59fdc36'
-        }
-
-    <~~ server
-        {
-            'version': 1,
-            'status': 'OK',
-            'state': 'PLAYING',
-            'reason': 'Accepted',
-            'players': {
-                'you': {
-                    'score': 1,
-                    'position': {
-                        'y': 5, 'x': 0
-                    }
-                }
-                'foe': {
-                    'score': 1,
-                    'position': {
-                        'y': 3, 'x': 0
-                    }
-                }
-            },
-            'ball': {
-                'x': 0, 'y': 27
-            }
-        }
-
 """
 
 
@@ -194,6 +175,13 @@ class Request(Packet):
     CMD_DISCONNECT = '-connect'
     CMD_MV_UP = '+move'
     CMD_MV_DN = '-move'
+    CMD_UPDATE = 'update'
+
+    def __init__(self, data=None, *, command=None, **kwargs):
+        super().__init__(data, **kwargs)
+
+        if command is not None:
+            self.command = command
 
     @property
     def command(self):

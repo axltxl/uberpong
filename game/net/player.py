@@ -18,7 +18,7 @@ class PlayerClient(Client):
     """
     Player client implementation
     """
-    def __init__(self, **kwargs):
+    def __init__(self, *, position, **kwargs):
         """Constructor"""
         super().__init__(**kwargs)
 
@@ -26,17 +26,37 @@ class PlayerClient(Client):
         # and used on further requests
         self._id = None
 
-        # sprite
+        # TODO: document all of this
+
+        # base image
         self._img = pyglet.image.load('assets/images/glasspaddle2.png')
-        self._sprite = pyglet.sprite.Sprite(self._img, x=50, y=50)
+
+        # image region
+        self._ball_region = self._img.get_region(0, 0, 32, 64)
+
+        # anchor
+        self._ball_region.anchor_x = self._ball_region.width // 2
+        self._ball_region.anchor_y = self._ball_region.height // 2
+
+
+        # sprite
+        self._sprite = pyglet.sprite.Sprite(self._ball_region)
+
 
         # position
-        self._x = 0
-        self._y = 0
+        self._x, self._y = position
 
         # velocity
         self._vx = 0
         self._vy = 0
+
+        # connection flag
+        # TODO: document this
+        self._connected = False
+
+        # TODO: document this
+        self._key_move_up = False
+        self._key_move_down = False
 
     def connect(self):
         """Connect to server
@@ -50,9 +70,7 @@ class PlayerClient(Client):
             }
 
         """
-        request = Request()
-        request.command = Request.CMD_CONNECT
-        self.send(request)
+        self.send(Request(command=Request.CMD_CONNECT))
 
     def send(self, request):
         """Send a regular request to server
@@ -60,13 +78,29 @@ class PlayerClient(Client):
         Args:
             request(Request): A regular request object
         """
-        request.player_id = self._id  # Set player uuid on request
-        super().send(request.data)  # Send request to server
 
+        # Set player uuid upon request
+        if self._connected:
+            request.player_id = self._id
+
+        # Send request to server
+        super().send(request.data)
+
+    def pump(self):
+
+        if self._key_move_up:
+            self.send(Request(command=Request.CMD_MV_UP))
+
+        if self._key_move_down:
+            self.send(Request(command=Request.CMD_MV_DN))
+
+        # Pump netowrk traffic!
+        super().pump()
 
     def draw(self):
         # TODO: document this
         # fixed time as used in server side
+        # use SPOT var 'timestep' instead
         self._x += self._vx * 1/60.0
         self._y += self._vy * 1/60.0
 
@@ -75,6 +109,18 @@ class PlayerClient(Client):
 
         # draw sprite
         self._sprite.draw()
+
+        # update
+        # TODO: DOCUMENT THIS!
+        # IT IS IMPORTANT TO LET KNOW HOW THIS HAS
+        # AN IMPORTANT INFLUENCE ON SERVER-SIDE
+        # THESIS: DON'T FLOOD THE SERVER WITH UPDATES
+        # STILL KINDA BUGGY, SOMETIMES IT NEEDS TO UPDATE
+        # WITHOUT ANY USER INTERVENTION, FIND OUT THE BEST
+        # WAY
+        if self._key_move_up or self._key_move_down:
+            if self._connected:
+                self.send(Request(command=Request.CMD_UPDATE))
 
     def on_data_received(self, data, host, port):
         """Response pump for this client"""
@@ -96,15 +142,21 @@ class PlayerClient(Client):
                 #
                 raise ConnectionRefusedError(
                     "Connection to {}:{} refused!".format(
-                    self._server_host, self._server_port))
+                    self._server_addr, self._server_port))
 
         if response.status == Response.STATUS_OK:
+
+            # TODO: document this
+            if not self._connected:
+                self._connected = True
+
+            # TODO: and this as well
             if 'players' in response.data:
                 #
                 # Update data used to update the paddle sprite
                 #
 
-                # TODO: do something better than this!
+                # FIXME: do something better than this!
                 me = response.data['players']['you']
                 position = me['position']
                 x = position['x']
@@ -121,56 +173,28 @@ class PlayerClient(Client):
         """Send packets to the server as the player hits buttons"""
 
         #
-        # Create a new Request
+        # move up
         #
-        request = Request()
+        if symbol == pyglet.window.key.W:
+            self._key_move_up = True
 
         #
-        # Whether to send the packet or not
+        # move down
         #
-        send_pkt = False
+        if symbol == pyglet.window.key.S:
+            self._key_move_down = True
+
+
+    def on_key_release(self, symbol, modifiers):
 
         #
         # move up
         #
         if symbol == pyglet.window.key.W:
-            request.command = Request.CMD_MV_UP
-            send_pkt = True
+            self._key_move_up = False
 
         #
         # move down
         #
-        elif symbol == pyglet.window.key.S:
-            request.command = Request.CMD_MV_DN
-            send_pkt = True
-
-        if send_pkt:
-            self.send(request)
-
-    def on_key_release(self, symbol, modifiers):
-        #
-        # Create a new Request
-        #
-        request = Request()
-
-        #
-        # Whether to send the packet or not
-        #
-        send_pkt = False
-
-        #
-        # move down
-        #
-        # if symbol == pyglet.window.key.W:
-        #     request.command = Request.CMD_MV_DN
-        #     send_pkt = True
-
-        #
-        # move up
-        #
-        # elif symbol == pyglet.window.key.S:
-        #     request.command = Request.CMD_MV_UP
-        #     send_pkt = True
-
-        if send_pkt:
-            self.send(request)
+        if symbol == pyglet.window.key.S:
+            self._key_move_down = False

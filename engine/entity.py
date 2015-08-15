@@ -44,7 +44,7 @@ class EntityManager(pymunk.Space):
         # create the actual entity
         entity = self._classes[class_id](new_uuid, manager=self, **kwargs)
 
-        #
+        # TODO: document this!
         self.add(entity, entity.rect)
 
         # map the entity
@@ -95,6 +95,7 @@ class Entity(pymunk.Body):
         """
 
         # TODO: document this
+        # FIXME: mass a moment cannot be set this way!
         super().__init__(1, 1666)
 
         # Assign manager and UUID for this entity
@@ -106,6 +107,9 @@ class Entity(pymunk.Body):
 
         # rect
         self._rect = pymunk.Poly.create_box(self, size)
+
+        # position
+        self.position = position
 
         #
         # Contacts directory:

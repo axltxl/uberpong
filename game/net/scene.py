@@ -15,6 +15,7 @@ from engine.entity import EntityManager
 
 from game.net.packet import Packet, Request, Response
 from game.entities.player import PlayerEntity
+from game.entities.board import Board
 
 
 class Scene(Server):
@@ -42,16 +43,22 @@ class Scene(Server):
         self._window_width = width
         self._window_height = height
 
+        # Set up the actual EntityManager
+        self._ent_mgr = EntityManager()
+
+        # set gravity
+        # TODO: IMPLEMENT SPOT VAR sv_gravity
+        self._ent_mgr.gravity = 0, 0
+
+        # Board
+        self._board = Board(width, height, self._ent_mgr)
+
         # Players (and their related information) will be held in here
         self._players = {}
 
-        # Set up the actual EntityManager
-        self._ent_mgr = EntityManager()
-        self._ent_mgr.gravity = 0, 0  # set gravity
-
-
         # Register entities
         self._ent_mgr.register_class('ent_player', PlayerEntity)
+
 
     def create_player(self, host, port):
         """Create a PlayerEntity for a client
@@ -65,8 +72,8 @@ class Scene(Server):
         player = self._ent_mgr.create_entity('ent_player')
 
         # Set initial position for this player
-        #player.move_abs(0, (self._window_height - player.height)//2)
-        #player.move_abs(0, 0)
+        # FIXME: USE SPOT VAR (tuple) 'cl_paddle_position_start'
+        player.position = 32, self._window_height // 2
 
         # Save information for this new player
         self._players[player.uuid] = {
@@ -80,13 +87,15 @@ class Scene(Server):
 
     def pump(self):
         # TODO: document this
+        # FIXME: Use SPOT var 'timescale' instead
+        # put it on self._timescale
         self._ent_mgr.step(1/60.0)  # fixed time
 
         # Tell the EntityManager to deliver all
         # pending messages (if there are any)
         self._ent_mgr.dispatch_messages()
 
-        #
+        # Pump network traffic
         super().pump()
 
     def on_data_received(self, data, host, port):
@@ -97,6 +106,7 @@ class Scene(Server):
             host(str): client address
             port(int): client port
         """
+
         #
         # Get a nice Request from raw data
         #
@@ -134,40 +144,46 @@ class Scene(Server):
                 #
                 # Request is valid and going to be processed
                 #
-                print(request.data)
+
+                # TODO: remove this when logger has been implemented
+                print("~> {}".format(request.data))
 
                 # TODO: document this
                 player = self._players[request.player_id]['entity']
                 command = request.command
 
-                # update command
+                #
+                # TODO: fix a 'sv_paddle_impulse' SPOT var
+                # assign it to self._paddle_impulse at contructor level
+                # and use it here
 
                 # +move command
                 if command == Request.CMD_MV_UP:
-                    player.apply_impulse((0 ,10))
+                    player.apply_impulse((0 ,5))  # sv_paddle_impulse
 
                 # -move command
                 elif command == Request.CMD_MV_DN:
-                    player.apply_impulse((0, -10))
+                    player.apply_impulse((0, -5))  # sv_paddle_impulse
 
-                # poor implementation of response
-                response.data['players'] = {}
-                response.data['players']['you'] = {}
-                response.data['players']['you']['position'] = {
-                    'x': int(player.position.x),
-                    'y': int(player.position.y)
-                }
-                response.data['players']['you']['velocity'] = {
-                    'x': player.velocity.x,
-                    'y': player.velocity.y
-                }
+                elif command == Request.CMD_UPDATE:
+                    # FIXME: poor implementation of response
+                    response.data['players'] = {}
+                    response.data['players']['you'] = {}
+                    response.data['players']['you']['position'] = {
+                        'x': int(player.position.x),
+                        'y': int(player.position.y)
+                    }
+                    response.data['players']['you']['velocity'] = {
+                        'x': int(player.velocity.x),
+                        'y': int(player.velocity.y)
+                    }
 
                 # Set the answer as accepted
                 response.status = Response.STATUS_OK
                 response.reason = Response.REASON_ACCEPTED
 
-                # TEMP
-                print(response.data)
+                # TODO: remove this when logger has been implemented
+                print("<~ {}".format(response.data))
 
         # Send the packet to the client
         self.send(response.data, host, port)
