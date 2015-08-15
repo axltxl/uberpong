@@ -73,9 +73,13 @@ class Game(StateMachine):
 
         spot_set('game_name', "PONG!")
         spot_set('game_version', "0.1a")
-        spot_set('timescale', 1.0/60.0)
         spot_set('cl_fullscreen', False)
+
+        # Physics
+        spot_set('timescale', 1.0/60.0)
         spot_set('sv_gravity', (0,0))
+        spot_set('sv_paddle_impulse', 5)
+        spot_set('sv_paddle_max_velocity', 200) #TODO: Implement this!
 
     def _parse_args(self, argv):
         """pong

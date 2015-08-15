@@ -61,6 +61,10 @@ class Scene(Server):
         # Time scale (for in-server physics)
         self._timescale = spot_get('timescale')
 
+        # Paddle impulse and top speed
+        self._paddle_impulse = spot_get('sv_paddle_impulse')
+        self._paddle_max_velocity = spot_get('sv_paddle_max_velocity')
+
 
     def create_player(self, host, port):
         """Create a PlayerEntity for a client
@@ -162,11 +166,11 @@ class Scene(Server):
 
                 # +move command
                 if command == Request.CMD_MV_UP:
-                    player.apply_impulse((0 ,5))  # sv_paddle_impulse
+                    player.apply_impulse((0 ,self._paddle_impulse))  # sv_paddle_impulse
 
                 # -move command
                 elif command == Request.CMD_MV_DN:
-                    player.apply_impulse((0, -5))  # sv_paddle_impulse
+                    player.apply_impulse((0, - self._paddle_impulse))  # sv_paddle_impulse
 
                 elif command == Request.CMD_UPDATE:
                     # FIXME: poor implementation of response
