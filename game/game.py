@@ -22,18 +22,15 @@ from engine.spot import spot_set, spot_get
 from game.states.splash import SplashState
 from game.states.game import GameState
 
-# Set initial SPOT values
-spot_set('game_name', "PONG!")
-spot_set('game_version', "0.1a")
-spot_set('timescale', 1.0/60.0)
-spot_set('cl_fullscreen', False)
-
 class Game(StateMachine):
     """Game class"""
 
     def __init__(self, argv):
+        # Populate SPOT with a bunch of defaults
+        self._spot_init()
+
         # Parse command line arguments
-        self.parse_args(argv)
+        self._parse_args(argv)
 
         # Parsed command line options
         options = spot_get('argv')
@@ -71,7 +68,15 @@ class Game(StateMachine):
         # Register this object onto the SPOT
         spot_set('game_object', self)
 
-    def parse_args(self, argv):
+    def _spot_init(self):
+        """Set initial SPOT values"""
+
+        spot_set('game_name', "PONG!")
+        spot_set('game_version', "0.1a")
+        spot_set('timescale', 1.0/60.0)
+        spot_set('cl_fullscreen', False)
+
+    def _parse_args(self, argv):
         """pong
 
         Usage:
@@ -87,7 +92,7 @@ class Game(StateMachine):
           -h --help                   Show this screen.
           --version                   Show version.
         """
-        spot_set("argv", docopt(self.parse_args.__doc__,
+        spot_set("argv", docopt(self._parse_args.__doc__,
                  argv=argv, version=spot_get('game_version')))
 
     #
