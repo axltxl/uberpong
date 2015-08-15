@@ -79,9 +79,11 @@ class Scene(Server):
         return player
 
     def pump(self):
+        # TODO: document this
+        self._ent_mgr.step(1/60.0)  # fixed time
+
         # Tell the EntityManager to deliver all
         # pending messages (if there are any)
-        self._ent_mgr.step(0.02)
         self._ent_mgr.dispatch_messages()
 
         #
@@ -134,7 +136,7 @@ class Scene(Server):
                 #
                 print(request.data)
 
-                #
+                # TODO: document this
                 player = self._players[request.player_id]['entity']
                 command = request.command
 
@@ -142,18 +144,22 @@ class Scene(Server):
 
                 # +move command
                 if command == Request.CMD_MV_UP:
-                    player.apply_force((0 ,1))
+                    player.apply_impulse((0 ,10))
 
                 # -move command
                 elif command == Request.CMD_MV_DN:
-                    player.apply_force((0, -1))
+                    player.apply_impulse((0, -10))
 
                 # poor implementation of response
-                request.data['players'] = {}
-                request.data['players']['you'] = {}
-                request.data['players']['you']['position'] = {
-                    'x': player.position.x,
-                    'y': player.position.y
+                response.data['players'] = {}
+                response.data['players']['you'] = {}
+                response.data['players']['you']['position'] = {
+                    'x': int(player.position.x),
+                    'y': int(player.position.y)
+                }
+                response.data['players']['you']['velocity'] = {
+                    'x': player.velocity.x,
+                    'y': player.velocity.y
                 }
 
                 # Set the answer as accepted
@@ -161,7 +167,7 @@ class Scene(Server):
                 response.reason = Response.REASON_ACCEPTED
 
                 # TEMP
-                print(request.data)
+                print(response.data)
 
         # Send the packet to the client
         self.send(response.data, host, port)

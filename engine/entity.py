@@ -16,6 +16,8 @@ import pymunk
 class EntityManager(pymunk.Space):
     """
     Lord of all entities
+
+    #TODO: document this as well
     """
     def __init__(self):
         """Constructor"""
@@ -72,19 +74,8 @@ class Entity(pymunk.Body):
     a boundary box and a series of arbitrary attributes
     (e.g. "cg_color", "glow", etc.).
 
-    An entity holds a boundary box made by four integer points
-    to be used in a plane. Points a and b are the coordinates of
-    the upper left corner of the entity's boundary box whereas
-    c and d represent coordinates in its lower right corner, like so:
-
-                (left,top)
-                     *----------------*
-                     |                |
-                     |                |
-                     |                |
-                     |                |
-                     *----------------*
-                               (bottom,right)
+    An entity implements a pymunk.Body, so all physics
+    are applied to the out-of-the-box.
 
     An entity is not meant to be used as a unit performing logic
     on its behalf but rather a simple object holding information
@@ -98,11 +89,12 @@ class Entity(pymunk.Body):
         Args:
             uuid(str): uuid assigned to this entity
         Kwargs:
+            position(tuple): Initial position
+            size(tuple): Boundary box size for this entity
             manager(EntityManager): this entity's manager
-
         """
 
-        #
+        # TODO: document this
         super().__init__(1, 1666)
 
         # Assign manager and UUID for this entity
@@ -111,9 +103,6 @@ class Entity(pymunk.Body):
 
         # size
         self._width, self._height = size
-
-        # Position + boundary box
-        #self._update_box(position)
 
         # rect
         self._rect = pymunk.Poly.create_box(self, size)
@@ -137,42 +126,10 @@ class Entity(pymunk.Body):
         """Boundary box width"""
         return self._width
 
-
-    @width.setter
-    def width(self, value):
-        """Boundary box width"""
-        self._width = value
-        self._update_box()
-
     @property
     def height(self):
         """Boundary box height"""
         return self._height
-
-    @height.setter
-    def height(self, value):
-        """Boundary box height"""
-        self._height = value
-        self._update_box()
-
-    # @property
-    # def coordinates(self):
-    #     """Boundary box coordinates"""
-    #     return (self._a, self._b, self._c, self._d)
-    #
-    # def _update_box(self, position=None):
-    #     if position is not None:
-    #         self._a, self._b = position
-    #     self._c = self._a + self._width
-    #     self._d = self._b + self._height
-    #
-    # def move_abs(self, x=0, y=0):
-    #     """Move to an absolute position"""
-    #     self._update_box((x, y))
-    #
-    # def move_rel(self, dx=0, dy=0):
-    #     """Move this entity dx/dy units relative to its current position"""
-    #     self._update_box((self._a + dx, self._b + dy))
 
     @property
     def uuid(self):

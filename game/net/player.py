@@ -25,8 +25,18 @@ class PlayerClient(Client):
         # This will hold the UUID assigned by a server
         # and used on further requests
         self._id = None
+
+        # sprite
         self._img = pyglet.image.load('assets/images/glasspaddle2.png')
         self._sprite = pyglet.sprite.Sprite(self._img, x=50, y=50)
+
+        # position
+        self._x = 0
+        self._y = 0
+
+        # velocity
+        self._vx = 0
+        self._vy = 0
 
     def connect(self):
         """Connect to server
@@ -54,9 +64,17 @@ class PlayerClient(Client):
         super().send(request.data)  # Send request to server
 
 
-    def pump(self):
+    def draw(self):
+        # TODO: document this
+        # fixed time as used in server side
+        self._x += self._vx * 1/60.0
+        self._y += self._vy * 1/60.0
+
+        # Set position
+        self._sprite.set_position(self._x, self._y)
+
+        # draw sprite
         self._sprite.draw()
-        super().pump()
 
     def on_data_received(self, data, host, port):
         """Response pump for this client"""
@@ -79,6 +97,25 @@ class PlayerClient(Client):
                 raise ConnectionRefusedError(
                     "Connection to {}:{} refused!".format(
                     self._server_host, self._server_port))
+
+        if response.status == Response.STATUS_OK:
+            if 'players' in response.data:
+                #
+                # Update data used to update the paddle sprite
+                #
+
+                # TODO: do something better than this!
+                me = response.data['players']['you']
+                position = me['position']
+                x = position['x']
+                y = position['y']
+                self._x, self._y = x, y
+
+                velocity = me['velocity']
+                vx = velocity['x']
+                vy = velocity['y']
+                self._vx, self._vy = vx, vy
+
 
     def on_key_press(self, symbol, modifiers):
         """Send packets to the server as the player hits buttons"""
@@ -124,16 +161,16 @@ class PlayerClient(Client):
         #
         # move down
         #
-        if symbol == pyglet.window.key.W:
-            request.command = Request.CMD_MV_DN
-            send_pkt = True
+        # if symbol == pyglet.window.key.W:
+        #     request.command = Request.CMD_MV_DN
+        #     send_pkt = True
 
         #
         # move up
         #
-        elif symbol == pyglet.window.key.S:
-            request.command = Request.CMD_MV_UP
-            send_pkt = True
+        # elif symbol == pyglet.window.key.S:
+        #     request.command = Request.CMD_MV_UP
+        #     send_pkt = True
 
         if send_pkt:
             self.send(request)

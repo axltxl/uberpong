@@ -97,6 +97,7 @@ class GameState(State):
         # Update client!
         if self._player:
             self._player.pump()
+            self._player.draw()
 
         # Update server (if created)
         if self._scene:
