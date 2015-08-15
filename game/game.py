@@ -75,6 +75,7 @@ class Game(StateMachine):
         spot_set('game_version', "0.1a")
         spot_set('timescale', 1.0/60.0)
         spot_set('cl_fullscreen', False)
+        spot_set('sv_gravity', (0,0))
 
     def _parse_args(self, argv):
         """pong

@@ -47,8 +47,7 @@ class Scene(Server):
         self._ent_mgr = EntityManager()
 
         # set gravity
-        # TODO: IMPLEMENT SPOT VAR sv_gravity
-        self._ent_mgr.gravity = 0, 0
+        self._ent_mgr.gravity = spot_get('sv_gravity')
 
         # Board
         self._board = Board(width, height, self._ent_mgr)
