@@ -10,6 +10,7 @@ See LICENSE for more details.
 """
 
 import pyglet
+from engine.spot import spot_set, spot_get
 from engine.net import Client
 from game.net.packet import Packet, Request, Response
 
@@ -58,6 +59,9 @@ class PlayerClient(Client):
         self._key_move_up = False
         self._key_move_down = False
 
+        # Time scale (for in-client physics)
+        self._timescale = spot_get('timescale')
+
     def connect(self):
         """Connect to server
 
@@ -98,11 +102,15 @@ class PlayerClient(Client):
         super().pump()
 
     def draw(self):
-        # TODO: document this
-        # fixed time as used in server side
-        # use SPOT var 'timestep' instead
-        self._x += self._vx * 1/60.0
-        self._y += self._vy * 1/60.0
+        """Render all the things!"""
+        
+        # Physics are performed based on a fixed time step
+        # or time scale from which all bodies on a scene
+        # are ruled. This is done for consistent client-server
+        # physics.
+        self._x += self._vx * self._timescale
+        self._y += self._vy * self._timescale
+
 
         # Set position
         self._sprite.set_position(self._x, self._y)

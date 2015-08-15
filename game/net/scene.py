@@ -59,6 +59,9 @@ class Scene(Server):
         # Register entities
         self._ent_mgr.register_class('ent_player', PlayerEntity)
 
+        # Time scale (for in-server physics)
+        self._timescale = spot_get('timescale')
+
 
     def create_player(self, host, port):
         """Create a PlayerEntity for a client
@@ -86,10 +89,11 @@ class Scene(Server):
         return player
 
     def pump(self):
-        # TODO: document this
-        # FIXME: Use SPOT var 'timescale' instead
-        # put it on self._timescale
-        self._ent_mgr.step(1/60.0)  # fixed time
+        # Physics are performed based on a fixed time step
+        # or time scale from which all bodies on a scene
+        # are ruled. This is done for consistent client-server
+        # physics.
+        self._ent_mgr.step(self._timescale)
 
         # Tell the EntityManager to deliver all
         # pending messages (if there are any)
