@@ -19,30 +19,34 @@ class PlayerClient(Client):
     """
     Player client implementation
     """
+
     def __init__(self, *, position, **kwargs):
-        """Constructor"""
+        """Constructor
+
+        Args:
+            position(int,int): Initial position for this player
+        """
+
+        #
         super().__init__(**kwargs)
 
         # This will hold the UUID assigned by a server
         # and used on further requests
         self._id = None
 
-        # TODO: document all of this
-
         # base image
         self._img = pyglet.image.load('assets/images/glasspaddle2.png')
 
         # image region
-        self._ball_region = self._img.get_region(0, 0, 32, 64)
+        w, h = spot_get('paddle_size')
+        self._paddle_region = self._img.get_region(0, 0, w, h)
 
-        # anchor
-        self._ball_region.anchor_x = self._ball_region.width // 2
-        self._ball_region.anchor_y = self._ball_region.height // 2
-
+        # centered anchor as required by pymunk bodies at the server side
+        self._paddle_region.anchor_x = self._paddle_region.width // 2
+        self._paddle_region.anchor_y = self._paddle_region.height // 2
 
         # sprite
-        self._sprite = pyglet.sprite.Sprite(self._ball_region)
-
+        self._paddle_sprite = pyglet.sprite.Sprite(self._paddle_region)
 
         # position
         self._x, self._y = position
@@ -51,16 +55,39 @@ class PlayerClient(Client):
         self._vx = 0
         self._vy = 0
 
-        # connection flag
-        # TODO: document this
+        # Whether the client has succesfully connected to a server
         self._connected = False
 
-        # TODO: document this
+        # Whether the client is currently pressing up or down keys
         self._key_move_up = False
         self._key_move_down = False
 
         # Time scale (for in-client physics)
         self._timescale = spot_get('timescale')
+
+        # Ask the server for updates every cl_update_interval seconds
+        # This syncs physics between client and server
+        # without needing to flood the server on each tick
+        pyglet.clock.schedule_interval(
+            self._update,
+            spot_get('cl_update_interval')
+            )
+
+
+    def _update(self, dt):
+        """Send an update request
+
+        =>
+            {
+                'version': 1,
+                'cmd': 'update',
+                'player_id': '78f7ddd8a979ghf98sdf87'
+            }
+
+        """
+        if self._connected:
+            self.send(Request(command=Request.CMD_UPDATE))
+
 
     def connect(self):
         """Connect to server
@@ -76,6 +103,7 @@ class PlayerClient(Client):
         """
         self.send(Request(command=Request.CMD_CONNECT))
 
+
     def send(self, request):
         """Send a regular request to server
 
@@ -90,20 +118,22 @@ class PlayerClient(Client):
         # Send request to server
         super().send(request.data)
 
-    def pump(self):
 
+    def pump(self):
+        """Pump network traffic and toggle key flags"""
         if self._key_move_up:
             self.send(Request(command=Request.CMD_MV_UP))
 
         if self._key_move_down:
             self.send(Request(command=Request.CMD_MV_DN))
 
-        # Pump netowrk traffic!
+        # Pump network traffic!
         super().pump()
+
 
     def draw(self):
         """Render all the things!"""
-        
+
         # Physics are performed based on a fixed time step
         # or time scale from which all bodies on a scene
         # are ruled. This is done for consistent client-server
@@ -113,22 +143,11 @@ class PlayerClient(Client):
 
 
         # Set position
-        self._sprite.set_position(self._x, self._y)
+        self._paddle_sprite.set_position(self._x, self._y)
 
         # draw sprite
-        self._sprite.draw()
+        self._paddle_sprite.draw()
 
-        # update
-        # TODO: DOCUMENT THIS!
-        # IT IS IMPORTANT TO LET KNOW HOW THIS HAS
-        # AN IMPORTANT INFLUENCE ON SERVER-SIDE
-        # THESIS: DON'T FLOOD THE SERVER WITH UPDATES
-        # STILL KINDA BUGGY, SOMETIMES IT NEEDS TO UPDATE
-        # WITHOUT ANY USER INTERVENTION, FIND OUT THE BEST
-        # WAY
-        if self._key_move_up or self._key_move_down:
-            if self._connected:
-                self.send(Request(command=Request.CMD_UPDATE))
 
     def on_data_received(self, data, host, port):
         """Response pump for this client"""
@@ -154,27 +173,24 @@ class PlayerClient(Client):
 
         if response.status == Response.STATUS_OK:
 
-            # TODO: document this
+            # This player knows he has connected succesfully
+            # to the server
             if not self._connected:
                 self._connected = True
 
-            # TODO: and this as well
             if 'players' in response.data:
                 #
                 # Update data used to update the paddle sprite
                 #
+                me = response.get_player_info(name='you')
 
-                # FIXME: do something better than this!
-                me = response.data['players']['you']
+                # position
                 position = me['position']
-                x = position['x']
-                y = position['y']
-                self._x, self._y = x, y
+                self._x, self._y = position['x'], position['y']
 
+                # velocity
                 velocity = me['velocity']
-                vx = velocity['x']
-                vy = velocity['y']
-                self._vx, self._vy = vx, vy
+                self._vx, self._vy = velocity['x'], velocity['y']
 
 
     def on_key_press(self, symbol, modifiers):

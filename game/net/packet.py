@@ -135,22 +135,27 @@ class Packet:
             data = {}
         self._data = data
 
+        # Set protocol version
         self._data['version'] = self.PROTO_VERSION
+
 
     @property
     def data(self):
         """Raw data"""
         return self._data
 
+
     @data.setter
     def data(self, value):
         """Set raw data"""
         self._data = value
 
+
     @property
     def proto_version(self):
         """Get protocol version for this packet"""
         return self._data['version']
+
 
     @property
     def player_id(self):
@@ -159,10 +164,46 @@ class Packet:
             return self.data['player_id']
         return None
 
+
     @player_id.setter
-    def player_id(self, id):
+    def player_id(self, player_id):
         """Set player uuid"""
-        self.data['player_id'] = id
+        self.data['player_id'] = player_id
+
+
+    def set_player_info(self, *, name, score, position, velocity):
+        """Set player information
+
+        Kwargs:
+            name(str): Player name
+            score(int): Player score
+            position(int, int): Player's paddle position on the plane
+            velocity(int, int): Player's paddle current velocity
+        """
+
+        if not 'players' in self.data:
+            self.data['players'] = {}
+
+        self.data['players'][name] ={
+            'score': score,
+            'position': {
+                'x': position[0],
+                'y': position[1]
+            },
+            'velocity': {
+                'x': velocity[0],
+                'y': velocity[1]
+            }
+        }
+
+
+    def get_player_info(self, *, name):
+        """Get information regarding a specific player"""
+
+        if 'players' in self.data:
+            if name in self.data['players']:
+                return self.data['players'][name]
+        return None
 
 
 class Request(Packet):
@@ -177,11 +218,13 @@ class Request(Packet):
     CMD_MV_DN = '-move'
     CMD_UPDATE = 'update'
 
+
     def __init__(self, data=None, *, command=None, **kwargs):
         super().__init__(data, **kwargs)
 
         if command is not None:
             self.command = command
+
 
     @property
     def command(self):
@@ -189,6 +232,7 @@ class Request(Packet):
         if 'cmd' in self.data:
             return self.data['cmd']
         return None
+
 
     @command.setter
     def command(self, value):
@@ -213,6 +257,7 @@ class Response(Packet):
     REASON_CONN_GRANTED = 'Connection Granted'
     REASON_ACCEPTED = 'Accepted'
 
+
     @property
     def status(self):
         """Get status"""
@@ -220,10 +265,12 @@ class Response(Packet):
             return self.data['status']
         return None
 
+
     @status.setter
     def status(self, value):
         """Set status"""
         self.data['status'] = value
+
 
     @property
     def reason(self):
@@ -231,6 +278,7 @@ class Response(Packet):
         if 'reason' in self.data:
             return self.data['reason']
         return None
+
 
     @reason.setter
     def reason(self, value):

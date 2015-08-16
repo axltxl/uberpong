@@ -68,15 +68,24 @@ class Game(StateMachine):
         # Register this object onto the SPOT
         spot_set('game_object', self)
 
+        # Game-specific SPOT vars
+        spot_set('paddle_position_start', (32, self._window.height // 2))
+        spot_set('paddle_size', (32, 64))
+
+
     def _spot_init(self):
         """Set initial SPOT values"""
 
+        # Common
         spot_set('game_name', "PONG!")
         spot_set('game_version', "0.1a")
-        spot_set('cl_fullscreen', False)
-
-        # Physics
         spot_set('timescale', 1.0/60.0)
+
+        # Client
+        spot_set('cl_fullscreen', False)
+        spot_set('cl_update_interval', 1.0/15.0)
+
+        # Server
         spot_set('sv_gravity', (0,0))
         spot_set('sv_paddle_impulse', 5)
         spot_set('sv_paddle_max_velocity', 200) #TODO: Implement this!

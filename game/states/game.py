@@ -47,6 +47,7 @@ class GameState(State):
         #
         options = spot_get('argv')
 
+
         #
         # Initialise server
         #
@@ -66,9 +67,7 @@ class GameState(State):
         # Create client
         #
         self._player = PlayerClient(
-            # TODO: DOCUMENT THIS!
-            # FIXME: USE SPOT VAR (tuple) 'cl_paddle_position_start'
-            position=(32, self._machine.window.height // 2),
+            position=spot_get('paddle_position_start'),
             address=server_addr,
             port=5000
         )

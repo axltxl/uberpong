@@ -14,7 +14,7 @@ from engine.net import Server
 from engine.entity import EntityManager
 
 from game.net.packet import Packet, Request, Response
-from game.entities.player import PlayerEntity
+from game.entities.player import PlayerPaddle
 from game.entities.board import Board
 
 
@@ -33,7 +33,7 @@ class Scene(Server):
     def __init__(self, *, width, height, **kwargs):
         """Constructor
 
-        Args:
+        Kwargs:
             width(int): width of the scene in pixels
             height(int): height of the scene in pixels
         """
@@ -56,7 +56,7 @@ class Scene(Server):
         self._players = {}
 
         # Register entities
-        self._ent_mgr.register_class('ent_player', PlayerEntity)
+        self._ent_mgr.register_class('ent_player', PlayerPaddle)
 
         # Time scale (for in-server physics)
         self._timescale = spot_get('timescale')
@@ -67,19 +67,19 @@ class Scene(Server):
 
 
     def create_player(self, host, port):
-        """Create a PlayerEntity for a client
+        """Create a PlayerPaddle for a client
 
         Args:
             host(str): client address
             port(int): client port
         """
 
-        # New PlayerEntity for a client
+        # New PlayerPaddle for a client
         player = self._ent_mgr.create_entity('ent_player')
 
         # Set initial position for this player
-        # FIXME: USE SPOT VAR (tuple) 'cl_paddle_position_start'
-        player.position = 32, self._window_height // 2
+        player.position = spot_get('paddle_position_start')
+
 
         # Save information for this new player
         self._players[player.uuid] = {
@@ -90,6 +90,7 @@ class Scene(Server):
 
         # Return the thing
         return player
+
 
     def pump(self):
         # Physics are performed based on a fixed time step
@@ -104,6 +105,7 @@ class Scene(Server):
 
         # Pump network traffic
         super().pump()
+
 
     def on_data_received(self, data, host, port):
         """Pump network requests from clients
@@ -153,37 +155,31 @@ class Scene(Server):
                 #
 
                 # TODO: remove this when logger has been implemented
-                print("~> {}".format(request.data))
+                #print("~> {}".format(request.data))
 
-                # TODO: document this
+                # First of all get the player entity
                 player = self._players[request.player_id]['entity']
-                command = request.command
 
-                #
-                # TODO: fix a 'sv_paddle_impulse' SPOT var
-                # assign it to self._paddle_impulse at contructor level
-                # and use it here
+                # Get player's command
+                command = request.command
 
                 # +move command
                 if command == Request.CMD_MV_UP:
-                    player.apply_impulse((0 ,self._paddle_impulse))  # sv_paddle_impulse
+                    player.apply_impulse((0 , self._paddle_impulse))
 
                 # -move command
                 elif command == Request.CMD_MV_DN:
-                    player.apply_impulse((0, - self._paddle_impulse))  # sv_paddle_impulse
+                    player.apply_impulse((0, - self._paddle_impulse))
 
+                # update command
                 elif command == Request.CMD_UPDATE:
-                    # FIXME: poor implementation of response
-                    response.data['players'] = {}
-                    response.data['players']['you'] = {}
-                    response.data['players']['you']['position'] = {
-                        'x': int(player.position.x),
-                        'y': int(player.position.y)
-                    }
-                    response.data['players']['you']['velocity'] = {
-                        'x': int(player.velocity.x),
-                        'y': int(player.velocity.y)
-                    }
+                    response.set_player_info(
+                        name='you', score=0,
+                        position=(int(player.position.x),
+                                  int(player.position.y)),
+                        velocity=(int(player.velocity.x),
+                                  int(player.velocity.y))
+                    )
 
                 # Set the answer as accepted
                 response.status = Response.STATUS_OK

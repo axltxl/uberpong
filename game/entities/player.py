@@ -8,18 +8,17 @@ game.entities.player
 See LICENSE for more details.
 """
 
-
+from engine.spot import spot_get
 from engine.entity import Entity
 
-# FIXME: Rename as PlayerPaddle
-class PlayerEntity(Entity):
-    """Player as an entity"""
+class PlayerPaddle(Entity):
+    """Paddle as an entity"""
 
     def __init__(self, uuid, **kwargs):
         """Constructor"""
 
-        # FIXME: Paddle size should be set on SPOT tuple 'paddle_size' ?
-        super().__init__(uuid, size=(32, 64), **kwargs)
+        # call my parent
+        super().__init__(uuid, size=spot_get('paddle_size'), **kwargs)
 
-        # TODO: document this!
+        # pymunk.Body elasticity for this paddle
         self.rect.elasticity = 0.0
