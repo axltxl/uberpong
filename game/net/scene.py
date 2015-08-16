@@ -16,6 +16,7 @@ from engine.entity import EntityManager
 from game.net.packet import Packet, Request, Response
 from game.entities.player import PlayerPaddle
 from game.entities.board import Board
+from game.entities.ball import Ball
 
 
 class Scene(Server):
@@ -57,6 +58,7 @@ class Scene(Server):
 
         # Register entities
         self._ent_mgr.register_class('ent_player', PlayerPaddle)
+        self._ent_mgr.register_class('ent_ball', Ball)
 
         # Time scale (for in-server physics)
         self._timescale = spot_get('timescale')
@@ -64,6 +66,21 @@ class Scene(Server):
         # Paddle impulse and top speed
         self._paddle_impulse = spot_get('sv_paddle_impulse')
         self._paddle_max_velocity = spot_get('sv_paddle_max_velocity')
+
+        #
+        self.create_ball()
+
+
+    def create_ball(self):
+        """Create a ball to play"""
+        # New PlayerPaddle for a client
+        self._ball = self._ent_mgr.create_entity('ent_ball')
+
+        # Set initial position for this ball
+        self._ball.position = spot_get('ball_position_start')
+
+        #FIXME: do something
+        self._ball.apply_impulse((-250, 0))
 
 
     def create_player(self, host, port):
@@ -179,6 +196,13 @@ class Scene(Server):
                                   int(player.position.y)),
                         velocity=(int(player.velocity.x),
                                   int(player.velocity.y))
+                    )
+
+                    response.set_ball_info(
+                        position=(int(self._ball.position.x),
+                                  int(self._ball.position.y)),
+                        velocity=(int(self._ball.velocity.x),
+                                  int(self._ball.velocity.y))
                     )
 
                 # Set the answer as accepted

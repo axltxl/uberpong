@@ -65,7 +65,7 @@ class Board:
 
         # elasticity for each boundary
         for b in boundaries:
-            b.elasticity = 0.0
+            b.elasticity = 1.0
 
         # Put them in the space
         self._space.add(boundaries)

@@ -71,7 +71,8 @@ class Game(StateMachine):
         # Game-specific SPOT vars
         spot_set('paddle_position_start', (32, self._window.height // 2))
         spot_set('paddle_size', (32, 64))
-
+        spot_set('ball_position_start', (self._window.width // 2, self._window.height // 2))
+        spot_set('ball_size', (24, 24))
 
     def _spot_init(self):
         """Set initial SPOT values"""

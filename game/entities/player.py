@@ -21,4 +21,4 @@ class PlayerPaddle(Entity):
         super().__init__(uuid, size=spot_get('paddle_size'), **kwargs)
 
         # pymunk.Body elasticity for this paddle
-        self.rect.elasticity = 0.0
+        self.rect.elasticity = 1.0

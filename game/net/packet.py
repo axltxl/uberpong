@@ -196,6 +196,12 @@ class Packet:
             }
         }
 
+    def set_ball_info(self, *, position, velocity):
+        self.data['ball'] = {
+            'position': {'x': position[0], 'y': position[1]},
+            'velocity': {'x': velocity[0], 'y': velocity[1]}
+        }
+
 
     def get_player_info(self, *, name):
         """Get information regarding a specific player"""

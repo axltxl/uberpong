@@ -20,11 +20,12 @@ class PlayerClient(Client):
     Player client implementation
     """
 
-    def __init__(self, *, position, **kwargs):
+    def __init__(self, *, paddle_position, ball_position, **kwargs):
         """Constructor
 
         Args:
-            position(int,int): Initial position for this player
+            paddle_position(int,int): paddle initial position
+            ball_position(int,int): ball initial position
         """
 
         #
@@ -37,7 +38,7 @@ class PlayerClient(Client):
         # base image
         self._img = pyglet.image.load('assets/images/glasspaddle2.png')
 
-        # image region
+        # paddle image region
         w, h = spot_get('paddle_size')
         self._paddle_region = self._img.get_region(0, 0, w, h)
 
@@ -45,15 +46,31 @@ class PlayerClient(Client):
         self._paddle_region.anchor_x = self._paddle_region.width // 2
         self._paddle_region.anchor_y = self._paddle_region.height // 2
 
-        # sprite
+        # ball image region
+        w, h = spot_get('ball_size')
+        self._ball_region = self._img.get_region(0, 0, w, h)
+
+        # centered anchor as required by pymunk bodies at the server side
+        self._ball_region.anchor_x = self._ball_region.width // 2
+        self._ball_region.anchor_y = self._ball_region.height // 2
+
+        # sprites
         self._paddle_sprite = pyglet.sprite.Sprite(self._paddle_region)
+        self._ball_sprite = pyglet.sprite.Sprite(self._ball_region)
 
-        # position
-        self._x, self._y = position
+        # paddle position
+        self._paddle_x, self._paddle_y = paddle_position
 
-        # velocity
-        self._vx = 0
-        self._vy = 0
+        # ball position
+        self._ball_x, self._ball_y = ball_position
+
+        # paddle velocity
+        self._paddle_vx = 0
+        self._paddle_vy = 0
+
+        # ball velocity
+        self._ball_vx = 0
+        self._ball_vy = 0
 
         # Whether the client has succesfully connected to a server
         self._connected = False
@@ -138,15 +155,22 @@ class PlayerClient(Client):
         # or time scale from which all bodies on a scene
         # are ruled. This is done for consistent client-server
         # physics.
-        self._x += self._vx * self._timescale
-        self._y += self._vy * self._timescale
 
+        # predict paddle and ball positions on the plane
+        self._paddle_x += self._paddle_vx * self._timescale
+        self._paddle_y += self._paddle_vy * self._timescale
+        self._ball_x += self._ball_vx * self._timescale
+        self._ball_y += self._ball_vy * self._timescale
 
-        # Set position
-        self._paddle_sprite.set_position(self._x, self._y)
+        # Set paddle position
+        self._paddle_sprite.set_position(self._paddle_x, self._paddle_y)
 
-        # draw sprite
+        # Set ball position
+        self._ball_sprite.set_position(self._ball_x, self._ball_y)
+
+        # draw sprites
         self._paddle_sprite.draw()
+        self._ball_sprite.draw()
 
 
     def on_data_received(self, data, host, port):
@@ -186,11 +210,19 @@ class PlayerClient(Client):
 
                 # position
                 position = me['position']
-                self._x, self._y = position['x'], position['y']
+                self._paddle_x, self._paddle_y = position['x'], position['y']
 
                 # velocity
                 velocity = me['velocity']
-                self._vx, self._vy = velocity['x'], velocity['y']
+                self._paddle_vx, self._paddle_vy = velocity['x'], velocity['y']
+
+            if 'ball' in response.data:
+                ball = response.data['ball']
+                position = ball['position']
+                velocity = ball['velocity']
+
+                self._ball_x, self._ball_y = position['x'], position['y']
+                self._ball_vx, self._ball_vy = velocity['x'], velocity['y']
 
 
     def on_key_press(self, symbol, modifiers):
