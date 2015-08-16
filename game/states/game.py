@@ -32,7 +32,7 @@ class GameState(State):
         # Call my parent
         super().__init__(machine=machine)
 
-        #
+        # TODO: document this!
         self._scene = None
         self._player = None
 
@@ -46,6 +46,7 @@ class GameState(State):
         # Get argv parsed options
         #
         options = spot_get('argv')
+
 
         #
         # Initialise server
@@ -65,7 +66,11 @@ class GameState(State):
         #
         # Create client
         #
-        self._player = PlayerClient(address=server_addr, port=5000)
+        self._player = PlayerClient(
+            position=spot_get('paddle_position_start'),
+            address=server_addr,
+            port=5000
+        )
 
         #
         # Activate LZ4 compression on client
@@ -80,11 +85,11 @@ class GameState(State):
 
     def on_exit(self):
         # Client disconnection
-        if self._player:
+        if self._player is not None:
             self._player.close()
 
         # Scene server disconnection
-        if self._scene:
+        if self._scene is not None:
             self._scene.close()
 
 
@@ -95,11 +100,12 @@ class GameState(State):
         # Render all the things on client! (client.draw)
 
         # Update client!
-        if self._player:
+        if self._player is not None:
             self._player.pump()
+            self._player.draw()
 
         # Update server (if created)
-        if self._scene:
+        if self._scene is not None:
             self._scene.pump()
 
     #######################################################

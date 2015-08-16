@@ -9,7 +9,8 @@ Client implementation for a player
 See LICENSE for more details.
 """
 
-import pyglet.window.key
+import pyglet
+from engine.spot import spot_set, spot_get
 from engine.net import Client
 from game.net.packet import Packet, Request, Response
 
@@ -18,13 +19,75 @@ class PlayerClient(Client):
     """
     Player client implementation
     """
-    def __init__(self, **kwargs):
-        """Constructor"""
+
+    def __init__(self, *, position, **kwargs):
+        """Constructor
+
+        Args:
+            position(int,int): Initial position for this player
+        """
+
+        #
         super().__init__(**kwargs)
 
         # This will hold the UUID assigned by a server
         # and used on further requests
         self._id = None
+
+        # base image
+        self._img = pyglet.image.load('assets/images/glasspaddle2.png')
+
+        # image region
+        w, h = spot_get('paddle_size')
+        self._paddle_region = self._img.get_region(0, 0, w, h)
+
+        # centered anchor as required by pymunk bodies at the server side
+        self._paddle_region.anchor_x = self._paddle_region.width // 2
+        self._paddle_region.anchor_y = self._paddle_region.height // 2
+
+        # sprite
+        self._paddle_sprite = pyglet.sprite.Sprite(self._paddle_region)
+
+        # position
+        self._x, self._y = position
+
+        # velocity
+        self._vx = 0
+        self._vy = 0
+
+        # Whether the client has succesfully connected to a server
+        self._connected = False
+
+        # Whether the client is currently pressing up or down keys
+        self._key_move_up = False
+        self._key_move_down = False
+
+        # Time scale (for in-client physics)
+        self._timescale = spot_get('timescale')
+
+        # Ask the server for updates every cl_update_interval seconds
+        # This syncs physics between client and server
+        # without needing to flood the server on each tick
+        pyglet.clock.schedule_interval(
+            self._update,
+            spot_get('cl_update_interval')
+            )
+
+
+    def _update(self, dt):
+        """Send an update request
+
+        =>
+            {
+                'version': 1,
+                'cmd': 'update',
+                'player_id': '78f7ddd8a979ghf98sdf87'
+            }
+
+        """
+        if self._connected:
+            self.send(Request(command=Request.CMD_UPDATE))
+
 
     def connect(self):
         """Connect to server
@@ -38,9 +101,8 @@ class PlayerClient(Client):
             }
 
         """
-        request = Request()
-        request.command = Request.CMD_CONNECT
-        self.send(request)
+        self.send(Request(command=Request.CMD_CONNECT))
+
 
     def send(self, request):
         """Send a regular request to server
@@ -48,8 +110,44 @@ class PlayerClient(Client):
         Args:
             request(Request): A regular request object
         """
-        request.player_id = self._id  # Set player uuid on request
-        super().send(request.data)  # Send request to server
+
+        # Set player uuid upon request
+        if self._connected:
+            request.player_id = self._id
+
+        # Send request to server
+        super().send(request.data)
+
+
+    def pump(self):
+        """Pump network traffic and toggle key flags"""
+        if self._key_move_up:
+            self.send(Request(command=Request.CMD_MV_UP))
+
+        if self._key_move_down:
+            self.send(Request(command=Request.CMD_MV_DN))
+
+        # Pump network traffic!
+        super().pump()
+
+
+    def draw(self):
+        """Render all the things!"""
+
+        # Physics are performed based on a fixed time step
+        # or time scale from which all bodies on a scene
+        # are ruled. This is done for consistent client-server
+        # physics.
+        self._x += self._vx * self._timescale
+        self._y += self._vy * self._timescale
+
+
+        # Set position
+        self._paddle_sprite.set_position(self._x, self._y)
+
+        # draw sprite
+        self._paddle_sprite.draw()
+
 
     def on_data_received(self, data, host, port):
         """Response pump for this client"""
@@ -71,37 +169,56 @@ class PlayerClient(Client):
                 #
                 raise ConnectionRefusedError(
                     "Connection to {}:{} refused!".format(
-                    self._server_host, self._server_port))
+                    self._server_addr, self._server_port))
+
+        if response.status == Response.STATUS_OK:
+
+            # This player knows he has connected succesfully
+            # to the server
+            if not self._connected:
+                self._connected = True
+
+            if 'players' in response.data:
+                #
+                # Update data used to update the paddle sprite
+                #
+                me = response.get_player_info(name='you')
+
+                # position
+                position = me['position']
+                self._x, self._y = position['x'], position['y']
+
+                # velocity
+                velocity = me['velocity']
+                self._vx, self._vy = velocity['x'], velocity['y']
+
 
     def on_key_press(self, symbol, modifiers):
         """Send packets to the server as the player hits buttons"""
 
         #
-        # Create a new Request
+        # move up
         #
-        request = Request()
+        if symbol == pyglet.window.key.W:
+            self._key_move_up = True
 
         #
-        # Whether to send the packet or not
+        # move down
         #
-        send_pkt = False
+        if symbol == pyglet.window.key.S:
+            self._key_move_down = True
+
+
+    def on_key_release(self, symbol, modifiers):
 
         #
         # move up
         #
         if symbol == pyglet.window.key.W:
-            request.command = Request.CMD_MV_UP
-            send_pkt = True
+            self._key_move_up = False
 
         #
         # move down
         #
-        elif symbol == pyglet.window.key.S:
-            request.command = Request.CMD_MV_DN
-            send_pkt = True
-
-        if send_pkt:
-            self.send(request)
-
-    def on_key_release(self, symbol, modifiers):
-        pass
+        if symbol == pyglet.window.key.S:
+            self._key_move_down = False

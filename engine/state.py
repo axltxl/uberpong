@@ -13,7 +13,7 @@ See LICENSE for more details.
 import pyglet
 
 
-class State():
+class State:
     """State implementation"""
     def __init__(self, *, machine):
         """Constructor
@@ -29,8 +29,8 @@ class State():
     def pop(self):
         self._machine.pop_state()
 
-    def push(self, id):
-        self._machine.push_state(id)
+    def push(self, class_id):
+        self._machine.push_state(class_id)
 
     #
     # Callbacks to be invoked by events in the parent machine

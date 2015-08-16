@@ -17,34 +17,41 @@ import os
 from docopt import docopt
 
 from engine.state import State, StateMachine
-from engine.entity import EntityManager
 from engine.spot import spot_set, spot_get
 
 from game.states.splash import SplashState
 from game.states.game import GameState
 
-# Set initial SPOT values
-spot_set('game_name', "PONG!")
-spot_set('game_version', "0.1a")
-
-
 class Game(StateMachine):
     """Game class"""
 
     def __init__(self, argv):
+        # Populate SPOT with a bunch of defaults
+        self._spot_init()
+
         # Parse command line arguments
-        self.parse_args(argv)
+        self._parse_args(argv)
+
+        # Parsed command line options
+        options = spot_get('argv')
+
+        # full screen mode?
+        spot_set('cl_fullscreen', options['-x'])
 
         #
         # Set up window
         #
         self._window = pyglet.window.Window(
-            1024, 768,
+            800, 600,
             style=pyglet.window.Window.WINDOW_STYLE_DIALOG,
             caption="{name} - {version}"
             .format(name=spot_get('game_name'),
                     version=spot_get('game_version'))
             )
+        # Whether to set the game on full screen mode
+        self._window.set_fullscreen(spot_get('cl_fullscreen'))
+
+        #
         self._window.on_draw = self.on_draw
         self._window.on_close = self.on_window_close
 
@@ -58,29 +65,48 @@ class Game(StateMachine):
         # Shutdown flag
         self._shutdown = False
 
-        # Set up the actual EntityManager
-        self._ent_mgr = EntityManager()
-        spot_set('game_entity_manager', self._ent_mgr)
-
         # Register this object onto the SPOT
         spot_set('game_object', self)
 
-    def parse_args(self, argv):
+        # Game-specific SPOT vars
+        spot_set('paddle_position_start', (32, self._window.height // 2))
+        spot_set('paddle_size', (32, 64))
+
+
+    def _spot_init(self):
+        """Set initial SPOT values"""
+
+        # Common
+        spot_set('game_name', "PONG!")
+        spot_set('game_version', "0.1a")
+        spot_set('timescale', 1.0/60.0)
+
+        # Client
+        spot_set('cl_fullscreen', False)
+        spot_set('cl_update_interval', 1.0/15.0)
+
+        # Server
+        spot_set('sv_gravity', (0,0))
+        spot_set('sv_paddle_impulse', 5)
+        spot_set('sv_paddle_max_velocity', 200) #TODO: Implement this!
+
+    def _parse_args(self, argv):
         """pong
 
         Usage:
-            pong [-H <ip_address> | --host <ip_address>] [--port <port> | -p <port>] [--lz4 | -z]
+            pong [-x] [-H <ip_address> | --host <ip_address>] [--port <port> | -p <port>] [--lz4 | -z]
             pong -h | --help
             pong --version
 
         Options:
+          -x                          Fullscreen mode
           -z --lz4                    Use LZ4 compression algorithm
           -H --host <ip_address>      Server to connect to
           -p --port <port>            Port to connect to
           -h --help                   Show this screen.
           --version                   Show version.
         """
-        spot_set("argv", docopt(self.parse_args.__doc__,
+        spot_set("argv", docopt(self._parse_args.__doc__,
                  argv=argv, version=spot_get('game_version')))
 
     #
@@ -121,10 +147,6 @@ class Game(StateMachine):
             while not self._shutdown:
                 #
                 pyglet.clock.tick()
-
-                # Tell the EntityManager to deliver all
-                # pending messages (if there are any)
-                self._ent_mgr.dispatch_messages()
 
                 # pyglet.window bit
                 for window in pyglet.app.windows:
