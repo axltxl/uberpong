@@ -144,7 +144,12 @@ class Scene(Server):
         # so it won't move sideways no matter what
         for player in self._players.values():
             p = player['entity']
+
+            # cancel horizontal velocity
             p.velocity = 0, p.velocity.y
+
+            # artificial friction
+            p.apply_impulse((0, -0.85 * p.velocity.y))
 
         # Physics are performed based on a fixed time step
         # or time scale from which all bodies on a scene
