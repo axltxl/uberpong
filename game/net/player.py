@@ -20,7 +20,7 @@ class PlayerClient(Client):
     Player client implementation
     """
 
-    def __init__(self, *, paddle_position, ball_position, **kwargs):
+    def __init__(self, *, ball_position, **kwargs):
         """Constructor
 
         Args:
@@ -55,25 +55,39 @@ class PlayerClient(Client):
         self._ball_region.anchor_y = self._ball_region.height // 2
 
         # sprites
-        self._paddle_sprite = pyglet.sprite.Sprite(self._paddle_region)
+        self._paddle_me_sprite = pyglet.sprite.Sprite(self._paddle_region)
+        self._paddle_foe_sprite = pyglet.sprite.Sprite(self._paddle_region)
         self._ball_sprite = pyglet.sprite.Sprite(self._ball_region)
 
-        # paddle position
-        self._paddle_x, self._paddle_y = paddle_position
+        # Sprites are invisible at first
+        self._paddle_me_sprite.visible = False
+        self._paddle_foe_sprite.visible = False
+        self._ball_sprite.visible = False
+
+        # paddles initial position
+        self._paddle_me_x = 0
+        self._paddle_me_y = 0
+        self._paddle_foe_x = 0
+        self._paddle_foe_y = 0
 
         # ball position
         self._ball_x, self._ball_y = ball_position
 
-        # paddle velocity
-        self._paddle_vx = 0
-        self._paddle_vy = 0
+        # paddles initial velocity
+        self._paddle_me_vx = 0
+        self._paddle_me_vy = 0
+        self._paddle_foe_vx = 0
+        self._paddle_foe_vy = 0
 
         # ball velocity
         self._ball_vx = 0
         self._ball_vy = 0
 
         # Whether the client has succesfully connected to a server
-        self._connected = False
+        self._me_connected = False
+
+        # Whether a foe player is present in the game
+        self._foe_connected = False
 
         # Whether the client is currently pressing up or down keys
         self._key_move_up = False
@@ -98,11 +112,11 @@ class PlayerClient(Client):
             {
                 'version': 1,
                 'cmd': 'update',
-                'player_id': '78f7ddd8a979ghf98sdf87'
+                'player_id': '25aee061a5f34977bf672d4ff59fdc36'
             }
 
         """
-        if self._connected:
+        if self._me_connected:
             self.send(Request(command=Request.CMD_UPDATE))
 
 
@@ -121,6 +135,22 @@ class PlayerClient(Client):
         self.send(Request(command=Request.CMD_CONNECT))
 
 
+    def disconnect(self):
+        """Disconnect from server
+
+        Send a connect request to start handshaking with the server
+
+        =>
+            {
+                'version': 1,
+                'cmd': '-connect',
+                'player_id': '25aee061a5f34977bf672d4ff59fdc36'
+            }
+
+        """
+        self.send(Request(command=Request.CMD_DISCONNECT))
+
+
     def send(self, request):
         """Send a regular request to server
 
@@ -129,7 +159,7 @@ class PlayerClient(Client):
         """
 
         # Set player uuid upon request
-        if self._connected:
+        if self._me_connected:
             request.player_id = self._id
 
         # Send request to server
@@ -151,26 +181,52 @@ class PlayerClient(Client):
     def draw(self):
         """Render all the things!"""
 
-        # Physics are performed based on a fixed time step
-        # or time scale from which all bodies on a scene
-        # are ruled. This is done for consistent client-server
-        # physics.
+        if self._me_connected:
+            # Physics are performed based on a fixed time step
+            # or time scale from which all bodies on a scene
+            # are ruled. This is done for consistent client-server
+            # physics.
 
-        # predict paddle and ball positions on the plane
-        self._paddle_x += self._paddle_vx * self._timescale
-        self._paddle_y += self._paddle_vy * self._timescale
-        self._ball_x += self._ball_vx * self._timescale
-        self._ball_y += self._ball_vy * self._timescale
+            # predict paddle and ball positions on the plane
+            self._paddle_me_x += self._paddle_me_vx * self._timescale
+            self._paddle_me_y += self._paddle_me_vy * self._timescale
 
-        # Set paddle position
-        self._paddle_sprite.set_position(self._paddle_x, self._paddle_y)
+            self._ball_x += self._ball_vx * self._timescale
+            self._ball_y += self._ball_vy * self._timescale
 
-        # Set ball position
-        self._ball_sprite.set_position(self._ball_x, self._ball_y)
+            # Set paddle position
+            self._paddle_me_sprite.set_position(
+                self._paddle_me_x,
+                self._paddle_me_y
+                )
 
-        # draw sprites
-        self._paddle_sprite.draw()
-        self._ball_sprite.draw()
+            # Set ball position
+            self._ball_sprite.set_position(self._ball_x, self._ball_y)
+
+            # draw sprites
+            self._paddle_me_sprite.draw()
+            self._ball_sprite.draw()
+
+            #
+            # Do all stuff for foe player if connected
+            #
+            if self._foe_connected:
+
+                # A foe has connected to the game, so it's time
+                # to draw him
+                if not self._paddle_foe_sprite.visible:
+                    self._paddle_foe_sprite.visible = True
+
+                # Calculate/predict foe paddle position
+                self._paddle_foe_x += self._paddle_foe_vx * self._timescale
+                self._paddle_foe_y += self._paddle_foe_vy * self._timescale
+
+                # Set paddle position
+                self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
+
+                # Draw foe sprite
+                self._paddle_foe_sprite.draw()
+
 
 
     def on_data_received(self, data, host, port):
@@ -199,8 +255,15 @@ class PlayerClient(Client):
 
             # This player knows he has connected succesfully
             # to the server
-            if not self._connected:
-                self._connected = True
+            if not self._me_connected:
+
+                # Let it be known that this player has hereby connected
+                # to a server
+                self._me_connected = True
+
+                # Start drawing the ball and this player's paddle
+                self._paddle_me_sprite.visible = True
+                self._ball_sprite.visible = True
 
             if 'players' in response.data:
                 #
@@ -210,19 +273,49 @@ class PlayerClient(Client):
 
                 # position
                 position = me['position']
-                self._paddle_x, self._paddle_y = position['x'], position['y']
+                self._paddle_me_x, self._paddle_me_y = position['x'], position['y']
 
                 # velocity
                 velocity = me['velocity']
-                self._paddle_vx, self._paddle_vy = velocity['x'], velocity['y']
+                self._paddle_me_vx, self._paddle_me_vy = velocity['x'], velocity['y']
 
+                #
+                # Set all information regarding the opponent (foe)
+                #
+                foe = response.get_player_info(name='foe')
+                if foe is not None:
+
+                    # Let it be known hereby that the opponent has entered
+                    # the arena!
+                    self._foe_connected = True
+
+                    # position
+                    position = foe['position']
+                    self._paddle_foe_x, self._paddle_foe_y = position['x'], position['y']
+
+                    # velocity
+                    velocity = foe['velocity']
+                    self._paddle_foe_vx, self._paddle_foe_vy = velocity['x'], velocity['y']
+
+                else:
+                    # Oh!, foe is not present in the game
+                    self._foe_connected = False
+
+            #
+            # The actual ball information
+            #
             if 'ball' in response.data:
                 ball = response.data['ball']
+
+                # position and current velocity of the ball
                 position = ball['position']
                 velocity = ball['velocity']
 
-                self._ball_x, self._ball_y = position['x'], position['y']
-                self._ball_vx, self._ball_vy = velocity['x'], velocity['y']
+                # set that information
+                self._ball_x = position['x']
+                self._ball_y = position['y']
+                self._ball_vx = velocity['x']
+                self._ball_vy = velocity['y']
 
 
     def on_key_press(self, symbol, modifiers):

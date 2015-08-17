@@ -67,7 +67,6 @@ class GameState(State):
         # Create client
         #
         self._player = PlayerClient(
-            paddle_position=spot_get('paddle_position_start'),
             ball_position=spot_get('ball_position_start'),
             address=server_addr,
             port=5000
@@ -87,6 +86,7 @@ class GameState(State):
     def on_exit(self):
         # Client disconnection
         if self._player is not None:
+            self._player.disconnect()
             self._player.close()
 
         # Scene server disconnection
