@@ -35,9 +35,6 @@ class Game(StateMachine):
         # Parsed command line options
         options = spot_get('argv')
 
-        # full screen mode?
-        spot_set('cl_fullscreen', options['-x'])
-
         #
         # Set up window
         #
@@ -48,10 +45,8 @@ class Game(StateMachine):
             .format(name=spot_get('game_name'),
                     version=spot_get('game_version'))
             )
-        # Whether to set the game on full screen mode
-        self._window.set_fullscreen(spot_get('cl_fullscreen'))
 
-        #
+        # pyglet.window basic callbacks
         self._window.on_draw = self.on_draw
         self._window.on_close = self.on_window_close
 
@@ -71,7 +66,8 @@ class Game(StateMachine):
         # Game-specific SPOT vars
         spot_set('paddle_position_start', (32, self._window.height // 2))
         spot_set('paddle_size', (32, 64))
-
+        spot_set('ball_position_start', (self._window.width // 2, self._window.height // 2))
+        spot_set('ball_size', (24, 24))
 
     def _spot_init(self):
         """Set initial SPOT values"""
@@ -94,12 +90,11 @@ class Game(StateMachine):
         """pong
 
         Usage:
-            pong [-x] [-H <ip_address> | --host <ip_address>] [--port <port> | -p <port>] [--lz4 | -z]
+            pong [-H <ip_address> | --host <ip_address>] [--port <port> | -p <port>] [--lz4 | -z]
             pong -h | --help
             pong --version
 
         Options:
-          -x                          Fullscreen mode
           -z --lz4                    Use LZ4 compression algorithm
           -H --host <ip_address>      Server to connect to
           -p --port <port>            Port to connect to

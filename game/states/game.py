@@ -67,7 +67,8 @@ class GameState(State):
         # Create client
         #
         self._player = PlayerClient(
-            position=spot_get('paddle_position_start'),
+            paddle_position=spot_get('paddle_position_start'),
+            ball_position=spot_get('ball_position_start'),
             address=server_addr,
             port=5000
         )
