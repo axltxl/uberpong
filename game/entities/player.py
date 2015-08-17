@@ -18,7 +18,8 @@ class PlayerPaddle(Entity):
         """Constructor"""
 
         # call my parent
-        super().__init__(uuid, size=spot_get('paddle_size'), **kwargs)
+        super().__init__(uuid, mass=spot_get('sv_paddle_mass'),
+                         size=spot_get('paddle_size'), **kwargs)
 
         # pymunk.Body elasticity for this paddle
         self.box.elasticity = 1.0

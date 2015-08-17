@@ -81,7 +81,7 @@ class Scene(Server):
 
         #FIXME: do something better
         # Set initial impulse on the ball
-        self._ball.apply_impulse((-250, 0))
+        self._ball.apply_impulse((-2500, 0))
 
 
     def create_player(self, host, port):

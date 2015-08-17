@@ -17,7 +17,8 @@ class Ball(Entity):
 
     def __init__(self, uuid, **kwargs):
         # call my parent
-        super().__init__(uuid, size=spot_get('ball_size'), **kwargs)
+        super().__init__(uuid, mass=spot_get('sv_ball_mass'),
+                         size=spot_get('ball_size'), **kwargs)
 
         # pymunk.Body elasticity for this paddle
         self.box.elasticity = 1.0

@@ -83,7 +83,7 @@ class Entity(pymunk.Body):
 
     """
     def __init__(self, uuid, *, manager,
-                 position=(0, 0), size=(32, 32), **kwargs):
+                 mass=100, position=(0, 0), size=(32, 32), **kwargs):
         """Constructor
 
         Args:
@@ -94,16 +94,19 @@ class Entity(pymunk.Body):
             manager(EntityManager): this entity's manager
         """
 
-        # TODO: document this
-        # FIXME: mass a moment cannot be set this way!
-        super().__init__(1, 1666)
-
         # Assign manager and UUID for this entity
         self._manager = manager
         self._uuid = uuid
 
         # size
         self._width, self._height = size
+
+        # TODO: document this
+        # FIXME: mass a moment cannot be set this way!
+
+        moment = pymunk.moment_for_box(mass, self._width, self._height)
+
+        super().__init__(mass, moment)
 
         # rect
         self._box = pymunk.Poly.create_box(self, size)
