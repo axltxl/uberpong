@@ -67,7 +67,7 @@ class Scene(Server):
         self._paddle_impulse = spot_get('sv_paddle_impulse')
         self._paddle_max_velocity = spot_get('sv_paddle_max_velocity')
 
-        #
+        # Create the actual ball
         self.create_ball()
 
 
@@ -79,7 +79,8 @@ class Scene(Server):
         # Set initial position for this ball
         self._ball.position = spot_get('ball_position_start')
 
-        #FIXME: do something
+        #FIXME: do something better
+        # Set initial impulse on the ball
         self._ball.apply_impulse((-250, 0))
 
 
@@ -94,19 +95,47 @@ class Scene(Server):
         # New PlayerPaddle for a client
         player = self._ent_mgr.create_entity('ent_player')
 
+        # Set initial position for a player
+        player_number = len(self._players) + 1
+        player_position_x, player_position_y = spot_get('paddle_position_start')
+
+        # player 2's position on the other side of the screen
+        if player_number == 2:
+            player_position_x = self._window_width - player_position_x
+
         # Set initial position for this player
-        player.position = spot_get('paddle_position_start')
+        player.position = player_position_x, player_position_y
 
 
         # Save information for this new player
         self._players[player.uuid] = {
             "entity": player,
             "host": host,
-            "port": port
+            "port": port,
+            "number": player_number,
+            "foe": None
         }
+
 
         # Return the thing
         return player
+
+
+    def destroy_player(self, player_id):
+        """Get rid of a player"""
+        del self._players[player_id]
+
+
+    def update_players(self):
+        """Update information on players"""
+
+        # Update each player's foes
+        for uuid, player_info in self._players.items():
+            foes = [p['entity'].uuid for p in self._players.values() if p['entity'].uuid != uuid]
+            if len(foes):
+                player_info['foe'] = foes[0]
+            else:
+                player_info['foe'] = None
 
 
     def pump(self):
@@ -165,6 +194,7 @@ class Scene(Server):
                         response.status = Response.STATUS_OK
                         response.reason = Response.REASON_CONN_GRANTED
                         response.player_id = self.create_player(host, port).uuid
+                        self.update_players()
 
             elif request.player_id in self._players:
                 #
@@ -174,30 +204,55 @@ class Scene(Server):
                 # TODO: remove this when logger has been implemented
                 #print("~> {}".format(request.data))
 
-                # First of all get the player entity
-                player = self._players[request.player_id]['entity']
+                # First of all, get the players' entities
+                player_me = self._players[request.player_id]['entity']
+
+                # FIXME: this will get better
+                if self._players[request.player_id]['foe'] is not None:
+                    foe_uuid = self._players[request.player_id]['foe']
+                    player_foe = self._players[foe_uuid]['entity']
+
 
                 # Get player's command
                 command = request.command
 
                 # +move command
                 if command == Request.CMD_MV_UP:
-                    player.apply_impulse((0 , self._paddle_impulse))
+                    player_me.apply_impulse((0 , self._paddle_impulse))
 
                 # -move command
                 elif command == Request.CMD_MV_DN:
-                    player.apply_impulse((0, - self._paddle_impulse))
+                    player_me.apply_impulse((0, - self._paddle_impulse))
+
+                # disconnect command
+                elif command == Request.CMD_DISCONNECT:
+                    self.destroy_player(request.player_id)
+                    self.update_players()
+
 
                 # update command
                 elif command == Request.CMD_UPDATE:
+
+                    # Set player information
                     response.set_player_info(
                         name='you', score=0,
-                        position=(int(player.position.x),
-                                  int(player.position.y)),
-                        velocity=(int(player.velocity.x),
-                                  int(player.velocity.y))
+                        position=(int(player_me.position.x),
+                                  int(player_me.position.y)),
+                        velocity=(int(player_me.velocity.x),
+                                  int(player_me.velocity.y))
                     )
 
+                    # Set opponent (foe) information
+                    if self._players[request.player_id]['foe'] is not None:
+                        response.set_player_info(
+                            name='foe', score=0,
+                            position=(int(player_foe.position.x),
+                                      int(player_foe.position.y)),
+                            velocity=(int(player_foe.velocity.x),
+                                      int(player_foe.velocity.y))
+                        )
+
+                    # Set ball information
                     response.set_ball_info(
                         position=(int(self._ball.position.x),
                                   int(self._ball.position.y)),
