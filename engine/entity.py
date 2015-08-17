@@ -45,7 +45,7 @@ class EntityManager(pymunk.Space):
         entity = self._classes[class_id](new_uuid, manager=self, **kwargs)
 
         # TODO: document this!
-        self.add(entity, entity.rect)
+        self.add(entity, entity.box)
 
         # map the entity
         self._ents[new_uuid] = entity
@@ -106,7 +106,7 @@ class Entity(pymunk.Body):
         self._width, self._height = size
 
         # rect
-        self._rect = pymunk.Poly.create_box(self, size)
+        self._box = pymunk.Poly.create_box(self, size)
 
         # position
         self.position = position
@@ -121,9 +121,9 @@ class Entity(pymunk.Body):
         self._directory = {}
 
     @property
-    def rect(self):
+    def box(self):
         """Rectangle"""
-        return self._rect
+        return self._box
 
     @property
     def width(self):

@@ -20,4 +20,4 @@ class Ball(Entity):
         super().__init__(uuid, size=spot_get('ball_size'), **kwargs)
 
         # pymunk.Body elasticity for this paddle
-        self.rect.elasticity = 1.0
+        self.box.elasticity = 1.0
