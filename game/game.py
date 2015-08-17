@@ -83,8 +83,8 @@ class Game(StateMachine):
 
         # Server
         spot_set('sv_gravity', (0,0))
-        spot_set('sv_paddle_impulse', 500000)
-        spot_set('sv_paddle_mass', 100000)
+        spot_set('sv_paddle_impulse', 50)
+        spot_set('sv_paddle_mass', 100)
         spot_set('sv_paddle_max_velocity', 200) #TODO: Implement this!
         spot_set('sv_ball_mass', 10)
 

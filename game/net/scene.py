@@ -139,6 +139,13 @@ class Scene(Server):
 
 
     def pump(self):
+
+        # FIXME: This is working, it caps the velocity to 0 in x
+        # so it won't move sideways no matter what
+        for player in self._players.values():
+            p = player['entity']
+            p.velocity = 0, p.velocity.y
+
         # Physics are performed based on a fixed time step
         # or time scale from which all bodies on a scene
         # are ruled. This is done for consistent client-server
