@@ -73,6 +73,64 @@ class Scene(Server):
         # Create the actual ball
         self.create_ball()
 
+        pyglet.clock.schedule_interval(
+            self.send_update,
+            spot_get('cl_update_interval')
+            )
+
+    def send_update(self, dt):
+        """Send an update to all clients"""
+
+        if len(self._players):
+            #The actual response
+            response = Response()
+
+            # Set the answer as accepted
+            response.status = Response.STATUS_OK
+            response.reason = Response.REASON_UPDATE
+
+
+            for player in self._players.values():
+                # Current player
+                player_me = player['entity']
+
+                # Get host and port from him
+                host = player['host']
+                port = player['port']
+
+                # Set player information
+                response.set_player_info(
+                    name='you', score=0,
+                    position=(int(player_me.position.x),
+                              int(player_me.position.y)),
+                    velocity=(int(player_me.velocity.x),
+                              int(player_me.velocity.y))
+                )
+
+                # Set opponent (foe) information
+                if player['foe'] is not None:
+
+                    player_foe = self._players[player['foe']]['entity']
+
+                    response.set_player_info(
+                        name='foe', score=0,
+                        position=(int(player_foe.position.x),
+                                  int(player_foe.position.y)),
+                        velocity=(int(player_foe.velocity.x),
+                                  int(player_foe.velocity.y))
+                    )
+
+                # Set ball information
+                response.set_ball_info(
+                    position=(int(self._ball.position.x),
+                              int(self._ball.position.y)),
+                    velocity=(int(self._ball.velocity.x),
+                              int(self._ball.velocity.y))
+                )
+
+                # Send the packet to the client
+                self.send(response.data, host, port)
+
 
     def create_ball(self):
         """Create a ball to play"""
@@ -233,13 +291,13 @@ class Scene(Server):
                         response.player_id = self.create_player(host, port).uuid
                         self.update_players()
 
+                        # Send the packet to the client
+                        self.send(response.data, host, port)
+
             elif request.player_id in self._players:
                 #
                 # Request is valid and going to be processed
                 #
-
-                # TODO: remove this when logger has been implemented
-                #print("~> {}".format(request.data))
 
                 # First of all, get the players' entities
                 player_me = self._players[request.player_id]['entity']
@@ -248,7 +306,6 @@ class Scene(Server):
                 if self._players[request.player_id]['foe'] is not None:
                     foe_uuid = self._players[request.player_id]['foe']
                     player_foe = self._players[foe_uuid]['entity']
-
 
                 # Get player's command
                 command = request.command
@@ -265,44 +322,3 @@ class Scene(Server):
                 elif command == Request.CMD_DISCONNECT:
                     self.destroy_player(request.player_id)
                     self.update_players()
-
-
-                # update command
-                elif command == Request.CMD_UPDATE:
-
-                    # Set player information
-                    response.set_player_info(
-                        name='you', score=0,
-                        position=(int(player_me.position.x),
-                                  int(player_me.position.y)),
-                        velocity=(int(player_me.velocity.x),
-                                  int(player_me.velocity.y))
-                    )
-
-                    # Set opponent (foe) information
-                    if self._players[request.player_id]['foe'] is not None:
-                        response.set_player_info(
-                            name='foe', score=0,
-                            position=(int(player_foe.position.x),
-                                      int(player_foe.position.y)),
-                            velocity=(int(player_foe.velocity.x),
-                                      int(player_foe.velocity.y))
-                        )
-
-                    # Set ball information
-                    response.set_ball_info(
-                        position=(int(self._ball.position.x),
-                                  int(self._ball.position.y)),
-                        velocity=(int(self._ball.velocity.x),
-                                  int(self._ball.velocity.y))
-                    )
-
-                # Set the answer as accepted
-                response.status = Response.STATUS_OK
-                response.reason = Response.REASON_ACCEPTED
-
-                # TODO: remove this when logger has been implemented
-                print("<~ {}".format(response.data))
-
-        # Send the packet to the client
-        self.send(response.data, host, port)

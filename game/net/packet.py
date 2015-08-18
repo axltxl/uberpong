@@ -69,7 +69,9 @@ a client must first handshake with a server, like so:
         }
 
 Once the server has acknowledged a client, the latter receives a valid
-player id from which further requests can be made:
+player id from which further requests can be made. From this point until
+disconnection, the former will actively send the client periodic
+update responses:
 
     (client) ~~>
         {
@@ -78,17 +80,17 @@ player id from which further requests can be made:
             'player_id': '25aee061a5f34977bf672d4ff59fdc36'
         }
 
-    <~~ (server)
+    (client) ~~>
         {
             'version': 1,
-            'status': 'OK',
-            'reason': 'Accepted',
+            'cmd': '+move',
+            'player_id': '25aee061a5f34977bf672d4ff59fdc36'
         }
 
     (client) ~~>
         {
             'version': 1,
-            'cmd': 'update',
+            'cmd': '-move',
             'player_id': '25aee061a5f34977bf672d4ff59fdc36'
         }
 
@@ -97,23 +99,34 @@ player id from which further requests can be made:
             'version': 1,
             'status': 'OK',
             'state': 'PLAYING',
-            'reason': 'Accepted',
+            'reason': 'Update',
             'players': {
                 'you': {
                     'score': 1,
                     'position': {
                         'y': 1, 'x': 0
+                    },
+                    'velocity': {
+                        'y': 14, 'x': -20
                     }
                 }
                 'foe': {
                     'score': 1,
                     'position': {
                         'y': 24, 'x': 0
+                    },
+                    'velocity': {
+                        'y': 23, 'x': 40
                     }
                 }
             },
             'ball': {
-                'x': 12, 'y': 4
+                'position': {
+                    'x': 12, 'y': 4
+                },
+                'velocity': {
+                    'y': 223, 'x': 140
+                }
             }
         }
 """
@@ -222,8 +235,6 @@ class Request(Packet):
     CMD_DISCONNECT = '-connect'
     CMD_MV_UP = '+move'
     CMD_MV_DN = '-move'
-    CMD_UPDATE = 'update'
-
 
     def __init__(self, data=None, *, command=None, **kwargs):
         super().__init__(data, **kwargs)
@@ -262,6 +273,7 @@ class Response(Packet):
     REASON_CONN_REFUSED = "Connection Refused"
     REASON_CONN_GRANTED = 'Connection Granted'
     REASON_ACCEPTED = 'Accepted'
+    REASON_UPDATE = 'Update'
 
 
     @property

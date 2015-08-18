@@ -96,29 +96,6 @@ class PlayerClient(Client):
         # Time scale (for in-client physics)
         self._timescale = spot_get('timescale')
 
-        # Ask the server for updates every cl_update_interval seconds
-        # This syncs physics between client and server
-        # without needing to flood the server on each tick
-        pyglet.clock.schedule_interval(
-            self._update,
-            spot_get('cl_update_interval')
-            )
-
-
-    def _update(self, dt):
-        """Send an update request
-
-        =>
-            {
-                'version': 1,
-                'cmd': 'update',
-                'player_id': '25aee061a5f34977bf672d4ff59fdc36'
-            }
-
-        """
-        if self._me_connected:
-            self.send(Request(command=Request.CMD_UPDATE))
-
 
     def connect(self):
         """Connect to server
