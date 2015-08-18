@@ -165,7 +165,6 @@ class PlayerClient(Client):
             # physics.
 
             # predict paddle and ball positions on the plane
-            self._paddle_me_x += self._paddle_me_vx * self._timescale
             self._paddle_me_y += self._paddle_me_vy * self._timescale
 
             self._ball_x += self._ball_vx * self._timescale
@@ -195,7 +194,6 @@ class PlayerClient(Client):
                     self._paddle_foe_sprite.visible = True
 
                 # Calculate/predict foe paddle position
-                self._paddle_foe_x += self._paddle_foe_vx * self._timescale
                 self._paddle_foe_y += self._paddle_foe_vy * self._timescale
 
                 # Set paddle position
