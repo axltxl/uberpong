@@ -26,14 +26,14 @@ class Game(StateMachine):
     """Game class"""
 
     def __init__(self, argv):
-        # Populate SPOT with a bunch of defaults
-        self._spot_init()
-
         # Parse command line arguments
         self._parse_args(argv)
 
         # Parsed command line options
-        options = spot_get('argv')
+        self._options = spot_get('argv')
+
+        # Populate SPOT with a bunch of defaults
+        self._spot_init()
 
         #
         # Set up window
@@ -72,24 +72,43 @@ class Game(StateMachine):
     def _spot_init(self):
         """Set initial SPOT values"""
 
+        #
         # Common
+        #
         spot_set('game_name', "PONG!")
         spot_set('game_version', "0.1a")
-        spot_set('timescale', 1.0/60.0)
 
+        # The server simulates the game in discrete time steps called ticks.
+        # By default, the timestep is 15ms, so 66.666... ticks
+        # per second are simulated
+        spot_set('tickrate', 66)
+
+        # In-server physics timestep
+        # Used in-client as well for prediction
+        spot_set('timestep', 0.02)
+
+        #
         # Client
-        spot_set('cl_fullscreen', False)
+        #
 
+        # The rate at which a client sends requests to the server per second
+        spot_set('cl_cmdrate', 30)
+
+        # The client can request a certain snapshot rate
+        spot_set('cl_updaterate', 20)
+
+        #
         # Server
-        spot_set('sv_cheats', False)
-        spot_set('sv_update_interval', 45)
-        spot_set('sv_gravity', (0, 0))
-        spot_set('sv_paddle_impulse', 3200)
-        spot_set('sv_paddle_mass', 100)
-        spot_set('sv_paddle_friction', 0.80)
-        spot_set('sv_paddle_max_velocity', 1600)
-        spot_set('sv_ball_mass', 10)
-        spot_set('sv_ball_max_velocity', 1600)
+        #
+        if self._options['--host'] is None:
+            spot_set('sv_cheats', False)
+            spot_set('sv_gravity', (0, 0))
+            spot_set('sv_paddle_impulse', 3200)
+            spot_set('sv_paddle_mass', 100)
+            spot_set('sv_paddle_friction', 0.80)
+            spot_set('sv_paddle_max_velocity', 1600)
+            spot_set('sv_ball_mass', 10)
+            spot_set('sv_ball_max_velocity', 1600)
 
     def _parse_args(self, argv):
         """pong

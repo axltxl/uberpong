@@ -106,6 +106,7 @@ class Client(Channel):
     def send(self, data):
         """Send raw data to the server"""
         super().send(data, self._server_addr, self._server_port)
+        
 
     @property
     def server_address(self):

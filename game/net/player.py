@@ -94,7 +94,18 @@ class PlayerClient(Client):
         self._key_move_down = False
 
         # Time scale (for in-client physics)
-        self._timescale = spot_get('timescale')
+        self._timescale = spot_get('timestep')
+
+        # Command rate
+        # How much command is this client going to send per second?
+        self._cmdrate = 1.0 / spot_get('cl_cmdrate')
+        pyglet.clock.schedule_interval(self.send_commands, self._cmdrate)
+
+        # Updates frequence
+        # Set up updates interval on client
+        self._update_lock = False # this will lock pump() callbacks
+        self._update_rate = 1.0 / spot_get('cl_updaterate')
+        pyglet.clock.schedule_interval(self.update_from_server, self._update_rate)
 
 
     def connect(self):
@@ -143,16 +154,20 @@ class PlayerClient(Client):
         super().send(request.data)
 
 
-    def pump(self):
-        """Pump network traffic and toggle key flags"""
+    def send_commands(self, dt):
+        """Send commands to the server"""
         if self._key_move_up:
             self.send(Request(command=Request.CMD_MV_UP))
 
         if self._key_move_down:
             self.send(Request(command=Request.CMD_MV_DN))
 
-        # Pump network traffic!
-        super().pump()
+
+    def update_from_server(self, dt):
+        """See whether something arrives from the server"""
+
+        # Unleash the kraken!
+        self._update_lock = False
 
 
     def draw(self):
@@ -206,6 +221,13 @@ class PlayerClient(Client):
 
     def on_data_received(self, data, host, port):
         """Response pump for this client"""
+
+        # The kraken is on a leash! :(
+        if self._update_lock:
+            return
+
+        # The kraken is on the wild!
+        self._update_lock = True
 
         # Get raw data and get a proper Response from it
         response = Response(data)

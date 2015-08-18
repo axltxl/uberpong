@@ -52,7 +52,11 @@ class GameState(State):
         # Initialise server
         #
         if options['--host'] is None:
+
+            #
             server_addr = 'localhost'
+
+            #
             self._scene = Scene(port=5000,
                                 width=self._machine.window.width,
                                 height=self._machine.window.height)
@@ -101,8 +105,8 @@ class GameState(State):
             self._player.draw()
 
         # Update server (if created)
-        if self._scene is not None:
-            self._scene.pump()
+        #if self._scene is not None:
+        #    self._scene.pump()
 
     #######################################################
     # All input events are handled directly by the client

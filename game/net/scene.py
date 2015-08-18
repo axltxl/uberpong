@@ -63,10 +63,7 @@ class Scene(Server):
         self._ent_mgr.register_class('ent_ball', Ball)
 
         # Time scale (for in-server physics)
-        self._timescale = spot_get('timescale')
-
-        # Updates frequence
-        self._update_interval = .001 * spot_get('sv_update_interval')
+        self._timestep = spot_get('timestep')
 
         # Paddle impulse, top speed and artificial friction
         self._paddle_impulse = spot_get('sv_paddle_impulse')
@@ -76,10 +73,12 @@ class Scene(Server):
         # Create the actual ball
         self.create_ball()
 
-        # Set up updates interval on server
-        pyglet.clock.schedule_interval(self.send_update, self._update_interval)
+        # Set up tick interval on server
+        self._tickrate = 1.0 / spot_get('tickrate')
+        pyglet.clock.schedule_interval(self.tick, self._tickrate)
 
-    def send_update(self, dt):
+
+    def broadcast_update(self):
         """Send an update to all clients"""
 
         if len(self._players):
@@ -146,6 +145,7 @@ class Scene(Server):
         self._ball.apply_impulse((-1500, 0))
 
         # Increase/maintain ball velocity each second
+        # TODO: move this to tick()
         pyglet.clock.schedule_interval(self.increase_ball_velocity, 1.0)
 
 
@@ -222,7 +222,18 @@ class Scene(Server):
                 self._ball.apply_impulse((-200, self._ball.velocity.y))
 
 
-    def pump(self):
+    def tick(self, dt):
+        """Run simulation on server and broadcast an update to all clients
+
+        During each tick, the server processes incoming user commands,
+        runs a physical simulation step, checks the game rules,
+        and updates all object states.
+        """
+
+        # Process incoming user commands
+        self.pump()
+
+        # Run a physical simulation step:
 
         # FIXME: This is working, it caps the velocity to 0 in x
         # so it won't move sideways no matter what
@@ -239,14 +250,14 @@ class Scene(Server):
         # or time scale from which all bodies on a scene
         # are ruled. This is done for consistent client-server
         # physics.
-        self._ent_mgr.step(self._timescale)
+        self._ent_mgr.step(self._timestep)
 
         # Tell the EntityManager to deliver all
         # pending messages (if there are any)
         self._ent_mgr.dispatch_messages()
 
-        # Pump network traffic
-        super().pump()
+        # Broadcast latest snapshot to all clients
+        self.broadcast_update()
 
 
     def on_data_received(self, data, host, port):
