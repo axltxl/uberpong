@@ -83,7 +83,7 @@ class Entity(pymunk.Body):
 
     """
     def __init__(self, uuid, *, manager,
-                 position=(0, 0), size=(32, 32), **kwargs):
+                 mass=100, position=(0, 0), size=(32, 32), **kwargs):
         """Constructor
 
         Args:
@@ -94,10 +94,6 @@ class Entity(pymunk.Body):
             manager(EntityManager): this entity's manager
         """
 
-        # TODO: document this
-        # FIXME: mass a moment cannot be set this way!
-        super().__init__(1, 1666)
-
         # Assign manager and UUID for this entity
         self._manager = manager
         self._uuid = uuid
@@ -105,7 +101,13 @@ class Entity(pymunk.Body):
         # size
         self._width, self._height = size
 
-        # rect
+        # Set moment (inertia) for this body
+        moment = pymunk.moment_for_box(mass, self._width, self._height)
+
+        # Call my parent
+        super().__init__(mass, moment)
+
+        # boundary box for this body
         self._box = pymunk.Poly.create_box(self, size)
 
         # position
@@ -119,6 +121,10 @@ class Entity(pymunk.Body):
         # much like having a contact list on your smartphone. With this
         # approach, any entity can easily send messages to another one
         self._directory = {}
+
+    @property
+    def manager(self):
+        return self._manager
 
     @property
     def box(self):

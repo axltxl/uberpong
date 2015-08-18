@@ -9,6 +9,8 @@ Client implementation for a player
 See LICENSE for more details.
 """
 
+import pyglet
+
 from engine.spot import spot_set, spot_get
 from engine.net import Server
 from engine.entity import EntityManager
@@ -63,9 +65,10 @@ class Scene(Server):
         # Time scale (for in-server physics)
         self._timescale = spot_get('timescale')
 
-        # Paddle impulse and top speed
+        # Paddle impulse, top speed and artificial friction
         self._paddle_impulse = spot_get('sv_paddle_impulse')
         self._paddle_max_velocity = spot_get('sv_paddle_max_velocity')
+        self._paddle_friction = spot_get('sv_paddle_friction')
 
         # Create the actual ball
         self.create_ball()
@@ -81,7 +84,10 @@ class Scene(Server):
 
         #FIXME: do something better
         # Set initial impulse on the ball
-        self._ball.apply_impulse((-250, 0))
+        self._ball.apply_impulse((-1500, 0))
+
+        # Increase/maintain ball velocity each second
+        pyglet.clock.schedule_interval(self.increase_ball_velocity, 1.0)
 
 
     def create_player(self, host, port):
@@ -138,7 +144,38 @@ class Scene(Server):
                 player_info['foe'] = None
 
 
+    def increase_ball_velocity(self, dt):
+        """Increase/maintain a constant velocity for the ball"""
+
+        # In order to have a decent/pleasurable gameplay
+        # the ball needs to maintain a certain pace, so it
+        # becomes "pushed" constantly until it reaches its
+        # top speed
+        self._ball.velocity = (1.02 * self._ball.velocity.x,
+                               1.02 * self._ball.velocity.y)
+
+        # Very much like table hockey games the ball gets
+        # pushed until it gains its minimun speed of 200.0
+        if abs(self._ball.velocity.x) < 200.0:
+            if self._ball.velocity.x > 0:
+                self._ball.apply_impulse((200, self._ball.velocity.y))
+            elif self._ball.velocity.x < 0:
+                self._ball.apply_impulse((-200, self._ball.velocity.y))
+
+
     def pump(self):
+
+        # FIXME: This is working, it caps the velocity to 0 in x
+        # so it won't move sideways no matter what
+        for player in self._players.values():
+            p = player['entity']
+
+            # cancel horizontal velocity
+            p.velocity = 0, p.velocity.y
+
+            # artificial friction maybe?
+            p.apply_impulse((0, - self._paddle_friction * p.velocity.y))
+
         # Physics are performed based on a fixed time step
         # or time scale from which all bodies on a scene
         # are ruled. This is done for consistent client-server
