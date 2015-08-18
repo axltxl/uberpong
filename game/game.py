@@ -79,9 +79,9 @@ class Game(StateMachine):
 
         # Client
         spot_set('cl_fullscreen', False)
-        spot_set('cl_update_interval', 1.0/15.0)
 
         # Server
+        spot_set('sv_update_interval', 10)
         spot_set('sv_gravity', (0,0))
         spot_set('sv_paddle_impulse', 3200)
         spot_set('sv_paddle_mass', 100)

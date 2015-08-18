@@ -65,6 +65,9 @@ class Scene(Server):
         # Time scale (for in-server physics)
         self._timescale = spot_get('timescale')
 
+        # Updates frequence
+        self._update_interval = .001 * spot_get('sv_update_interval')
+
         # Paddle impulse, top speed and artificial friction
         self._paddle_impulse = spot_get('sv_paddle_impulse')
         self._paddle_max_velocity = spot_get('sv_paddle_max_velocity')
@@ -73,10 +76,8 @@ class Scene(Server):
         # Create the actual ball
         self.create_ball()
 
-        pyglet.clock.schedule_interval(
-            self.send_update,
-            spot_get('cl_update_interval')
-            )
+        # Set up updates interval on server
+        pyglet.clock.schedule_interval(self.send_update, self._update_interval)
 
     def send_update(self, dt):
         """Send an update to all clients"""
