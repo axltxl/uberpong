@@ -81,6 +81,7 @@ class Game(StateMachine):
         spot_set('cl_fullscreen', False)
 
         # Server
+        spot_set('sv_cheats', False)
         spot_set('sv_update_interval', 10)
         spot_set('sv_gravity', (0,0))
         spot_set('sv_paddle_impulse', 3200)
