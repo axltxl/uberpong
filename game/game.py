@@ -83,10 +83,12 @@ class Game(StateMachine):
 
         # Server
         spot_set('sv_gravity', (0,0))
-        spot_set('sv_paddle_impulse', 500)
+        spot_set('sv_paddle_impulse', 3200)
         spot_set('sv_paddle_mass', 100)
-        spot_set('sv_paddle_max_velocity', 200) #TODO: Implement this!
+        spot_set('sv_paddle_friction', 0.80)
+        spot_set('sv_paddle_max_velocity', 1600)
         spot_set('sv_ball_mass', 10)
+        spot_set('sv_ball_max_velocity', 1600)
 
     def _parse_args(self, argv):
         """pong
@@ -112,14 +114,17 @@ class Game(StateMachine):
     def on_window_close(self):
         self.exit()
 
+
     def on_draw(self):
         self._window.clear()
         self.update_state()
+
 
     def on_key_press(self, sym, mod):
         """Exit the game if F12 has been pressed"""
         if sym == pyglet.window.key.F12:
             self.exit()
+
 
     def _handle_except(self, e):
         """Exception handler"""
@@ -130,9 +135,11 @@ class Game(StateMachine):
               line=exc_tb.tb_lineno,  msg=e))
         print(traceback.format_exc())
 
+
     def exit(self):
         """Exit the game"""
         self._shutdown = True
+
 
     def go(self):
         """Main entry point"""
@@ -159,6 +166,7 @@ class Game(StateMachine):
             self._cleanup()
 
         return 0
+
 
     def _cleanup(self):
         """House keeping after all's been done"""

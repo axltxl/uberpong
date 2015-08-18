@@ -101,14 +101,13 @@ class Entity(pymunk.Body):
         # size
         self._width, self._height = size
 
-        # TODO: document this
-        # FIXME: mass a moment cannot be set this way!
-
+        # Set moment (inertia) for this body
         moment = pymunk.moment_for_box(mass, self._width, self._height)
 
+        # Call my parent
         super().__init__(mass, moment)
 
-        # rect
+        # boundary box for this body
         self._box = pymunk.Poly.create_box(self, size)
 
         # position
@@ -122,6 +121,10 @@ class Entity(pymunk.Body):
         # much like having a contact list on your smartphone. With this
         # approach, any entity can easily send messages to another one
         self._directory = {}
+
+    @property
+    def manager(self):
+        return self._manager
 
     @property
     def box(self):
