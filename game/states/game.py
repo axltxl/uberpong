@@ -95,11 +95,6 @@ class GameState(State):
 
 
     def on_update(self):
-        # Update client with data from server (unless the client is event-driven)
-        # Perform actions inside the client based on new data (client.update or something)
-        # Send data from client to server (client.sent_data or something)
-        # Render all the things on client! (client.draw)
-
         # Update client!
         if self._player is not None:
             self._player.pump()

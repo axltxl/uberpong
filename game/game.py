@@ -83,7 +83,7 @@ class Game(StateMachine):
         # Server
         spot_set('sv_cheats', False)
         spot_set('sv_update_interval', 45)
-        spot_set('sv_gravity', (0,0))
+        spot_set('sv_gravity', (0, 0))
         spot_set('sv_paddle_impulse', 3200)
         spot_set('sv_paddle_mass', 100)
         spot_set('sv_paddle_friction', 0.80)
