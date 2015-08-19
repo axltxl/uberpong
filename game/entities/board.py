@@ -39,13 +39,13 @@ class Board:
 
         # Coordinates used to create segments
         left = 0
-        top = height + 1
-        right = width
+        top = height - 1
+        right = width - 1
         bottom = 0
-        thick = 0.0  # thickness of segments
+        thick = 200 # thickness of walls
 
-        # Create the actual static segments
-        # everything inside these boundary segments will collide with them
+        # Create the actual static boundaries
+        # everything inside these boundaries will collide with them
         #
         #
         #           (left,top)             (right,top)
@@ -53,14 +53,43 @@ class Board:
         #                  |              |
         #                  |              |
         #                  |              |
+        #                  |              |
+        #                  |              |
         #                  *--------------*
         #           (left,bottom)          (right,bottom)
         #
         boundaries = [
-            pymunk.Segment(self._body, (left,top), (right,top), thick),  # up
-            pymunk.Segment(self._body, (left,bottom), (right,bottom), thick),  # down
-            pymunk.Segment(self._body, (left,top), (left,bottom), thick),  # left
-            pymunk.Segment(self._body, (right,top), (right,bottom), thick)  # right
+            # up
+            pymunk.Poly(self._body, [
+                (left - thick, top),
+                (right + thick, top),
+                (right + thick, top + thick),
+                (left - thick, top + thick),
+                ]),
+
+            #down
+            pymunk.Poly(self._body, [
+                (left - thick, bottom - thick),
+                (right + thick, bottom - thick),
+                (right + thick, bottom),
+                (left - thick, bottom),
+                ]),
+
+            # left
+            pymunk.Poly(self._body, [
+                (left - thick, bottom),
+                (left, bottom),
+                (left, top),
+                (left - thick, top),
+                ]),
+
+            # right
+            pymunk.Poly(self._body, [
+                (right, bottom),
+                (right + thick, bottom),
+                (right + thick, top),
+                (right, top),
+                ])
         ]
 
         # elasticity for each boundary
