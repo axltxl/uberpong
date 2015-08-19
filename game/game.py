@@ -104,7 +104,7 @@ class Game(StateMachine):
             spot_set('sv_paddle_friction', 0.80)
             spot_set('sv_paddle_max_velocity', 1600)
             spot_set('sv_ball_mass', 10)
-            spot_set('sv_ball_max_velocity', 1600)
+            spot_set('sv_ball_max_velocity', 800)
 
     def _parse_args(self, argv):
         """pong
