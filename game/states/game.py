@@ -104,9 +104,6 @@ class GameState(State):
             self._player.pump()
             self._player.draw()
 
-        # Update server (if created)
-        #if self._scene is not None:
-        #    self._scene.pump()
 
     #######################################################
     # All input events are handled directly by the client

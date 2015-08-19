@@ -10,6 +10,7 @@ See LICENSE for more details.
 """
 
 import pyglet
+import time
 from engine.spot import spot_set, spot_get
 from engine.net import Client
 from game.net.packet import Packet, Request, Response
@@ -94,7 +95,8 @@ class PlayerClient(Client):
         self._key_move_down = False
 
         # Time scale (for in-client physics)
-        self._timescale = spot_get('timestep')
+        self._current_time = time.time()
+        self._dt = 0.0  # time delta
 
         # Command rate
         # How much command is this client going to send per second?
@@ -103,7 +105,7 @@ class PlayerClient(Client):
 
         # Updates frequence
         # Set up updates interval on client
-        self._update_lock = False # this will lock pump() callbacks
+        self._update_lock = False # if True, this client will ignore any incoming data
         self._update_rate = 1.0 / spot_get('cl_updaterate')
         pyglet.clock.schedule_interval(self.update_from_server, self._update_rate)
 
@@ -174,16 +176,21 @@ class PlayerClient(Client):
         """Render all the things!"""
 
         if self._me_connected:
-            # Physics are performed based on a fixed time step
-            # or time scale from which all bodies on a scene
-            # are ruled. This is done for consistent client-server
+            # Physics are performed based on
+            # client prediction based on his last known position
+            # and velocity. This is done for consistent client-server
             # physics.
 
-            # predict paddle and ball positions on the plane
-            self._paddle_me_y += self._paddle_me_vy * self._timescale
+            # Recalculate time delta
+            now = time.time()
+            self._dt = now - self._current_time
+            self._current_time = now
 
-            self._ball_x += self._ball_vx * self._timescale
-            self._ball_y += self._ball_vy * self._timescale
+            # predict paddle and ball positions on the plane
+            self._paddle_me_y += self._paddle_me_vy * self._dt
+
+            self._ball_x += self._ball_vx * self._dt
+            self._ball_y += self._ball_vy * self._dt
 
             # Set paddle position
             self._paddle_me_sprite.set_position(
@@ -209,7 +216,7 @@ class PlayerClient(Client):
                     self._paddle_foe_sprite.visible = True
 
                 # Calculate/predict foe paddle position
-                self._paddle_foe_y += self._paddle_foe_vy * self._timescale
+                self._paddle_foe_y += self._paddle_foe_vy * self._dt
 
                 # Set paddle position
                 self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)

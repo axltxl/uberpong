@@ -85,6 +85,7 @@ class Game(StateMachine):
 
         # In-server physics timestep
         # Used in-client as well for prediction
+        # TODO: get rid of this
         spot_set('timestep', 0.02)
 
         #

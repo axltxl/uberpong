@@ -62,9 +62,6 @@ class Scene(Server):
         self._ent_mgr.register_class('ent_player', PlayerPaddle)
         self._ent_mgr.register_class('ent_ball', Ball)
 
-        # Time scale (for in-server physics)
-        self._timestep = spot_get('timestep')
-
         # Paddle impulse, top speed and artificial friction
         self._paddle_impulse = spot_get('sv_paddle_impulse')
         self._paddle_max_velocity = spot_get('sv_paddle_max_velocity')
@@ -250,7 +247,7 @@ class Scene(Server):
         # or time scale from which all bodies on a scene
         # are ruled. This is done for consistent client-server
         # physics.
-        self._ent_mgr.step(self._timestep)
+        self._ent_mgr.step(self._tickrate)
 
         # Tell the EntityManager to deliver all
         # pending messages (if there are any)
