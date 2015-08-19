@@ -46,6 +46,17 @@ def test_data_inconsistencies():
     # Empty data shouldn't update client.data_received
     eq_(data_received, client.data_received)
 
+def test_continuity():
+    for i in range(10):
+        client.send({'number': i + 1})
+        # Pump events on both client and server just ONCE
+        server.pump()
+
+    client.pump()
+
+    # Expect client.data_received to have the last one
+    eq_(client.data_received['number'], 10)
+
 
 def test_data_eq():
     # Create data and send it to server
