@@ -16,8 +16,6 @@ import socket
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
-from game.net.player import PlayerClient
-from game.net.scene import Scene
 
 class GameState(State):
     """Game start state"""
@@ -33,8 +31,8 @@ class GameState(State):
         super().__init__(machine=machine)
 
         # TODO: document this!
-        self._scene = None
-        self._player = None
+        self._server = spot_get('game_server')
+        self._client = spot_get('game_client')
 
     #
     # pyglet event callbacks
@@ -42,67 +40,68 @@ class GameState(State):
 
     def on_begin(self):
 
+        # #
+        # # Get argv parsed options
+        # #
+        # options = spot_get('argv')
         #
-        # Get argv parsed options
         #
-        options = spot_get('argv')
+        # #
+        # # Initialise server
+        # #
+        # if options['--host'] is None:
+        #
+        #     #
+        #     server_addr = 'localhost'
+        #
+        #     #
+        #     self._server = Scene(port=5000,
+        #                         width=self._machine.window.width,
+        #                         height=self._machine.window.height)
+        #
+        #     # Activate LZ4 compression on client
+        #     if options['--lz4']:
+        #         self._server.use_lz4 = True
+        # else:
+        #     server_addr = options["--host"]
 
-
+        # #
+        # # Create client
+        # #
+        # self._client = PlayerClient(
+        #     ball_position=spot_get('ball_position_start'),
+        #     address=server_addr,
+        #     port=5000
+        # )
         #
-        # Initialise server
-        #
-        if options['--host'] is None:
-
-            #
-            server_addr = 'localhost'
-
-            #
-            self._scene = Scene(port=5000,
-                                width=self._machine.window.width,
-                                height=self._machine.window.height)
-
-            # Activate LZ4 compression on client
-            if options['--lz4']:
-                self._scene.use_lz4 = True
-        else:
-            server_addr = options["--host"]
-
-        #
-        # Create client
-        #
-        self._player = PlayerClient(
-            ball_position=spot_get('ball_position_start'),
-            address=server_addr,
-            port=5000
-        )
-
-        #
-        # Activate LZ4 compression on client
-        #
-        if options['--lz4']:
-            self._player.use_lz4 = True
+        # #
+        # # Activate LZ4 compression on client
+        # #
+        # if options['--lz4']:
+        #     self._client.use_lz4 = True
 
         #
         # Connect client to server
-        #
-        self._player.connect()
+        # TODO: put this on 'game_load' state
+        self._client.connect()
 
     def on_exit(self):
-        # Client disconnection
-        if self._player is not None:
-            self._player.disconnect()
-            self._player.close()
-
-        # Scene server disconnection
-        if self._scene is not None:
-            self._scene.close()
+        pass
+        # # Client disconnection
+        # if self._client is not None:
+        #     self._client.disconnect()
+        #     self._client.close()
+        #
+        # # Scene server disconnection
+        # if self._server is not None:
+        #     self._server.close()
 
 
     def on_update(self):
         # Update client!
-        if self._player is not None:
-            self._player.pump()
-            self._player.draw()
+        if self._client is not None:
+            # self._client.pump()
+            self._client.draw()
 
 
     #######################################################
@@ -111,8 +110,8 @@ class GameState(State):
 
     def on_key_press(self, symbol, modifiers):
         # Update data on client
-        self._player.on_key_press(symbol, modifiers)
+        self._client.on_key_press(symbol, modifiers)
 
     def on_key_release(self, symbol, modifiers):
         # Update data on client
-        self._player.on_key_release(symbol, modifiers)
+        self._client.on_key_release(symbol, modifiers)
