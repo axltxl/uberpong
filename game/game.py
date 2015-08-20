@@ -23,7 +23,8 @@ from game.net.player import PlayerClient
 from game.net.scene import Scene
 
 from game.states.splash import SplashState
-from game.states.game import GameState
+from game.states.round import RoundState
+from game.states.load import LoadState
 
 class Game(StateMachine):
     """Game class"""
@@ -57,8 +58,9 @@ class Game(StateMachine):
         super().__init__(window=self._window)
 
         # Register states
-        self.register_state('state_splash', SplashState)
-        self.register_state('state_game', GameState)
+        self.register_state('game_splash', SplashState)
+        self.register_state('game_round', RoundState)
+        self.register_state('game_load', LoadState)
 
         # Shutdown flag
         self._shutdown = False
@@ -75,6 +77,8 @@ class Game(StateMachine):
         #
         # Create server and client
         #
+        self._client = None
+        self._server = None
         self.create_client(self.create_server())
 
 
@@ -164,11 +168,13 @@ class Game(StateMachine):
             # Activate LZ4 compression on client
             if options['--lz4']:
                 self._server.use_lz4 = True
+
+            # Set it on SPOT
+            spot_set('game_server', self._server)
+
         else:
             server_addr = options["--host"]
 
-        # Set it on SPOT
-        spot_set('game_server', self._server)
 
         #
         return server_addr
@@ -231,7 +237,7 @@ class Game(StateMachine):
         """Main entry point"""
         try:
             # Push first State
-            self.push_state('state_splash')
+            self.push_state('game_splash')
 
             # Run the thing!
             while not self._shutdown:

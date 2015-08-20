@@ -59,7 +59,7 @@ class SplashState(State):
 
     def _get_going(self, dt):
         """Switch to next state"""
-        self.push('state_game')
+        self.push('game_load')
 
     #
     # pyglet event callbacks

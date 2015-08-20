@@ -109,6 +109,9 @@ class PlayerClient(Client):
         self._update_rate = 1.0 / spot_get('cl_updaterate')
         pyglet.clock.schedule_interval(self.update_from_server, self._update_rate)
 
+    @property
+    def connected(self):
+        return self._me_connected
 
     def connect(self):
         """Connect to server
