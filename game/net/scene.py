@@ -91,10 +91,12 @@ class Scene(Server):
         self._tickrate = 1.0 / spot_get('tickrate')
         pyglet.clock.schedule_interval(self.tick, self._tickrate)
 
+
     @property
     def state(self):
         """Get current state in server"""
         return self._state
+
 
     def broadcast_update(self):
         """Send an update to all clients"""
@@ -153,10 +155,35 @@ class Scene(Server):
                 self.send(response.data, host, port)
 
 
-    def create_ball(self):
-        """Create a ball to play"""
-        # New PlayerPaddle for a client
-        self._ball = self._ent_mgr.create_entity('ent_ball')
+    def _reset_player(self, player):
+        """Reset values on a player"""
+
+        # Calculate initial position
+        player_position_x, player_position_y = spot_get('paddle_position_start')
+
+        # player 2's position on the other side of the screen
+        if player['number'] == 2:
+            player_position_x = self._window_width - player_position_x
+
+        # Set initial position for this player
+        player['entity'].position = player_position_x, player_position_y
+
+        # Reset score
+        player['score'] = 0
+
+        # Ready state for this player
+        player['ready'] = False
+
+
+    def reset_players(self):
+        """Reset values on players"""
+
+        for player in self._players.values():
+            self._reset_player(player)
+
+
+    def reset_ball(self):
+        """Reset ball position"""
 
         # Set initial position for this ball
         self._ball.position = spot_get('ball_position_start')
@@ -164,6 +191,15 @@ class Scene(Server):
         #FIXME: do something better
         # Set initial impulse on the ball
         self._ball.apply_impulse((-1500, 0))
+
+
+    def create_ball(self):
+        """Create a ball to play"""
+        # New PlayerPaddle for a client
+        self._ball = self._ent_mgr.create_entity('ent_ball')
+
+        # Reset values on ball
+        self.reset_ball()
 
         # Increase/maintain ball velocity each second
         # TODO: move this to tick()
@@ -183,14 +219,14 @@ class Scene(Server):
 
         # Set initial position for a player
         player_number = len(self._players) + 1
-        player_position_x, player_position_y = spot_get('paddle_position_start')
-
-        # player 2's position on the other side of the screen
-        if player_number == 2:
-            player_position_x = self._window_width - player_position_x
-
-        # Set initial position for this player
-        player.position = player_position_x, player_position_y
+        # player_position_x, player_position_y = spot_get('paddle_position_start')
+        #
+        # # player 2's position on the other side of the screen
+        # if player_number == 2:
+        #     player_position_x = self._window_width - player_position_x
+        #
+        # # Set initial position for this player
+        # player.position = player_position_x, player_position_y
 
 
         # Save information for this new player
@@ -202,8 +238,11 @@ class Scene(Server):
             "foe": None
         }
 
+        #
+        self._reset_player(self._players[player.uuid])
 
-        # Return the thing
+
+        # Return the entity
         return player
 
 
@@ -215,7 +254,7 @@ class Scene(Server):
     def update_players(self):
         """Update information on players"""
 
-        #
+        # Change state depending on the number of players present
         if len(self._players) < self.MAX_PLAYERS:
             self._state = self.ST_WAITING_FOR_PLAYER
         else:
@@ -284,6 +323,10 @@ class Scene(Server):
             # pending messages (if there are any)
             self._ent_mgr.dispatch_messages()
 
+        elif self._state == self.ST_BEGIN:
+            if all([p['ready'] for p in self._players.values()]):
+                self._state = self.ST_PLAYING
+
         # Broadcast latest snapshot to all clients
         self.broadcast_update()
 
@@ -340,7 +383,8 @@ class Scene(Server):
                 #
 
                 # First of all, get the players' entities
-                player_me = self._players[request.player_id]['entity']
+                player_me = self._players[request.player_id]
+                player_me_ent = player_me['entity']
 
                 # FIXME: this will get better
                 if self._players[request.player_id]['foe'] is not None:
@@ -350,15 +394,23 @@ class Scene(Server):
                 # Get player's command
                 command = request.command
 
+                # TODO: document this
                 if self._state == self.ST_PLAYING:
 
                     # +move command
                     if command == Request.CMD_MV_UP:
-                        player_me.apply_impulse((0 , self._paddle_impulse))
+                        player_me_ent.apply_impulse((0 , self._paddle_impulse))
 
                     # -move command
                     elif command == Request.CMD_MV_DN:
-                        player_me.apply_impulse((0, - self._paddle_impulse))
+                        player_me_ent.apply_impulse((0, - self._paddle_impulse))
+
+                # TODO: document this
+                if self._state == self.ST_BEGIN:
+
+                    # +ready command
+                    if command == Request.CMD_READY:
+                        player_me['ready'] = True
 
                 # disconnect command
                 if command == Request.CMD_DISCONNECT:

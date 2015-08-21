@@ -14,6 +14,8 @@ import time
 from engine.spot import spot_set, spot_get
 from engine.net import Client
 
+from .scene import Scene
+
 from . import (
     Packet,
     Request,
@@ -117,6 +119,9 @@ class PlayerClient(Client):
         # Initial state on server
         self._server_state = None
 
+        # Ready the player?
+        self._ready = False
+
     @property
     def connected(self):
         return self._me_connected
@@ -174,11 +179,16 @@ class PlayerClient(Client):
 
     def send_commands(self, dt):
         """Send commands to the server"""
-        if self._key_move_up:
-            self.send(Request(command=Request.CMD_MV_UP))
 
-        if self._key_move_down:
-            self.send(Request(command=Request.CMD_MV_DN))
+        if self.server_state == Scene.ST_PLAYING:
+            if self._key_move_up:
+                self.send(Request(command=Request.CMD_MV_UP))
+
+            if self._key_move_down:
+                self.send(Request(command=Request.CMD_MV_DN))
+
+        if self.server_state == Scene.ST_BEGIN and self._ready:
+                self.send(Request(command=Request.CMD_READY))
 
 
     def update_from_server(self, dt):
@@ -360,29 +370,37 @@ class PlayerClient(Client):
     def on_key_press(self, symbol, modifiers):
         """Send packets to the server as the player hits buttons"""
 
-        #
-        # move up
-        #
-        if symbol == pyglet.window.key.W:
-            self._key_move_up = True
+        if self.server_state == Scene.ST_PLAYING:
+            #
+            # move up
+            #
+            if symbol == pyglet.window.key.W:
+                self._key_move_up = True
 
-        #
-        # move down
-        #
-        if symbol == pyglet.window.key.S:
-            self._key_move_down = True
+            #
+            # move down
+            #
+            if symbol == pyglet.window.key.S:
+                self._key_move_down = True
+
+        if self.server_state == Scene.ST_BEGIN:
+            #
+            # Ready the player
+            #
+            self._ready = True
 
 
     def on_key_release(self, symbol, modifiers):
 
-        #
-        # move up
-        #
-        if symbol == pyglet.window.key.W:
-            self._key_move_up = False
+        if self.server_state == Scene.ST_PLAYING:
+            #
+            # move up
+            #
+            if symbol == pyglet.window.key.W:
+                self._key_move_up = False
 
-        #
-        # move down
-        #
-        if symbol == pyglet.window.key.S:
-            self._key_move_down = False
+            #
+            # move down
+            #
+            if symbol == pyglet.window.key.S:
+                self._key_move_down = False

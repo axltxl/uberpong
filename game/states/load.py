@@ -37,7 +37,7 @@ class LoadState(State):
         self._server = spot_get('game_server')
         self._client = spot_get('game_client')
 
-        #
+        # A flag to control _get_going
         self._push_schedule = False
 
         # Connect label
@@ -50,8 +50,8 @@ class LoadState(State):
         # Server label
         self._server_label = pyglet.text.Label(
             "@ pong://{}:{}".format(self._client.server_address, self._client.server_port),
-            font_name='8-bit Operator+', font_size=24,
-            x=machine.window.width//2, y=machine.window.height//2 - 40,
+            font_name='8-bit Operator+', font_size=20,
+            x=machine.window.width//2, y=machine.window.height//2 - 48,
             anchor_x='center', anchor_y='center'
         )
 
@@ -62,27 +62,22 @@ class LoadState(State):
             anchor_x='center', anchor_y='center'
         )
 
-
-
     #
     # pyglet event callbacks
     #
 
     def _get_going(self, dt):
-        self.push('game_wait') #  temp
-        # TODO: implement this when the time comes
-        # if self._server is not None:
-        #     self.push('game_waitforplayer')
-        # else:
-        #     self.push('game_begin')
+        # Push next state
+        self.push('game_wait')
 
     def _attempt_connection(self, dt):
+        # Attempt to connect to server
         if not self._client.connected:
             self._client.connect()
 
     def on_begin(self):
         #
-        # Connect client to server
+        # Attemp to vonnect client to server each second
         #
         pyglet.clock.schedule_interval(self._attempt_connection, 1)
 
@@ -93,16 +88,17 @@ class LoadState(State):
         #
         if self._client.connected:
             if not self._push_schedule:
-                # Schedule a new state onto the stack after the sound has been played
-                pyglet.clock.schedule_once(self._get_going, 3)
 
-                #
+                # Schedule a new state onto the stack after the sound has been played
+                pyglet.clock.schedule_once(self._get_going, 1)
+
+                # Tear down connection attempt
                 pyglet.clock.unschedule(self._attempt_connection)
 
-                #
+                # A flag to control this code block
                 self._push_schedule = True
 
-            #
+            # Draw the label
             self._connected_label.draw()
 
         else:
