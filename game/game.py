@@ -24,7 +24,11 @@ from .net import PlayerClient, Scene
 from .states import (
     SplashState,
     RoundState,
-    LoadState
+    LoadState,
+    BeginState,
+    ScoreState,
+    GameSetState,
+    WaitState
 )
 
 class Game(StateMachine):
@@ -62,6 +66,10 @@ class Game(StateMachine):
         self.register_state('game_splash', SplashState)
         self.register_state('game_round', RoundState)
         self.register_state('game_load', LoadState)
+        self.register_state('game_begin', BeginState)
+        self.register_state('game_wait', WaitState)
+        self.register_state('game_score', ScoreState)
+        self.register_state('game_set', GameSetState)
 
         # Shutdown flag
         self._shutdown = False
