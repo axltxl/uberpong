@@ -42,6 +42,10 @@ class Scene(Server):
 
     # States
     ST_WAITING_FOR_PLAYER = 'WAITING_FOR_PLAYER'
+    ST_BEGIN = 'GAME_BEGIN'
+    ST_PLAYING = 'PLAYING'
+    ST_SCORE = 'PLAYER_SCORED'
+    ST_GAME_SET = 'GAME_SET'
 
     def __init__(self, *, width, height, **kwargs):
         """Constructor
@@ -114,35 +118,36 @@ class Scene(Server):
                 host = player['host']
                 port = player['port']
 
-                # Set player information
-                response.set_player_info(
-                    name='you', score=0,
-                    position=(int(player_me.position.x),
-                              int(player_me.position.y)),
-                    velocity=(int(player_me.velocity.x),
-                              int(player_me.velocity.y))
-                )
-
-                # Set opponent (foe) information
-                if player['foe'] is not None:
-
-                    player_foe = self._players[player['foe']]['entity']
-
+                if self._state == self.ST_PLAYING:
+                    # Set player information
                     response.set_player_info(
-                        name='foe', score=0,
-                        position=(int(player_foe.position.x),
-                                  int(player_foe.position.y)),
-                        velocity=(int(player_foe.velocity.x),
-                                  int(player_foe.velocity.y))
+                        name='you', score=0,
+                        position=(int(player_me.position.x),
+                                  int(player_me.position.y)),
+                        velocity=(int(player_me.velocity.x),
+                                  int(player_me.velocity.y))
                     )
 
-                # Set ball information
-                response.set_ball_info(
-                    position=(int(self._ball.position.x),
-                              int(self._ball.position.y)),
-                    velocity=(int(self._ball.velocity.x),
-                              int(self._ball.velocity.y))
-                )
+                    # Set opponent (foe) information
+                    if player['foe'] is not None:
+
+                        player_foe = self._players[player['foe']]['entity']
+
+                        response.set_player_info(
+                            name='foe', score=0,
+                            position=(int(player_foe.position.x),
+                                      int(player_foe.position.y)),
+                            velocity=(int(player_foe.velocity.x),
+                                      int(player_foe.velocity.y))
+                        )
+
+                    # Set ball information
+                    response.set_ball_info(
+                        position=(int(self._ball.position.x),
+                                  int(self._ball.position.y)),
+                        velocity=(int(self._ball.velocity.x),
+                                  int(self._ball.velocity.y))
+                    )
 
                 # Send the packet to the client
                 self.send(response.data, host, port)
@@ -210,6 +215,12 @@ class Scene(Server):
     def update_players(self):
         """Update information on players"""
 
+        #
+        if len(self._players) < self.MAX_PLAYERS:
+            self._state = self.ST_WAITING_FOR_PLAYER
+        else:
+            self._state = self.ST_BEGIN
+
         # Update each player's foes
         for uuid, player_info in self._players.items():
             foes = [p['entity'].uuid for p in self._players.values() if p['entity'].uuid != uuid]
@@ -222,20 +233,21 @@ class Scene(Server):
     def increase_ball_velocity(self, dt):
         """Increase/maintain a constant velocity for the ball"""
 
-        # In order to have a decent/pleasurable gameplay
-        # the ball needs to maintain a certain pace, so it
-        # becomes "pushed" constantly until it reaches its
-        # top speed
-        self._ball.velocity = (1.02 * self._ball.velocity.x,
-                               1.02 * self._ball.velocity.y)
+        if self._state == self.ST_PLAYING:
+            # In order to have a decent/pleasurable gameplay
+            # the ball needs to maintain a certain pace, so it
+            # becomes "pushed" constantly until it reaches its
+            # top speed
+            self._ball.velocity = (1.02 * self._ball.velocity.x,
+                                   1.02 * self._ball.velocity.y)
 
-        # Very much like table hockey games the ball gets
-        # pushed until it gains its minimun speed of 200.0
-        if abs(self._ball.velocity.x) < 200.0:
-            if self._ball.velocity.x > 0:
-                self._ball.apply_impulse((200, self._ball.velocity.y))
-            elif self._ball.velocity.x < 0:
-                self._ball.apply_impulse((-200, self._ball.velocity.y))
+            # Very much like table hockey games the ball gets
+            # pushed until it gains its minimun speed of 200.0
+            if abs(self._ball.velocity.x) < 200.0:
+                if self._ball.velocity.x > 0:
+                    self._ball.apply_impulse((200, self._ball.velocity.y))
+                elif self._ball.velocity.x < 0:
+                    self._ball.apply_impulse((-200, self._ball.velocity.y))
 
 
     def tick(self, dt):
@@ -250,27 +262,27 @@ class Scene(Server):
         self.pump()
 
         # Run a physical simulation step:
+        if self._state == self.ST_PLAYING:
+            # FIXME: This is working, it caps the velocity to 0 in x
+            # so it won't move sideways no matter what
+            for player in self._players.values():
+                p = player['entity']
 
-        # FIXME: This is working, it caps the velocity to 0 in x
-        # so it won't move sideways no matter what
-        for player in self._players.values():
-            p = player['entity']
+                # cancel horizontal velocity
+                p.velocity = 0, p.velocity.y
 
-            # cancel horizontal velocity
-            p.velocity = 0, p.velocity.y
+                # artificial friction maybe?
+                p.apply_impulse((0, - self._paddle_friction * p.velocity.y))
 
-            # artificial friction maybe?
-            p.apply_impulse((0, - self._paddle_friction * p.velocity.y))
+            # Physics are performed based on a fixed time step
+            # or time scale from which all bodies on a scene
+            # are ruled. This is done for consistent client-server
+            # physics.
+            self._ent_mgr.step(self._tickrate)
 
-        # Physics are performed based on a fixed time step
-        # or time scale from which all bodies on a scene
-        # are ruled. This is done for consistent client-server
-        # physics.
-        self._ent_mgr.step(self._tickrate)
-
-        # Tell the EntityManager to deliver all
-        # pending messages (if there are any)
-        self._ent_mgr.dispatch_messages()
+            # Tell the EntityManager to deliver all
+            # pending messages (if there are any)
+            self._ent_mgr.dispatch_messages()
 
         # Broadcast latest snapshot to all clients
         self.broadcast_update()
@@ -338,15 +350,17 @@ class Scene(Server):
                 # Get player's command
                 command = request.command
 
-                # +move command
-                if command == Request.CMD_MV_UP:
-                    player_me.apply_impulse((0 , self._paddle_impulse))
+                if self._state == self.ST_PLAYING:
 
-                # -move command
-                elif command == Request.CMD_MV_DN:
-                    player_me.apply_impulse((0, - self._paddle_impulse))
+                    # +move command
+                    if command == Request.CMD_MV_UP:
+                        player_me.apply_impulse((0 , self._paddle_impulse))
+
+                    # -move command
+                    elif command == Request.CMD_MV_DN:
+                        player_me.apply_impulse((0, - self._paddle_impulse))
 
                 # disconnect command
-                elif command == Request.CMD_DISCONNECT:
+                if command == Request.CMD_DISCONNECT:
                     self.destroy_player(request.player_id)
                     self.update_players()
