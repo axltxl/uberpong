@@ -74,9 +74,9 @@ class Channel:
 
         # Getting raw data
         if self._use_lz4:
-            data_raw = lz4.compress(bytes(json.dumps(data), NET_ENCODING))
+            data_raw = lz4.compress(bytes(json.dumps(data, separators=(',', ':')), NET_ENCODING))
         else:
-            data_raw = bytes(json.dumps(data), NET_ENCODING)
+            data_raw = bytes(json.dumps(data, separators=(',', ':')), NET_ENCODING)
 
         # Put the data on the wire as an UTF-8 JSON string
         self.sock.sendto(data_raw, (host, port))
@@ -106,7 +106,7 @@ class Client(Channel):
     def send(self, data):
         """Send raw data to the server"""
         super().send(data, self._server_addr, self._server_port)
-        
+
 
     @property
     def server_address(self):

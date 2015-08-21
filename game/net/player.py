@@ -320,12 +320,10 @@ class PlayerClient(Client):
                 me = response.get_player_info(name='you')
 
                 # position
-                position = me['position']
-                self._paddle_me_x, self._paddle_me_y = position['x'], position['y']
+                self._paddle_me_x, self._paddle_me_y = me['position']
 
                 # velocity
-                velocity = me['velocity']
-                self._paddle_me_vx, self._paddle_me_vy = velocity['x'], velocity['y']
+                self._paddle_me_vx, self._paddle_me_vy = me['velocity']
 
                 #
                 # Set all information regarding the opponent (foe)
@@ -338,12 +336,10 @@ class PlayerClient(Client):
                     self._foe_connected = True
 
                     # position
-                    position = foe['position']
-                    self._paddle_foe_x, self._paddle_foe_y = position['x'], position['y']
+                    self._paddle_foe_x, self._paddle_foe_y = foe['position']
 
                     # velocity
-                    velocity = foe['velocity']
-                    self._paddle_foe_vx, self._paddle_foe_vy = velocity['x'], velocity['y']
+                    self._paddle_foe_vx, self._paddle_foe_vy = foe['velocity']
 
                 else:
                     # Oh!, foe is not present in the game
@@ -356,14 +352,9 @@ class PlayerClient(Client):
                 ball = response.data['ball']
 
                 # position and current velocity of the ball
-                position = ball['position']
-                velocity = ball['velocity']
+                self._ball_x, self._ball_y = ball['position']
+                self._ball_vx, self._ball_vy = ball['velocity']
 
-                # set that information
-                self._ball_x = position['x']
-                self._ball_y = position['y']
-                self._ball_vx = velocity['x']
-                self._ball_vy = velocity['y']
 
 
     def on_key_press(self, symbol, modifiers):
