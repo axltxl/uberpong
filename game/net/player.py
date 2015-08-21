@@ -114,9 +114,17 @@ class PlayerClient(Client):
         self._update_rate = 1.0 / spot_get('cl_updaterate')
         pyglet.clock.schedule_interval(self.update_from_server, self._update_rate)
 
+        # Initial state on server
+        self._server_state = None
+
     @property
     def connected(self):
         return self._me_connected
+
+    @property
+    def server_state(self):
+        """Get current state in server"""
+        return self._server_state
 
     def connect(self):
         """Connect to server
@@ -276,6 +284,9 @@ class PlayerClient(Client):
                 # Start drawing the ball and this player's paddle
                 self._paddle_me_sprite.visible = True
                 self._ball_sprite.visible = True
+
+            # Set state found on server
+            self._server_state = response.state
 
             if 'players' in response.data:
                 #

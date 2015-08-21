@@ -40,6 +40,9 @@ class Scene(Server):
     # Maximum number of players (clients) allowed to join the game
     MAX_PLAYERS = 2
 
+    # States
+    ST_WAITING_FOR_PLAYER = 'WAITING_FOR_PLAYER'
+
     def __init__(self, *, width, height, **kwargs):
         """Constructor
 
@@ -77,10 +80,17 @@ class Scene(Server):
         # Create the actual ball
         self.create_ball()
 
+        # Current state
+        self._state = self.ST_WAITING_FOR_PLAYER
+
         # Set up tick interval on server
         self._tickrate = 1.0 / spot_get('tickrate')
         pyglet.clock.schedule_interval(self.tick, self._tickrate)
 
+    @property
+    def state(self):
+        """Get current state in server"""
+        return self._state
 
     def broadcast_update(self):
         """Send an update to all clients"""
@@ -93,6 +103,8 @@ class Scene(Server):
             response.status = Response.STATUS_OK
             response.reason = Response.REASON_UPDATE
 
+            # Set state
+            response.state = self._state
 
             for player in self._players.values():
                 # Current player

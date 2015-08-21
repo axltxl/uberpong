@@ -291,6 +291,20 @@ class Response(Packet):
 
 
     @property
+    def state(self):
+        """Get state"""
+        if 'state' in self.data:
+            return self.data['state']
+        return None
+
+
+    @state.setter
+    def state(self, value):
+        """Set state"""
+        self.data['state'] = value
+
+
+    @property
     def reason(self):
         """Set reason"""
         if 'reason' in self.data:
