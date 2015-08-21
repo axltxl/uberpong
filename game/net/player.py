@@ -31,8 +31,7 @@ class PlayerClient(Client):
     def __init__(self, *, ball_position, **kwargs):
         """Constructor
 
-        Args:
-            paddle_position(int,int): paddle initial position
+        Kwargs:
             ball_position(int,int): ball initial position
         """
 
@@ -188,7 +187,7 @@ class PlayerClient(Client):
                 self.send(Request(command=Request.CMD_MV_DN))
 
         if self.server_state == Scene.ST_BEGIN and self._ready:
-                self.send(Request(command=Request.CMD_READY))
+            self.send(Request(command=Request.CMD_READY))
 
 
     def update_from_server(self, dt):

@@ -3,7 +3,7 @@
 """
 game.states.score
 ~~~~~~~~
-The game is set
+A player has scored
 
 Purpose:
 * Declare a winner with celebration and everything!

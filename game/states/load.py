@@ -3,7 +3,7 @@
 """
 game.states.load
 ~~~~~~~~
-Round state
+Set up client-server
 
 Purpose:
 * The client tries to connect to a server

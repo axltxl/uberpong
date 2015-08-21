@@ -17,9 +17,19 @@ class PlayerPaddle(Entity):
     CTYPE = 50  # collision type
 
     def __init__(self, uuid,
-        host=None, port=None,
-        number=None, foe=None, **kwargs):
-        """Constructor"""
+                host=None,
+                port=None,
+                number=None,
+                foe=None,
+                **kwargs):
+        """Constructor
+
+        Kwargs:
+            host(str): Client address associated with this player
+            port(str): Source port of client address
+            number(int): Player number
+            foe(str): Opponent UUID
+        """
 
         # call my parent
         super().__init__(uuid, mass=spot_get('sv_paddle_mass'),

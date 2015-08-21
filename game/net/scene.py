@@ -120,7 +120,8 @@ class Scene(Server):
                 host = player.host
                 port = player.port
 
-                if self._state == self.ST_PLAYING:
+                if self._state == self.ST_PLAYING \
+                or self.state == self.ST_BEGIN:
                     # Set player information
                     response.set_player_info(
                         name='you', score=0,
@@ -221,33 +222,12 @@ class Scene(Server):
                 port=port,
                 number=len(self._players) + 1,
             )
-        #import ipdb; ipdb.set_trace()
 
-        # Set initial position for a player
-        #player_number =
-        # player_position_x, player_position_y = spot_get('paddle_position_start')
-        #
-        # # player 2's position on the other side of the screen
-        # if player_number == 2:
-        #     player_position_x = self._window_width - player_position_x
-        #
-        # # Set initial position for this player
-        # player.position = player_position_x, player_position_y
-
-
-        # Save information for this new player
-        # self._players[player.uuid] = {
-        #     "entity": player,
-        #     "host": host,
-        #     "port": port,
-        #     "number": player_number,
-        #     "foe": None
-        # }
+        # Add this player to the server
         self._players[player.uuid] = player
 
-        #
+        # Reset its values
         self._reset_player(self._players[player.uuid])
-
 
         # Return the entity
         return player
@@ -330,6 +310,7 @@ class Scene(Server):
             self._ent_mgr.dispatch_messages()
 
         elif self._state == self.ST_BEGIN:
+            # If all players are ready, then move on
             if all([p.ready for p in self._players.values()]):
                 self._state = self.ST_PLAYING
 

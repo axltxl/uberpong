@@ -67,7 +67,7 @@ class BeginState(State):
         self._wait_label.draw()
         self._client.tick()
         self._client.draw_ball()
-        #self._client.draw_paddles()
+        self._client.draw_paddles()
 
         if self._client.server_state == Scene.ST_PLAYING:
             self.push('game_round')

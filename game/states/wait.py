@@ -3,10 +3,10 @@
 """
 game.states.wait
 ~~~~~~~~
-The game is set
+Wait for both players to be connected with the server
 
 Purpose:
-* To wait for both players to be ready.
+* To wait for both players to be connected.
   The server will tell when that happens,
   if so, a BeginState is pushed.
 
@@ -35,8 +35,7 @@ class WaitState(State):
         # Call my parent
         super().__init__(machine=machine)
 
-        # TODO: document this!
-        self._server = spot_get('game_server')
+        # Get client
         self._client = spot_get('game_client')
 
         # Server label
@@ -51,14 +50,10 @@ class WaitState(State):
     # pyglet event callbacks
     #
 
-    def on_begin(self):
-        pass
-
-    def on_exit(self):
-        pass
-
     def on_update(self):
+        # Draw label
         self._wait_label.draw()
 
+        # Go to begin state
         if self._client.server_state == Scene.ST_BEGIN:
-            self.push('game_begin') # TEMP
+            self.push('game_begin')
