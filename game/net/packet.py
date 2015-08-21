@@ -235,6 +235,7 @@ class Request(Packet):
     CMD_DISCONNECT = '-connect'
     CMD_MV_UP = '+move'
     CMD_MV_DN = '-move'
+    CMD_READY = '+ready'
 
     def __init__(self, data=None, *, command=None, **kwargs):
         super().__init__(data, **kwargs)
@@ -288,6 +289,20 @@ class Response(Packet):
     def status(self, value):
         """Set status"""
         self.data['status'] = value
+
+
+    @property
+    def state(self):
+        """Get state"""
+        if 'state' in self.data:
+            return self.data['state']
+        return None
+
+
+    @state.setter
+    def state(self, value):
+        """Set state"""
+        self.data['state'] = value
 
 
     @property

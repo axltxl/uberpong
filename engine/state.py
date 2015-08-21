@@ -29,6 +29,9 @@ class State:
     def pop(self):
         self._machine.pop_state()
 
+    def pop_until(self, class_id):
+        self._machine.pop_until(class_id)
+
     def push(self, class_id):
         self._machine.push_state(class_id)
 
@@ -142,6 +145,17 @@ class StateMachine(pyglet.event.EventDispatcher):
     def purge_stack(self):
         """Pop all states from the stack"""
         while len(self._stack):
+            self.pop_state()
+
+    def pop_until(self, class_id):
+        """Pop states from the class until the first occurrence
+        of an instance of class_id"""
+
+        if not class_id in self._states:
+            return
+
+        while len(self._states) \
+        and type(self.get_current_state()) is not class_id:
             self.pop_state()
 
     def pop_state(self):

@@ -19,8 +19,17 @@ from docopt import docopt
 from engine.state import State, StateMachine
 from engine.spot import spot_set, spot_get
 
-from game.states.splash import SplashState
-from game.states.game import GameState
+from .net import PlayerClient, Scene
+
+from .states import (
+    SplashState,
+    RoundState,
+    LoadState,
+    BeginState,
+    ScoreState,
+    GameSetState,
+    WaitState
+)
 
 class Game(StateMachine):
     """Game class"""
@@ -54,8 +63,13 @@ class Game(StateMachine):
         super().__init__(window=self._window)
 
         # Register states
-        self.register_state('state_splash', SplashState)
-        self.register_state('state_game', GameState)
+        self.register_state('game_splash', SplashState)
+        self.register_state('game_round', RoundState)
+        self.register_state('game_load', LoadState)
+        self.register_state('game_begin', BeginState)
+        self.register_state('game_wait', WaitState)
+        self.register_state('game_score', ScoreState)
+        self.register_state('game_set', GameSetState)
 
         # Shutdown flag
         self._shutdown = False
@@ -68,6 +82,14 @@ class Game(StateMachine):
         spot_set('paddle_size', (32, 64))
         spot_set('ball_position_start', (self._window.width // 2, self._window.height // 2))
         spot_set('ball_size', (24, 24))
+
+        #
+        # Create server and client
+        #
+        self._client = None
+        self._server = None
+        self.create_client(self.create_server())
+
 
     def _spot_init(self):
         """Set initial SPOT values"""
@@ -130,6 +152,69 @@ class Game(StateMachine):
     def on_window_close(self):
         self.exit()
 
+    def create_server(self):
+        """Create the server"""
+
+        #
+        # Get argv parsed options
+        #
+        options = spot_get('argv')
+
+
+        #
+        # Initialise server
+        #
+        if options['--host'] is None:
+
+            #
+            server_addr = 'localhost'
+
+            #
+            self._server = Scene(port=5000,
+                                width=self._window.width,
+                                height=self._window.height)
+
+            # Activate LZ4 compression on client
+            if options['--lz4']:
+                self._server.use_lz4 = True
+
+            # Set it on SPOT
+            spot_set('game_server', self._server)
+
+        else:
+            server_addr = options["--host"]
+
+
+        #
+        return server_addr
+
+
+    def create_client(self, server_addr):
+        """Create the client"""
+
+        #
+        # Get argv parsed options
+        #
+        options = spot_get('argv')
+
+        #
+        # Create client
+        #
+        self._client = PlayerClient(
+            ball_position=spot_get('ball_position_start'),
+            address=server_addr,
+            port=5000
+        )
+
+        #
+        # Activate LZ4 compression on client
+        #
+        if options['--lz4']:
+            self._client.use_lz4 = True
+
+        # Set it on SPOT
+        spot_set('game_client', self._client)
+
 
     def on_draw(self):
         self._window.clear()
@@ -161,12 +246,16 @@ class Game(StateMachine):
         """Main entry point"""
         try:
             # Push first State
-            self.push_state('state_splash')
+            self.push_state('game_splash')
 
             # Run the thing!
             while not self._shutdown:
                 #
                 pyglet.clock.tick()
+
+                # Pump network traffic on client
+                if self._client is not None:
+                    self._client.pump()
 
                 # pyglet.window bit
                 for window in pyglet.app.windows:
@@ -186,4 +275,15 @@ class Game(StateMachine):
 
     def _cleanup(self):
         """House keeping after all's been done"""
+
+        # Client disconnection
+        if self._client is not None:
+            self._client.disconnect()
+            self._client.close()
+
+        # Scene server disconnection
+        if self._server is not None:
+            self._server.close()
+
+        #TODO: document this
         self.purge_stack()

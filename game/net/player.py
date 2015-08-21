@@ -13,7 +13,14 @@ import pyglet
 import time
 from engine.spot import spot_set, spot_get
 from engine.net import Client
-from game.net.packet import Packet, Request, Response
+
+from .scene import Scene
+
+from . import (
+    Packet,
+    Request,
+    Response
+)
 
 
 class PlayerClient(Client):
@@ -24,8 +31,7 @@ class PlayerClient(Client):
     def __init__(self, *, ball_position, **kwargs):
         """Constructor
 
-        Args:
-            paddle_position(int,int): paddle initial position
+        Kwargs:
             ball_position(int,int): ball initial position
         """
 
@@ -109,6 +115,20 @@ class PlayerClient(Client):
         self._update_rate = 1.0 / spot_get('cl_updaterate')
         pyglet.clock.schedule_interval(self.update_from_server, self._update_rate)
 
+        # Initial state on server
+        self._server_state = None
+
+        # Ready the player?
+        self._ready = False
+
+    @property
+    def connected(self):
+        return self._me_connected
+
+    @property
+    def server_state(self):
+        """Get current state in server"""
+        return self._server_state
 
     def connect(self):
         """Connect to server
@@ -158,11 +178,16 @@ class PlayerClient(Client):
 
     def send_commands(self, dt):
         """Send commands to the server"""
-        if self._key_move_up:
-            self.send(Request(command=Request.CMD_MV_UP))
 
-        if self._key_move_down:
-            self.send(Request(command=Request.CMD_MV_DN))
+        if self.server_state == Scene.ST_PLAYING:
+            if self._key_move_up:
+                self.send(Request(command=Request.CMD_MV_UP))
+
+            if self._key_move_down:
+                self.send(Request(command=Request.CMD_MV_DN))
+
+        if self.server_state == Scene.ST_BEGIN and self._ready:
+            self.send(Request(command=Request.CMD_READY))
 
 
     def update_from_server(self, dt):
@@ -171,58 +196,74 @@ class PlayerClient(Client):
         # Unleash the kraken!
         self._update_lock = False
 
+    def tick(self):
+        """Run simulation on client"""
 
-    def draw(self):
-        """Render all the things!"""
+        # Physics are performed based on
+        # client prediction based on his last known position
+        # and velocity. This is done for consistent client-server
+        # physics.
 
         if self._me_connected:
-            # Physics are performed based on
-            # client prediction based on his last known position
-            # and velocity. This is done for consistent client-server
-            # physics.
 
             # Recalculate time delta
             now = time.time()
             self._dt = now - self._current_time
             self._current_time = now
 
-            # predict paddle and ball positions on the plane
-            self._paddle_me_y += self._paddle_me_vy * self._dt
-
+            # predict ball position on the plane
             self._ball_x += self._ball_vx * self._dt
             self._ball_y += self._ball_vy * self._dt
+
+            # Set ball position
+            self._ball_sprite.set_position(self._ball_x, self._ball_y)
+
+            # predict paddle and ball positions on the plane
+            self._paddle_me_y += self._paddle_me_vy * self._dt
 
             # Set paddle position
             self._paddle_me_sprite.set_position(
                 self._paddle_me_x,
                 self._paddle_me_y
-                )
+            )
 
-            # Set ball position
-            self._ball_sprite.set_position(self._ball_x, self._ball_y)
+        #
+        # Do all stuff for foe player if connected
+        #
+        if self._foe_connected:
+            # Calculate/predict foe paddle position
+            self._paddle_foe_y += self._paddle_foe_vy * self._dt
 
-            # draw sprites
-            self._paddle_me_sprite.draw()
-            self._ball_sprite.draw()
+            # Set paddle position
+            self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
 
-            #
-            # Do all stuff for foe player if connected
-            #
-            if self._foe_connected:
 
-                # A foe has connected to the game, so it's time
-                # to draw him
-                if not self._paddle_foe_sprite.visible:
-                    self._paddle_foe_sprite.visible = True
 
-                # Calculate/predict foe paddle position
-                self._paddle_foe_y += self._paddle_foe_vy * self._dt
+    def draw_ball(self):
+        """Render the ball"""
 
-                # Set paddle position
-                self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
+        # Draw the thing onto the screen
+        self._ball_sprite.draw()
 
-                # Draw foe sprite
-                self._paddle_foe_sprite.draw()
+
+    def draw_paddles(self):
+        """Render paddles"""
+
+        # draw sprites
+        self._paddle_me_sprite.draw()
+
+        #
+        # Do all stuff for foe player if connected
+        #
+        if self._foe_connected:
+
+            # A foe has connected to the game, so it's time
+            # to draw him
+            if not self._paddle_foe_sprite.visible:
+                self._paddle_foe_sprite.visible = True
+
+            # Draw foe sprite
+            self._paddle_foe_sprite.draw()
 
 
 
@@ -268,6 +309,9 @@ class PlayerClient(Client):
                 # Start drawing the ball and this player's paddle
                 self._paddle_me_sprite.visible = True
                 self._ball_sprite.visible = True
+
+            # Set state found on server
+            self._server_state = response.state
 
             if 'players' in response.data:
                 #
@@ -325,29 +369,37 @@ class PlayerClient(Client):
     def on_key_press(self, symbol, modifiers):
         """Send packets to the server as the player hits buttons"""
 
-        #
-        # move up
-        #
-        if symbol == pyglet.window.key.W:
-            self._key_move_up = True
+        if self.server_state == Scene.ST_PLAYING:
+            #
+            # move up
+            #
+            if symbol == pyglet.window.key.W:
+                self._key_move_up = True
 
-        #
-        # move down
-        #
-        if symbol == pyglet.window.key.S:
-            self._key_move_down = True
+            #
+            # move down
+            #
+            if symbol == pyglet.window.key.S:
+                self._key_move_down = True
+
+        if self.server_state == Scene.ST_BEGIN:
+            #
+            # Ready the player
+            #
+            self._ready = True
 
 
     def on_key_release(self, symbol, modifiers):
 
-        #
-        # move up
-        #
-        if symbol == pyglet.window.key.W:
-            self._key_move_up = False
+        if self.server_state == Scene.ST_PLAYING:
+            #
+            # move up
+            #
+            if symbol == pyglet.window.key.W:
+                self._key_move_up = False
 
-        #
-        # move down
-        #
-        if symbol == pyglet.window.key.S:
-            self._key_move_down = False
+            #
+            # move down
+            #
+            if symbol == pyglet.window.key.S:
+                self._key_move_down = False

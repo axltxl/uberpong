@@ -11,15 +11,25 @@ See LICENSE for more details.
 from engine.spot import spot_get
 from engine.entity import Entity
 
-from game.entities.ball import Ball
-
 class PlayerPaddle(Entity):
     """Paddle as an entity"""
 
     CTYPE = 50  # collision type
 
-    def __init__(self, uuid, **kwargs):
-        """Constructor"""
+    def __init__(self, uuid,
+                host=None,
+                port=None,
+                number=None,
+                foe=None,
+                **kwargs):
+        """Constructor
+
+        Kwargs:
+            host(str): Client address associated with this player
+            port(str): Source port of client address
+            number(int): Player number
+            foe(str): Opponent UUID
+        """
 
         # call my parent
         super().__init__(uuid, mass=spot_get('sv_paddle_mass'),
@@ -33,6 +43,16 @@ class PlayerPaddle(Entity):
 
         # paddle top speed
         self.velocity_limit = spot_get('sv_paddle_max_velocity')
+
+        # Networking information for this player
+        self.host = host
+        self.port = port
+
+        # Player number
+        self.number = number
+
+        # This player's opponent
+        self.foe = foe
 
         # TODO: to be used later
     #     self.manager.add_collision_handler(self.CTYPE,

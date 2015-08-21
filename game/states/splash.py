@@ -5,6 +5,10 @@ game.states.splash
 ~~~~~~~~
 Splash title state
 
+Purpose:
+* A nice splash text is drawn here
+
+
 (c) 2015 by Alejandro Ricoveri
 See LICENSE for more details.
 """
@@ -59,7 +63,7 @@ class SplashState(State):
 
     def _get_going(self, dt):
         """Switch to next state"""
-        self.push('state_game')
+        self.push('game_load')
 
     #
     # pyglet event callbacks
