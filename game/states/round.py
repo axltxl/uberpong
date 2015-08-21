@@ -19,8 +19,8 @@ from engine.state import State
 from engine.spot import spot_set, spot_get
 
 
-class GameState(State):
-    """Game start state"""
+class RoundState(State):
+    """Game round state"""
 
     def __init__(self, *, machine):
         """Constructor

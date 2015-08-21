@@ -15,10 +15,17 @@ from engine.spot import spot_set, spot_get
 from engine.net import Server
 from engine.entity import EntityManager
 
-from game.net.packet import Packet, Request, Response
-from game.entities.player import PlayerPaddle
-from game.entities.board import Board
-from game.entities.ball import Ball
+from . import (
+    Packet,
+    Request,
+    Response
+)
+
+from ..entities import (
+    PlayerPaddle,
+    Board,
+    Ball
+)
 
 
 class Scene(Server):

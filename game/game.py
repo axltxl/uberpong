@@ -19,12 +19,13 @@ from docopt import docopt
 from engine.state import State, StateMachine
 from engine.spot import spot_set, spot_get
 
-from game.net.player import PlayerClient
-from game.net.scene import Scene
+from .net import PlayerClient, Scene
 
-from game.states.splash import SplashState
-from game.states.round import RoundState
-from game.states.load import LoadState
+from .states import (
+    SplashState,
+    RoundState,
+    LoadState
+)
 
 class Game(StateMachine):
     """Game class"""

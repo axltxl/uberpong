@@ -9,8 +9,6 @@ Board as an entity
 See LICENSE for more details.
 """
 
-
-#from engine.entity import Entity
 import pymunk
 
 class Board:

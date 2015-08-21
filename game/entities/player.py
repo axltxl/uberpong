@@ -11,8 +11,6 @@ See LICENSE for more details.
 from engine.spot import spot_get
 from engine.entity import Entity
 
-from game.entities.ball import Ball
-
 class PlayerPaddle(Entity):
     """Paddle as an entity"""
 

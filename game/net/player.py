@@ -13,7 +13,12 @@ import pyglet
 import time
 from engine.spot import spot_set, spot_get
 from engine.net import Client
-from game.net.packet import Packet, Request, Response
+
+from . import (
+    Packet,
+    Request,
+    Response
+)
 
 
 class PlayerClient(Client):

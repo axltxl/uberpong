@@ -5,6 +5,10 @@ game.states.splash
 ~~~~~~~~
 Splash title state
 
+Purpose:
+* A nice splash text is drawn here
+
+
 (c) 2015 by Alejandro Ricoveri
 See LICENSE for more details.
 """
