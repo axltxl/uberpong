@@ -20,6 +20,7 @@ import pyglet
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
+from ..net import Scene
 
 class WaitState(State):
     """Game wait state"""
@@ -38,6 +39,14 @@ class WaitState(State):
         self._server = spot_get('game_server')
         self._client = spot_get('game_client')
 
+        # Server label
+        self._wait_label = pyglet.text.Label(
+            "Waiting for players to join ...",
+            font_name='8-bit Operator+', font_size=14,
+            x=machine.window.width//2, y=machine.window.height - 48,
+            anchor_x='center', anchor_y='center'
+        )
+
     #
     # pyglet event callbacks
     #
@@ -49,4 +58,7 @@ class WaitState(State):
         pass
 
     def on_update(self):
-        pass
+        self._wait_label.draw()
+
+        if self._client.server_state == Scene.ST_BEGIN:
+            self.push('game_begin') # TEMP

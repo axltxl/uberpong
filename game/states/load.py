@@ -69,7 +69,7 @@ class LoadState(State):
     #
 
     def _get_going(self, dt):
-        self.push('game_round') #  temp
+        self.push('game_wait') #  temp
         # TODO: implement this when the time comes
         # if self._server is not None:
         #     self.push('game_waitforplayer')
