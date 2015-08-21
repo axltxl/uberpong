@@ -103,30 +103,18 @@ update responses:
             'players': {
                 'you': {
                     'score': 1,
-                    'position': {
-                        'y': 1, 'x': 0
-                    },
-                    'velocity': {
-                        'y': 14, 'x': -20
-                    }
+                    'position': [1, 0],
+                    'velocity': [14, -20]
                 }
                 'foe': {
                     'score': 1,
-                    'position': {
-                        'y': 24, 'x': 0
-                    },
-                    'velocity': {
-                        'y': 23, 'x': 40
-                    }
+                    'position': [24, 0],
+                    'velocity': [23, 40]
                 }
             },
             'ball': {
-                'position': {
-                    'x': 12, 'y': 4
-                },
-                'velocity': {
-                    'y': 223, 'x': 140
-                }
+                'position': [12, 4],
+                'velocity': [223, 140]
             }
         }
 """
@@ -199,20 +187,14 @@ class Packet:
 
         self.data['players'][name] ={
             'score': score,
-            'position': {
-                'x': position[0],
-                'y': position[1]
-            },
-            'velocity': {
-                'x': velocity[0],
-                'y': velocity[1]
-            }
+            'position': position,
+            'velocity': velocity
         }
 
     def set_ball_info(self, *, position, velocity):
         self.data['ball'] = {
-            'position': {'x': position[0], 'y': position[1]},
-            'velocity': {'x': velocity[0], 'y': velocity[1]}
+            'position': position,
+            'velocity': velocity
         }
 
 
