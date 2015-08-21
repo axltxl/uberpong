@@ -187,58 +187,74 @@ class PlayerClient(Client):
         # Unleash the kraken!
         self._update_lock = False
 
+    def tick(self):
+        """Run simulation on client"""
 
-    def draw(self):
-        """Render all the things!"""
+        # Physics are performed based on
+        # client prediction based on his last known position
+        # and velocity. This is done for consistent client-server
+        # physics.
 
         if self._me_connected:
-            # Physics are performed based on
-            # client prediction based on his last known position
-            # and velocity. This is done for consistent client-server
-            # physics.
 
             # Recalculate time delta
             now = time.time()
             self._dt = now - self._current_time
             self._current_time = now
 
-            # predict paddle and ball positions on the plane
-            self._paddle_me_y += self._paddle_me_vy * self._dt
-
+            # predict ball position on the plane
             self._ball_x += self._ball_vx * self._dt
             self._ball_y += self._ball_vy * self._dt
+
+            # Set ball position
+            self._ball_sprite.set_position(self._ball_x, self._ball_y)
+
+            # predict paddle and ball positions on the plane
+            self._paddle_me_y += self._paddle_me_vy * self._dt
 
             # Set paddle position
             self._paddle_me_sprite.set_position(
                 self._paddle_me_x,
                 self._paddle_me_y
-                )
+            )
 
-            # Set ball position
-            self._ball_sprite.set_position(self._ball_x, self._ball_y)
+        #
+        # Do all stuff for foe player if connected
+        #
+        if self._foe_connected:
+            # Calculate/predict foe paddle position
+            self._paddle_foe_y += self._paddle_foe_vy * self._dt
 
-            # draw sprites
-            self._paddle_me_sprite.draw()
-            self._ball_sprite.draw()
+            # Set paddle position
+            self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
 
-            #
-            # Do all stuff for foe player if connected
-            #
-            if self._foe_connected:
 
-                # A foe has connected to the game, so it's time
-                # to draw him
-                if not self._paddle_foe_sprite.visible:
-                    self._paddle_foe_sprite.visible = True
 
-                # Calculate/predict foe paddle position
-                self._paddle_foe_y += self._paddle_foe_vy * self._dt
+    def draw_ball(self):
+        """Render the ball"""
 
-                # Set paddle position
-                self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
+        # Draw the thing onto the screen
+        self._ball_sprite.draw()
 
-                # Draw foe sprite
-                self._paddle_foe_sprite.draw()
+
+    def draw_paddles(self):
+        """Render paddles"""
+
+        # draw sprites
+        self._paddle_me_sprite.draw()
+
+        #
+        # Do all stuff for foe player if connected
+        #
+        if self._foe_connected:
+
+            # A foe has connected to the game, so it's time
+            # to draw him
+            if not self._paddle_foe_sprite.visible:
+                self._paddle_foe_sprite.visible = True
+
+            # Draw foe sprite
+            self._paddle_foe_sprite.draw()
 
 
 
