@@ -114,11 +114,11 @@ class Scene(Server):
 
             for player in self._players.values():
                 # Current player
-                player_me = player['entity']
+                player_me = player
 
                 # Get host and port from him
-                host = player['host']
-                port = player['port']
+                host = player.host
+                port = player.port
 
                 if self._state == self.ST_PLAYING:
                     # Set player information
@@ -131,9 +131,9 @@ class Scene(Server):
                     )
 
                     # Set opponent (foe) information
-                    if player['foe'] is not None:
+                    if player.foe is not None:
 
-                        player_foe = self._players[player['foe']]['entity']
+                        player_foe = self._players[player.foe]
 
                         response.set_player_info(
                             name='foe', score=0,
@@ -162,17 +162,17 @@ class Scene(Server):
         player_position_x, player_position_y = spot_get('paddle_position_start')
 
         # player 2's position on the other side of the screen
-        if player['number'] == 2:
+        if player.number == 2:
             player_position_x = self._window_width - player_position_x
 
         # Set initial position for this player
-        player['entity'].position = player_position_x, player_position_y
+        player.position = player_position_x, player_position_y
 
         # Reset score
-        player['score'] = 0
+        player.score = 0
 
         # Ready state for this player
-        player['ready'] = False
+        player.ready = False
 
 
     def reset_players(self):
@@ -215,10 +215,16 @@ class Scene(Server):
         """
 
         # New PlayerPaddle for a client
-        player = self._ent_mgr.create_entity('ent_player')
+        player = self._ent_mgr.create_entity(
+                'ent_player',
+                host=host,
+                port=port,
+                number=len(self._players) + 1,
+            )
+        #import ipdb; ipdb.set_trace()
 
         # Set initial position for a player
-        player_number = len(self._players) + 1
+        #player_number =
         # player_position_x, player_position_y = spot_get('paddle_position_start')
         #
         # # player 2's position on the other side of the screen
@@ -230,13 +236,14 @@ class Scene(Server):
 
 
         # Save information for this new player
-        self._players[player.uuid] = {
-            "entity": player,
-            "host": host,
-            "port": port,
-            "number": player_number,
-            "foe": None
-        }
+        # self._players[player.uuid] = {
+        #     "entity": player,
+        #     "host": host,
+        #     "port": port,
+        #     "number": player_number,
+        #     "foe": None
+        # }
+        self._players[player.uuid] = player
 
         #
         self._reset_player(self._players[player.uuid])
@@ -261,12 +268,12 @@ class Scene(Server):
             self._state = self.ST_BEGIN
 
         # Update each player's foes
-        for uuid, player_info in self._players.items():
-            foes = [p['entity'].uuid for p in self._players.values() if p['entity'].uuid != uuid]
+        for uuid, player in self._players.items():
+            foes = [p.uuid for p in self._players.values() if p.uuid != uuid]
             if len(foes):
-                player_info['foe'] = foes[0]
+                player.foe = foes[0]
             else:
-                player_info['foe'] = None
+                player.foe = None
 
 
     def increase_ball_velocity(self, dt):
@@ -305,13 +312,12 @@ class Scene(Server):
             # FIXME: This is working, it caps the velocity to 0 in x
             # so it won't move sideways no matter what
             for player in self._players.values():
-                p = player['entity']
 
                 # cancel horizontal velocity
-                p.velocity = 0, p.velocity.y
+                player.velocity = 0, player.velocity.y
 
                 # artificial friction maybe?
-                p.apply_impulse((0, - self._paddle_friction * p.velocity.y))
+                player.apply_impulse((0, - self._paddle_friction * player.velocity.y))
 
             # Physics are performed based on a fixed time step
             # or time scale from which all bodies on a scene
@@ -324,7 +330,7 @@ class Scene(Server):
             self._ent_mgr.dispatch_messages()
 
         elif self._state == self.ST_BEGIN:
-            if all([p['ready'] for p in self._players.values()]):
+            if all([p.ready for p in self._players.values()]):
                 self._state = self.ST_PLAYING
 
         # Broadcast latest snapshot to all clients
@@ -384,12 +390,11 @@ class Scene(Server):
 
                 # First of all, get the players' entities
                 player_me = self._players[request.player_id]
-                player_me_ent = player_me['entity']
 
                 # FIXME: this will get better
-                if self._players[request.player_id]['foe'] is not None:
-                    foe_uuid = self._players[request.player_id]['foe']
-                    player_foe = self._players[foe_uuid]['entity']
+                if self._players[request.player_id].foe is not None:
+                    foe_uuid = self._players[request.player_id].foe
+                    player_foe = self._players[foe_uuid]
 
                 # Get player's command
                 command = request.command
@@ -399,18 +404,18 @@ class Scene(Server):
 
                     # +move command
                     if command == Request.CMD_MV_UP:
-                        player_me_ent.apply_impulse((0 , self._paddle_impulse))
+                        player_me.apply_impulse((0 , self._paddle_impulse))
 
                     # -move command
                     elif command == Request.CMD_MV_DN:
-                        player_me_ent.apply_impulse((0, - self._paddle_impulse))
+                        player_me.apply_impulse((0, - self._paddle_impulse))
 
                 # TODO: document this
                 if self._state == self.ST_BEGIN:
 
                     # +ready command
                     if command == Request.CMD_READY:
-                        player_me['ready'] = True
+                        player_me.ready = True
 
                 # disconnect command
                 if command == Request.CMD_DISCONNECT:

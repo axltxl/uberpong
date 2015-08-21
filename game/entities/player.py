@@ -16,7 +16,9 @@ class PlayerPaddle(Entity):
 
     CTYPE = 50  # collision type
 
-    def __init__(self, uuid, **kwargs):
+    def __init__(self, uuid,
+        host=None, port=None,
+        number=None, foe=None, **kwargs):
         """Constructor"""
 
         # call my parent
@@ -31,6 +33,16 @@ class PlayerPaddle(Entity):
 
         # paddle top speed
         self.velocity_limit = spot_get('sv_paddle_max_velocity')
+
+        # Networking information for this player
+        self.host = host
+        self.port = port
+
+        # Player number
+        self.number = number
+
+        # This player's opponent
+        self.foe = foe
 
         # TODO: to be used later
     #     self.manager.add_collision_handler(self.CTYPE,
