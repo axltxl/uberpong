@@ -11,11 +11,10 @@ See LICENSE for more details.
 
 import pyglet
 import time
+import ming
+
 from engine.spot import spot_set, spot_get
-from engine.net import Client
-
 from .scene import Scene
-
 from . import (
     Packet,
     Request,
@@ -23,7 +22,7 @@ from . import (
 )
 
 
-class PlayerClient(Client):
+class PlayerClient(ming.Client):
     """
     Player client implementation
     """
@@ -33,6 +32,7 @@ class PlayerClient(Client):
 
         Kwargs:
             ball_position(int,int): ball initial position
+            kwargs(dict, optional): Arbitrary keyword arguments
         """
 
         #
@@ -119,7 +119,7 @@ class PlayerClient(Client):
         self._server_state = None
 
         # Ready the player?
-        self._ready = False
+        self._key_ready = False
 
     @property
     def connected(self):
@@ -186,8 +186,9 @@ class PlayerClient(Client):
             if self._key_move_down:
                 self.send(Request(command=Request.CMD_MV_DN))
 
-        if self.server_state == Scene.ST_BEGIN and self._ready:
+        if self.server_state == Scene.ST_BEGIN and self._key_ready:
             self.send(Request(command=Request.CMD_READY))
+            self._key_ready = False
 
 
     def update_from_server(self, dt):
@@ -212,8 +213,9 @@ class PlayerClient(Client):
             self._current_time = now
 
             # predict ball position on the plane
-            self._ball_x += self._ball_vx * self._dt
-            self._ball_y += self._ball_vy * self._dt
+            if self.server_state != Scene.ST_BEGIN:
+                self._ball_x += self._ball_vx * self._dt
+                self._ball_y += self._ball_vy * self._dt
 
             # Set ball position
             self._ball_sprite.set_position(self._ball_x, self._ball_y)
@@ -278,15 +280,16 @@ class PlayerClient(Client):
         self._update_lock = True
 
         # Get raw data and get a proper Response from it
-        response = Response(data)
+        response = Response(data=data)
 
-        # Set player uuid
-        if response.player_id is not None:
-            self._id = response.player_id
 
         ########################################
         # The actual pump
         ########################################
+
+        #
+        # Request has been denied
+        #
         if response.status == Response.STATUS_UNAUTHORIZED:
             if response.reason == Response.REASON_CONN_REFUSED:
                 #
@@ -296,11 +299,17 @@ class PlayerClient(Client):
                     "Connection to {}:{} refused!".format(
                     self._server_addr, self._server_port))
 
+        #
+        # A request has been accepted by the server
+        #
         if response.status == Response.STATUS_OK:
 
-            # This player knows he has connected succesfully
-            # to the server
-            if not self._me_connected:
+            if response.reason == Response.REASON_CONN_GRANTED:
+                # This player knows he has connected succesfully
+                # to the server
+
+                # Assume player id
+                self._id = response.player_id
 
                 # Let it be known that this player has hereby connected
                 # to a server
@@ -313,11 +322,12 @@ class PlayerClient(Client):
             # Set state found on server
             self._server_state = response.state
 
-            if 'players' in response.data:
+            # if 'players' in response.data:
+            me = response.get_player_info(name='you')
+            if me is not None:
                 #
                 # Update data used to update the paddle sprite
                 #
-                me = response.get_player_info(name='you')
 
                 # position
                 self._paddle_me_x, self._paddle_me_y = me['position']
@@ -325,31 +335,31 @@ class PlayerClient(Client):
                 # velocity
                 self._paddle_me_vx, self._paddle_me_vy = me['velocity']
 
-                #
-                # Set all information regarding the opponent (foe)
-                #
-                foe = response.get_player_info(name='foe')
-                if foe is not None:
+            #
+            # Set all information regarding the opponent (foe)
+            #
+            foe = response.get_player_info(name='foe')
+            if foe is not None:
 
-                    # Let it be known hereby that the opponent has entered
-                    # the arena!
-                    self._foe_connected = True
+                # Let it be known hereby that the opponent has entered
+                # the arena!
+                self._foe_connected = True
 
-                    # position
-                    self._paddle_foe_x, self._paddle_foe_y = foe['position']
+                # position
+                self._paddle_foe_x, self._paddle_foe_y = foe['position']
 
-                    # velocity
-                    self._paddle_foe_vx, self._paddle_foe_vy = foe['velocity']
+                # velocity
+                self._paddle_foe_vx, self._paddle_foe_vy = foe['velocity']
 
-                else:
-                    # Oh!, foe is not present in the game
-                    self._foe_connected = False
+            else:
+                # Oh!, foe is not present in the game
+                self._foe_connected = False
 
             #
             # The actual ball information
             #
-            if 'ball' in response.data:
-                ball = response.data['ball']
+            ball = response.get_ball_info()
+            if ball is not None:
 
                 # position and current velocity of the ball
                 self._ball_x, self._ball_y = ball['position']
@@ -377,7 +387,7 @@ class PlayerClient(Client):
             #
             # Ready the player
             #
-            self._ready = True
+            self._key_ready = True
 
 
     def on_key_release(self, symbol, modifiers):

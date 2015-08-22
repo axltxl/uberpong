@@ -100,6 +100,9 @@ class Game(StateMachine):
         spot_set('game_name', "PONG!")
         spot_set('game_version', "0.1a")
 
+        # Network protocol codec to be used
+        spot_set('net_codec', 'json')
+
         # The server simulates the game in discrete time steps called ticks.
         # By default, the timestep is 15ms, so 66.666... ticks
         # per second are simulated
@@ -172,7 +175,8 @@ class Game(StateMachine):
             #
             self._server = Scene(port=5000,
                                 width=self._window.width,
-                                height=self._window.height)
+                                height=self._window.height,
+                                codec=spot_get('net_codec'))
 
             # Activate LZ4 compression on client
             if options['--lz4']:
@@ -203,7 +207,8 @@ class Game(StateMachine):
         self._client = PlayerClient(
             ball_position=spot_get('ball_position_start'),
             address=server_addr,
-            port=5000
+            port=5000,
+            codec=spot_get('net_codec')
         )
 
         #

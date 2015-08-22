@@ -22,11 +22,12 @@ Requests:
 A generic request is generally cooked with at least
 a protocol version field, a command field and a player id, like so:
 
-    {
-        'version': <proto_version>,
-        'cmd': <command>,
-        'player_id': <id>
-    }
+    [
+        <proto_version>,
+        <type_of_message>,
+        <command>,
+        <player_id>
+    ]
 
 
 Responses:
@@ -39,12 +40,17 @@ there is in a response), following data all remaining keys are considered
 variable data to be used by the receiving peer.
 A general response looks like the following:
 
-    {
-        'version': <proto_version>,
-        'status': <status_code>,
-        'reason': <reason_string>,
-        <variable data ...>
-    }
+    [
+        <proto_version>,
+        <type_of_message>,
+        (Depending on type of message)
+        <status>,
+        <reason>,
+        <state>
+        ...
+        // variable data
+        ...
+    ]
 
 
 Initial handshake and further communication:
@@ -55,18 +61,19 @@ it will need to acquire a valid player id. For this to happen,
 a client must first handshake with a server, like so:
 
     (client) ~~>
-        {
-            'version': 1,
-            'cmd': '+connect'
-        }
+        [
+            1, # Protocol version
+            30, # Type of message
+            '+connect' # Command
+        ]
 
     <~~ (server)
-        {
-            'version': 1,
-            'status': 'OK',
-            'reason': 'Connection Granted',
-            'player_id': '25aee061a5f34977bf672d4ff59fdc36'
-        }
+        [
+            1, # Protocol version
+            33, # Type of message
+            20, # Status
+            '25aee061a5f34977bf672d4ff59fdc36' # Player UUID
+        ]
 
 Once the server has acknowledged a client, the latter receives a valid
 player id from which further requests can be made. From this point until
@@ -74,137 +81,120 @@ disconnection, the former will actively send the client periodic
 update responses:
 
     (client) ~~>
-        {
-            'version': 1,
-            'cmd': '+move',
-            'player_id': '25aee061a5f34977bf672d4ff59fdc36'
-        }
-
-    (client) ~~>
-        {
-            'version': 1,
-            'cmd': '+move',
-            'player_id': '25aee061a5f34977bf672d4ff59fdc36'
-        }
-
-    (client) ~~>
-        {
-            'version': 1,
-            'cmd': '-move',
-            'player_id': '25aee061a5f34977bf672d4ff59fdc36'
-        }
+        [
+            1,
+            30,
+            '+move',
+            '25aee061a5f34977bf672d4ff59fdc36'
+        ]
 
     <~~ (server)
-        {
-            'version': 1,
-            'status': 'OK',
-            'state': 'PLAYING',
-            'reason': 'Update',
-            'players': {
-                'you': {
-                    'score': 1,
-                    'position': [1, 0],
-                    'velocity': [14, -20]
-                }
-                'foe': {
-                    'score': 1,
-                    'position': [24, 0],
-                    'velocity': [23, 40]
-                }
-            },
-            'ball': {
-                'position': [12, 4],
-                'velocity': [223, 140]
-            }
-        }
+        [
+            1, 31, # Protocol version and type of message
+            20, 14, # Status, reason
+
+            // variable data
+
+            102, # state
+            [
+                [1, 1, 0, 14, -20], # player info
+                [1, 24, 0, 23, 40]  # foe player info (could be null)
+            ],
+            [12, 4, 223, 140] # ball info
+        ]
 """
 
 
 class Packet:
     """Basic network packet implementation"""
 
+    ############################################
     # Protocol version
+    ############################################
     PROTO_VERSION = 1
 
-    def __init__(self, data=None):
+    ############################################
+    # Protocol indexes
+    ############################################
+    PI_VERSION = 0  # protocol version
+    PI_TOM = 1  # type of message
+    PI_STATUS = 2  # status
+    PI_COMMAND = 2  # command
+
+    ############################################
+    # Types of message
+    ############################################
+    TOM_COMMAND = 30
+    TOM_UPDATE = 31
+    TOM_CONNECT = 32
+    TOM_REPLY = 33
+
+    def __init__(self, *,
+                 data=None,
+                 pi_playerid=None):
         """Constructor
 
         Args:
             data(dict): Initial data for this packet
         """
+
+        # In order for the data to conserve its
+        # random access, an initial None-filled
+        # array is assigned as the initial data
         if data is None:
-            data = {}
+            data = [None for i in range(10)]
         self._data = data
 
         # Set protocol version
-        self._data['version'] = self.PROTO_VERSION
+        self._data[self.PI_VERSION] = self.PROTO_VERSION
+
+        # Protocol index for player id varies among
+        # types of message
+        self._pi_player_id = pi_playerid
 
 
     @property
     def data(self):
         """Raw data"""
-        return self._data
 
+        # Return a None-stripped copy of data
+        d = self._data.copy()
+        if len(d):
+            while d[-1] is None:
+                d.pop()
+        return d
 
     @data.setter
     def data(self, value):
         """Set raw data"""
         self._data = value
 
+    @property
+    def tom(self):
+        return self._data[self.PI_TOM]
+
+    @tom.setter
+    def tom(self, value):
+        """Set raw data"""
+        self._data[self.PI_TOM] = value
 
     @property
     def proto_version(self):
         """Get protocol version for this packet"""
-        return self._data['version']
-
+        return self._data[self.PI_VERSION]
 
     @property
     def player_id(self):
         """Get player uuid"""
-        if 'player_id' in self.data:
-            return self.data['player_id']
+        if self._pi_player_id in range(len(self._data)):
+            return self._data[self._pi_player_id]
         return None
 
 
     @player_id.setter
     def player_id(self, player_id):
         """Set player uuid"""
-        self.data['player_id'] = player_id
-
-
-    def set_player_info(self, *, name, score, position, velocity):
-        """Set player information
-
-        Kwargs:
-            name(str): Player name
-            score(int): Player score
-            position(int, int): Player's paddle position on the plane
-            velocity(int, int): Player's paddle current velocity
-        """
-
-        if not 'players' in self.data:
-            self.data['players'] = {}
-
-        self.data['players'][name] ={
-            'score': score,
-            'position': position,
-            'velocity': velocity
-        }
-
-    def set_ball_info(self, *, position, velocity):
-        self.data['ball'] = {
-            'position': position,
-            'velocity': velocity
-        }
-
-
-    def get_player_info(self, *, name):
-        """Get information regarding a specific player"""
-
-        if 'players' in self.data:
-            if name in self.data['players']:
-                return self.data['players'][name]
-        return None
+        self._data[self._pi_player_id] = player_id
 
 
 class Request(Packet):
@@ -219,25 +209,33 @@ class Request(Packet):
     CMD_MV_DN = '-move'
     CMD_READY = '+ready'
 
-    def __init__(self, data=None, *, command=None, **kwargs):
-        super().__init__(data, **kwargs)
+    ############################################
+    # Protocol indexes
+    ############################################
+    PI_PLAYER_ID = 3
 
+    def __init__(self, *, command=None, **kwargs):
+        super().__init__(pi_playerid=self.PI_PLAYER_ID, **kwargs)
+
+        # Type of message
+        self.tom = Packet.TOM_COMMAND
+
+        # Set command
         if command is not None:
             self.command = command
-
 
     @property
     def command(self):
         """Get command"""
-        if 'cmd' in self.data:
-            return self.data['cmd']
+        if Packet.PI_COMMAND in range(len(self.data)):
+            return self._data[Packet.PI_COMMAND]
         return None
 
 
     @command.setter
     def command(self, value):
         """Set command"""
-        self.data['cmd'] = value
+        self._data[Packet.PI_COMMAND] = value
 
 
 class Response(Packet):
@@ -246,56 +244,126 @@ class Response(Packet):
     ############################################
     # Status codes
     ############################################
-    STATUS_OK = 'OK'
-    STATUS_UNAUTHORIZED = 'Unauthorized'
+    STATUS_OK = 20
+    STATUS_UNAUTHORIZED = 21
 
     ############################################
     # Reasons
     ############################################
-    REASON_VERSION_NOT_SUPPORTED = 'Version Not Supported'
-    REASON_CONN_REFUSED = "Connection Refused"
-    REASON_CONN_GRANTED = 'Connection Granted'
-    REASON_ACCEPTED = 'Accepted'
-    REASON_UPDATE = 'Update'
+    REASON_VERSION_NOT_SUPPORTED = 11
+    REASON_CONN_REFUSED = 12
+    REASON_CONN_GRANTED = 13
+    REASON_ACCEPTED = 14
+    REASON_UPDATE = 15
 
+    ############################################
+    # Protocol indexes
+    ############################################
+    PI_PLAYER_ID = 4
+    PI_STATE = 4
+    PI_REASON = 3
+    PI_PLAYER_INFO = 5
+    PI_BALL_INFO = 6
+
+    def __init__(self, **kwargs):
+        super().__init__(pi_playerid=self.PI_PLAYER_ID, **kwargs)
+
+        # not necessarily
+        self.tom = Packet.TOM_UPDATE
 
     @property
     def status(self):
         """Get status"""
-        if 'status' in self.data:
-            return self.data['status']
+        if Packet.PI_STATUS in range(len(self._data)):
+            return self._data[Packet.PI_STATUS]
         return None
 
 
     @status.setter
     def status(self, value):
         """Set status"""
-        self.data['status'] = value
+        self._data[Packet.PI_STATUS] = value
 
 
     @property
     def state(self):
         """Get state"""
-        if 'state' in self.data:
-            return self.data['state']
+        if self.PI_STATE in range(len(self._data)):
+            return self._data[self.PI_STATE]
         return None
 
 
     @state.setter
     def state(self, value):
         """Set state"""
-        self.data['state'] = value
+        self._data[self.PI_STATE] = value
 
 
     @property
     def reason(self):
         """Set reason"""
-        if 'reason' in self.data:
-            return self.data['reason']
+        if self.PI_REASON in range(len(self._data)):
+            return self._data[self.PI_REASON]
         return None
 
 
     @reason.setter
     def reason(self, value):
         """Get reason"""
-        self.data['reason'] = value
+        self._data[self.PI_REASON] = value
+
+
+    def set_player_info(self, *, name, score, position, velocity):
+        """Set player information
+
+        Kwargs:
+            name(str): Player name
+            score(int): Player score
+            position(int, int): Player's paddle position on the plane
+            velocity(int, int): Player's paddle current velocity
+        """
+
+        if self._data[self.PI_PLAYER_INFO] is None:
+            self._data[self.PI_PLAYER_INFO] = [None, None]
+
+        if name == 'you':
+            player_index = 0
+        else:
+            player_index = 1
+
+        self._data[self.PI_PLAYER_INFO][player_index] = [score]
+        self._data[self.PI_PLAYER_INFO][player_index].extend(list(position))
+        self._data[self.PI_PLAYER_INFO][player_index].extend(list(velocity))
+
+    def get_ball_info(self):
+        try:
+            ball_info = self._data[self.PI_BALL_INFO]
+        except IndexError:
+            return None
+
+        return {
+            'position': ball_info[:2],
+            'velocity': ball_info[2:]
+        }
+
+    def set_ball_info(self, *, position, velocity):
+        self._data[self.PI_BALL_INFO] = list(position)
+        self._data[self.PI_BALL_INFO].extend(list(velocity))
+
+
+    def get_player_info(self, *, name):
+        """Get information regarding a specific player"""
+
+        try:
+            if name == 'you':
+                player_info =  self._data[self.PI_PLAYER_INFO][0]
+            else:
+                player_info = self._data[self.PI_PLAYER_INFO][1]
+        except IndexError:
+            return None
+
+        return {
+            'score': player_info[0],
+            'position': player_info[1:3],
+            'velocity': player_info[3:]
+        }
