@@ -59,9 +59,6 @@ class BeginState(State):
             self._server.reset_players()
             self._server.reset_ball()
 
-        #self._client.reset_paddles()
-        #self._client.reset_ball()
-
 
     def on_update(self):
         """Draw all the things!"""
