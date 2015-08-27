@@ -35,7 +35,7 @@ class PlayerClient(ming.Client):
             kwargs(dict, optional): Arbitrary keyword arguments
         """
 
-        #
+        # Call the parent
         super().__init__(**kwargs)
 
         # This will hold the UUID assigned by a server
@@ -46,16 +46,16 @@ class PlayerClient(ming.Client):
         self._img = pyglet.image.load('assets/images/glasspaddle2.png')
 
         # paddle image region
-        w, h = spot_get('paddle_size')
-        self._paddle_region = self._img.get_region(0, 0, w, h)
+        paddle_width, paddle_height = spot_get('paddle_size')
+        self._paddle_region = self._img.get_region(0, 0, paddle_width, paddle_height)
 
         # centered anchor as required by pymunk bodies at the server side
         self._paddle_region.anchor_x = self._paddle_region.width // 2
         self._paddle_region.anchor_y = self._paddle_region.height // 2
 
         # ball image region
-        w, h = spot_get('ball_size')
-        self._ball_region = self._img.get_region(0, 0, w, h)
+        ball_width, ball_height = spot_get('ball_size')
+        self._ball_region = self._img.get_region(0, 0, ball_width, ball_height)
 
         # centered anchor as required by pymunk bodies at the server side
         self._ball_region.anchor_x = self._ball_region.width // 2
