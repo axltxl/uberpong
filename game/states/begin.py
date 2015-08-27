@@ -64,11 +64,15 @@ class BeginState(State):
 
 
     def on_update(self):
+        """Draw all the things!"""
+
         self._wait_label.draw()
         self._client.tick()
         self._client.draw_ball()
         self._client.draw_paddles()
 
+        # Check for a state change, at anytime is expected
+        # from the server to change to "playing" state 
         if self._client.server_state == Scene.ST_PLAYING:
             self.push('game_round')
 
@@ -77,5 +81,9 @@ class BeginState(State):
     #######################################################
 
     def on_key_press(self, symbol, modifiers):
+
+        # Update the text
+        self._wait_label.text = "Ready!"
+
         # Update data on client
         self._client.on_key_press(symbol, modifiers)
