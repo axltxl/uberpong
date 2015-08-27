@@ -10,9 +10,9 @@ See LICENSE for more details.
 """
 
 import pyglet
+import ming
 
 from engine.spot import spot_set, spot_get
-from engine.net import Server
 from engine.entity import EntityManager
 
 from . import (
@@ -28,7 +28,7 @@ from ..entities import (
 )
 
 
-class Scene(Server):
+class Scene(ming.Server):
     """
     Scene server implementation
 
@@ -41,11 +41,11 @@ class Scene(Server):
     MAX_PLAYERS = 2
 
     # States
-    ST_WAITING_FOR_PLAYER = 'WAITING_FOR_PLAYER'
-    ST_BEGIN = 'GAME_BEGIN'
-    ST_PLAYING = 'PLAYING'
-    ST_SCORE = 'PLAYER_SCORED'
-    ST_GAME_SET = 'GAME_SET'
+    ST_WAITING_FOR_PLAYER = 100
+    ST_BEGIN = 101
+    ST_PLAYING = 102
+    ST_SCORE = 103
+    ST_GAME_SET = 104
 
     def __init__(self, *, width, height, **kwargs):
         """Constructor
@@ -53,6 +53,7 @@ class Scene(Server):
         Kwargs:
             width(int): width of the scene in pixels
             height(int): height of the scene in pixels
+            kwargs(dict, optional): Arbitrary keyword arguments
         """
         super().__init__(**kwargs)
 
@@ -330,7 +331,7 @@ class Scene(Server):
         #
         # Get a nice Request from raw data
         #
-        request = Request(data)
+        request = Request(data=data)
 
         #
         # By default, the server will not be OK with the incoming request
