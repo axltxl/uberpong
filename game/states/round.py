@@ -48,13 +48,12 @@ class RoundState(State):
 
     def on_update(self):
         # Update client!
-
         self._client.tick()
+
+        # Draw all the things in the client!
+        self._client.draw_scores()
         self._client.draw_paddles()
         self._client.draw_ball()
-
-        #
-
 
 
     #######################################################
