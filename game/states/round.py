@@ -18,6 +18,7 @@ import pyglet
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
+from ..net import Scene
 
 class RoundState(State):
     """Game round state"""
@@ -54,6 +55,11 @@ class RoundState(State):
         self._client.draw_scores()
         self._client.draw_paddles()
         self._client.draw_ball()
+
+        # Check for a state change, at anytime is expected
+        # from the server to change to "score" state
+        if self._client.server_state == Scene.ST_SCORE:
+            self.push('game_score')
 
 
     #######################################################

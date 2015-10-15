@@ -72,7 +72,7 @@ class BeginState(State):
         self._client.draw_paddles()
 
         # Check for a state change, at anytime is expected
-        # from the server to change to "playing" state 
+        # from the server to change to "playing" state
         if self._client.server_state == Scene.ST_PLAYING:
             self.push('game_round')
 
