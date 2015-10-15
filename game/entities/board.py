@@ -10,9 +10,12 @@ See LICENSE for more details.
 """
 
 import pymunk
+from .ball import Ball
 
 class Board:
     """The game board itself"""
+
+    BOUNDARY_CTYPE = 80 # collision type
 
     def __init__(self, width, height, space):
         """Constructor
@@ -56,43 +59,45 @@ class Board:
         #                  *--------------*
         #           (left,bottom)          (right,bottom)
         #
-        boundaries = [
-            # up
-            pymunk.Poly(self._body, [
-                (left - thick, top),
-                (right + thick, top),
-                (right + thick, top + thick),
-                (left - thick, top + thick),
-                ]),
+        boundaries = {
+            'up': pymunk.Poly(self._body, [
+            (left - thick, top),
+            (right + thick, top),
+            (right + thick, top + thick),
+            (left - thick, top + thick),
+            ]),
 
-            #down
-            pymunk.Poly(self._body, [
-                (left - thick, bottom - thick),
-                (right + thick, bottom - thick),
-                (right + thick, bottom),
-                (left - thick, bottom),
-                ]),
+            'down': pymunk.Poly(self._body, [
+            (left - thick, bottom - thick),
+            (right + thick, bottom - thick),
+            (right + thick, bottom),
+            (left - thick, bottom),
+            ]),
 
-            # left
-            pymunk.Poly(self._body, [
-                (left - thick, bottom),
-                (left, bottom),
-                (left, top),
-                (left - thick, top),
-                ]),
+            'left': pymunk.Poly(self._body, [
+            (left - thick, bottom),
+            (left, bottom),
+            (left, top),
+            (left - thick, top),
+            ]),
 
-            # right
-            pymunk.Poly(self._body, [
-                (right, bottom),
-                (right + thick, bottom),
-                (right + thick, top),
-                (right, top),
-                ])
-        ]
+            'right': pymunk.Poly(self._body, [
+            (right, bottom),
+            (right + thick, bottom),
+            (right + thick, top),
+            (right, top),
+            ])
+        }
 
-        # elasticity for each boundary
-        for b in boundaries:
-            b.elasticity = 1.0
+        # left and right boundaries need to have their
+        # collision type specified, these walls are the
+        # to know whether has scored
+        boundaries['left'].collision_type = self.BOUNDARY_CTYPE
+        boundaries['right'].collision_type = self.BOUNDARY_CTYPE
 
-        # Put them in the space
-        self._space.add(boundaries)
+        for boundary in boundaries.values():
+            # elasticity for each boundary
+            boundary.elasticity = 1.0
+
+            # Put them in the space
+            self._space.add(boundary)

@@ -121,6 +121,14 @@ class PlayerClient(ming.Client):
         # Ready the player?
         self._key_ready = False
 
+        # scores label
+        scores_x, scores_y = spot_get('scores_position')
+        self._scores_label = pyglet.text.Label(
+            font_name='8-bit Operator+',
+            x=scores_x, y=scores_y,font_size=32,
+            anchor_x='center', anchor_y='center'
+        )
+
     @property
     def connected(self):
         return self._me_connected
@@ -239,7 +247,9 @@ class PlayerClient(ming.Client):
             # Set paddle position
             self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
 
-
+    def draw_scores(self):
+        self._scores_label.text = '0  0'
+        self._scores_label.draw()
 
     def draw_ball(self):
         """Render the ball"""

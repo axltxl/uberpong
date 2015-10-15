@@ -92,6 +92,21 @@ class Scene(ming.Server):
         self._tickrate = 1.0 / spot_get('tickrate')
         pyglet.clock.schedule_interval(self.tick, self._tickrate)
 
+        #
+        self._ent_mgr.add_collision_handler(
+                Ball.CTYPE, Board.BOUNDARY_CTYPE,
+                begin=self.scored
+                )
+
+
+    def scored(self, space, arbiter, *args, **kwargs):
+        """
+        At this point , the ball has collided with
+        either the right or left wall
+        """
+        self._state = self.ST_SCORE
+        return False # tell pymunk to ignore the collision
+
 
     @property
     def state(self):
