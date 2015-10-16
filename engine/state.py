@@ -165,6 +165,9 @@ class StateMachine(pyglet.event.EventDispatcher):
             self._stack.pop(0)
             self._attach_events(self.get_current_state())
 
+        # Trigger an on_begin event on new state
+        self.dispatch_event('on_begin')
+
     def _attach_events(self, state):
         """Attach events (including window events) on state"""
 

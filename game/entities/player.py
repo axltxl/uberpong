@@ -54,6 +54,9 @@ class PlayerPaddle(Entity):
         # This player's opponent
         self.foe = foe
 
+        #
+        self.ready = False
+        self.score = 0
         # TODO: to be used later
     #     self.manager.add_collision_handler(self.CTYPE,
     #         Ball.CTYPE, separate=self._volley)

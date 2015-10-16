@@ -19,6 +19,7 @@ import pyglet
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
+from ..net import Scene
 
 class ScoreState(State):
     """Game score state"""
@@ -42,10 +43,17 @@ class ScoreState(State):
     #
 
     def on_begin(self):
+        # Mark score for winning player
         pass
 
     def on_exit(self):
         pass
 
     def on_update(self):
-        pass
+        # Draw all the things but the ball in the client!
+        self._client.draw_scores()
+        self._client.draw_paddles()
+
+        # Switch to previous state
+        if self._client.server_state == Scene.ST_PLAYING:
+            self.pop()

@@ -313,11 +313,12 @@ class Response(Packet):
         self._data[self.PI_REASON] = value
 
 
-    def set_player_info(self, *, name, score, position, velocity):
+    def set_player_info(self, *, name, number, score, position, velocity):
         """Set player information
 
         Kwargs:
             name(str): Player name
+            number(int): Player number
             score(int): Player score
             position(int, int): Player's paddle position on the plane
             velocity(int, int): Player's paddle current velocity
@@ -331,9 +332,18 @@ class Response(Packet):
         else:
             player_index = 1
 
-        self._data[self.PI_PLAYER_INFO][player_index] = [score]
-        self._data[self.PI_PLAYER_INFO][player_index].extend(list(position))
-        self._data[self.PI_PLAYER_INFO][player_index].extend(list(velocity))
+        # In this part, player information is set linearly
+        # in the array
+        # self._data[self.PI_PLAYER_INFO][player_index] = [number]
+        # self._data[self.PI_PLAYER_INFO][player_index].extend(score)
+        # self._data[self.PI_PLAYER_INFO][player_index].extend(list(position))
+        # self._data[self.PI_PLAYER_INFO][player_index].extend(list(velocity))
+        self._data[self.PI_PLAYER_INFO][player_index] = [
+                number,
+                score,
+                list(position),
+                list(velocity)
+                ]
 
     def get_ball_info(self):
         try:
