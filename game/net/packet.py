@@ -334,16 +334,9 @@ class Response(Packet):
 
         # In this part, player information is set linearly
         # in the array
-        # self._data[self.PI_PLAYER_INFO][player_index] = [number]
-        # self._data[self.PI_PLAYER_INFO][player_index].extend(score)
-        # self._data[self.PI_PLAYER_INFO][player_index].extend(list(position))
-        # self._data[self.PI_PLAYER_INFO][player_index].extend(list(velocity))
-        self._data[self.PI_PLAYER_INFO][player_index] = [
-                number,
-                score,
-                list(position),
-                list(velocity)
-                ]
+        self._data[self.PI_PLAYER_INFO][player_index] = [ number, score ]
+        self._data[self.PI_PLAYER_INFO][player_index].extend(list(position))
+        self._data[self.PI_PLAYER_INFO][player_index].extend(list(velocity))
 
     def get_ball_info(self):
         try:
@@ -373,7 +366,8 @@ class Response(Packet):
             return None
 
         return {
-            'score': player_info[0],
-            'position': player_info[1:3],
-            'velocity': player_info[3:]
+            'number': player_info[0],
+            'score': player_info[1],
+            'position': player_info[2:4],
+            'velocity': player_info[4:]
         }
