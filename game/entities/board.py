@@ -15,7 +15,8 @@ from .ball import Ball
 class Board:
     """The game board itself"""
 
-    BOUNDARY_CTYPE = 80 # collision type
+    BOUNDARY_CTYPE_LEFT = 80 # collision type for left wall
+    BOUNDARY_CTYPE_RIGHT = 81 # collision type for right wall
 
     def __init__(self, width, height, space):
         """Constructor
@@ -92,8 +93,8 @@ class Board:
         # left and right boundaries need to have their
         # collision type specified, these walls are the
         # to know whether has scored
-        boundaries['left'].collision_type = self.BOUNDARY_CTYPE
-        boundaries['right'].collision_type = self.BOUNDARY_CTYPE
+        boundaries['left'].collision_type = self.BOUNDARY_CTYPE_LEFT
+        boundaries['right'].collision_type = self.BOUNDARY_CTYPE_RIGHT
 
         for boundary in boundaries.values():
             # elasticity for each boundary

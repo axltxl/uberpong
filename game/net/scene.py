@@ -96,12 +96,30 @@ class Scene(ming.Server):
         # collides with either the left or the right boundary
         # on the board
         self._ent_mgr.add_collision_handler(
-                Ball.CTYPE, Board.BOUNDARY_CTYPE,
-                begin=self._scored
+                Ball.CTYPE, Board.BOUNDARY_CTYPE_LEFT,
+                begin=self._scored_left
+                )
+        self._ent_mgr.add_collision_handler(
+                Ball.CTYPE, Board.BOUNDARY_CTYPE_RIGHT,
+                begin=self._scored_right
                 )
 
 
-    def _scored(self, space, arbiter, *args, **kwargs):
+    def _scored_left(self, space, arbiter, *args, **kwargs):
+        player = [p for p in self._players.values() if p.number == 2][0]
+        player.score += 1
+        self._scored()
+        return False # tell pymunk to ignore the collision
+
+
+    def _scored_right(self, space, arbiter, *args, **kwargs):
+        player = [p for p in self._players.values() if p.number == 1][0]
+        player.score += 1
+        self._scored()
+        return False # tell pymunk to ignore the collision
+
+
+    def _scored(self):
         """
         At this point , the ball has collided with
         either the right or left wall
@@ -113,7 +131,6 @@ class Scene(ming.Server):
         # If one of the players has reached max score, then switch
         # to set state, otherwise, go back to round state
         pyglet.clock.schedule_once(self._round_goback, 3)
-        return False # tell pymunk to ignore the collision
 
     def _round_goback(self, dt):
         self._state = self.ST_PLAYING
@@ -151,7 +168,7 @@ class Scene(ming.Server):
                 or self.state == self.ST_BEGIN:
                     # Set player information
                     response.set_player_info(
-                        name='you', score=0, number=player_me.number,
+                        name='you', score=player_me.score, number=player_me.number,
                         position=(int(player_me.position.x),
                                   int(player_me.position.y)),
                         velocity=(int(player_me.velocity.x),
@@ -164,7 +181,7 @@ class Scene(ming.Server):
                         player_foe = self._players[player.foe]
 
                         response.set_player_info(
-                            name='foe', score=0, number=player_foe.number,
+                            name='foe', score=player_foe.score, number=player_foe.number,
                             position=(int(player_foe.position.x),
                                       int(player_foe.position.y)),
                             velocity=(int(player_foe.velocity.x),
