@@ -106,15 +106,17 @@ class Scene(ming.Server):
 
 
     def _scored_left(self, space, arbiter, *args, **kwargs):
+        """ the ball has collided with the left boundary """
         player = [p for p in self._players.values() if p.number == 2][0]
-        player.score += 1
+        player.score += 1 # bump the score
         self._scored()
         return False # tell pymunk to ignore the collision
 
 
     def _scored_right(self, space, arbiter, *args, **kwargs):
+        """ the ball has collided with the right boundary """
         player = [p for p in self._players.values() if p.number == 1][0]
-        player.score += 1
+        player.score += 1 # bump the score
         self._scored()
         return False # tell pymunk to ignore the collision
 
@@ -133,7 +135,10 @@ class Scene(ming.Server):
         pyglet.clock.schedule_once(self._round_goback, 3)
 
     def _round_goback(self, dt):
-        self._state = self.ST_PLAYING
+        if any([player.score == spot_get('sv_score_max')  for player in self._players.values()]):
+            self._state = self.ST_GAME_SET
+        else:
+            self._state = self.ST_PLAYING
 
     @property
     def state(self):

@@ -57,3 +57,5 @@ class ScoreState(State):
         # Switch to previous state
         if self._client.server_state == Scene.ST_PLAYING:
             self.pop()
+        elif self._client.server_state == Scene.ST_GAME_SET:
+            self.push('game_set')
