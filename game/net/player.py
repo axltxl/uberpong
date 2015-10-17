@@ -252,13 +252,14 @@ class PlayerClient(ming.Client):
             self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
 
     def draw_scores(self):
+        base_str_format = "{}   {}"
         if self._number_me == 1:
-            scores_label_format = "{} {}".format(
+            scores_label_format = base_str_format.format(
                     self._score_me,
                     self._score_foe
                     )
         else:
-            scores_label_format = "{} {}".format(
+            scores_label_format = base_str_format.format(
                     self._score_foe,
                     self._score_me
                     )
