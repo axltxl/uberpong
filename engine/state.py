@@ -155,7 +155,7 @@ class StateMachine(pyglet.event.EventDispatcher):
             return
 
         while len(self._states) \
-        and type(self.get_current_state()) is not class_id:
+        and not isinstance(self.get_current_state(), self._states[class_id]):
             self.pop_state()
 
     def pop_state(self):
