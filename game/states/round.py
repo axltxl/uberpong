@@ -42,7 +42,9 @@ class RoundState(State):
     #
 
     def on_begin(self):
-        pass
+        if self._server is not None:
+            self._server.reset_players()
+            self._server.reset_ball()
 
     def on_exit(self):
         pass

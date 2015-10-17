@@ -155,7 +155,7 @@ class StateMachine(pyglet.event.EventDispatcher):
             return
 
         while len(self._states) \
-        and type(self.get_current_state()) is not class_id:
+        and not isinstance(self.get_current_state(), self._states[class_id]):
             self.pop_state()
 
     def pop_state(self):
@@ -164,6 +164,9 @@ class StateMachine(pyglet.event.EventDispatcher):
             self.dispatch_event('on_exit')
             self._stack.pop(0)
             self._attach_events(self.get_current_state())
+
+        # Trigger an on_begin event on new state
+        self.dispatch_event('on_begin')
 
     def _attach_events(self, state):
         """Attach events (including window events) on state"""

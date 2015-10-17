@@ -21,6 +21,7 @@ import pyglet
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
+from ..net import Scene
 
 class GameSetState(State):
     """Game begin state"""
@@ -43,8 +44,14 @@ class GameSetState(State):
     # pyglet event callbacks
     #
 
+    def _go_back(self, dt):
+        if self._server is not None:
+            # TODO: horrible workaround
+            self._server._state = Scene.ST_BEGIN
+        self.pop_until('game_begin')
+
     def on_begin(self):
-        pass
+        pyglet.clock.schedule_once(self._go_back, 3)
 
     def on_exit(self):
         pass

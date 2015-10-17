@@ -129,6 +129,10 @@ class PlayerClient(ming.Client):
             anchor_x='center', anchor_y='center'
         )
 
+        # scores themselves
+        self._score_me = 0
+        self._score_foe = 0
+
     @property
     def connected(self):
         return self._me_connected
@@ -248,7 +252,18 @@ class PlayerClient(ming.Client):
             self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
 
     def draw_scores(self):
-        self._scores_label.text = '0  0'
+        base_str_format = "{}   {}"
+        if self._number_me == 1:
+            scores_label_format = base_str_format.format(
+                    self._score_me,
+                    self._score_foe
+                    )
+        else:
+            scores_label_format = base_str_format.format(
+                    self._score_foe,
+                    self._score_me
+                    )
+        self._scores_label.text = scores_label_format
         self._scores_label.draw()
 
     def draw_ball(self):
@@ -345,6 +360,12 @@ class PlayerClient(ming.Client):
                 # velocity
                 self._paddle_me_vx, self._paddle_me_vy = me['velocity']
 
+                # score
+                self._score_me = me['score']
+
+                # number
+                self._number_me = me['number']
+
             #
             # Set all information regarding the opponent (foe)
             #
@@ -360,6 +381,12 @@ class PlayerClient(ming.Client):
 
                 # velocity
                 self._paddle_foe_vx, self._paddle_foe_vy = foe['velocity']
+
+                # score
+                self._score_foe = foe['score']
+
+                # number
+                self._number_foe = foe['number']
 
             else:
                 # Oh!, foe is not present in the game

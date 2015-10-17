@@ -92,21 +92,53 @@ class Scene(ming.Server):
         self._tickrate = 1.0 / spot_get('tickrate')
         pyglet.clock.schedule_interval(self.tick, self._tickrate)
 
-        #
+        # this method wis called each time the ball
+        # collides with either the left or the right boundary
+        # on the board
         self._ent_mgr.add_collision_handler(
-                Ball.CTYPE, Board.BOUNDARY_CTYPE,
-                begin=self.scored
+                Ball.CTYPE, Board.BOUNDARY_CTYPE_LEFT,
+                begin=self._scored_left
+                )
+        self._ent_mgr.add_collision_handler(
+                Ball.CTYPE, Board.BOUNDARY_CTYPE_RIGHT,
+                begin=self._scored_right
                 )
 
 
-    def scored(self, space, arbiter, *args, **kwargs):
+    def _scored_left(self, space, arbiter, *args, **kwargs):
+        """ the ball has collided with the left boundary """
+        player = [p for p in self._players.values() if p.number == 2][0]
+        player.score += 1 # bump the score
+        self._scored()
+        return False # tell pymunk to ignore the collision
+
+
+    def _scored_right(self, space, arbiter, *args, **kwargs):
+        """ the ball has collided with the right boundary """
+        player = [p for p in self._players.values() if p.number == 1][0]
+        player.score += 1 # bump the score
+        self._scored()
+        return False # tell pymunk to ignore the collision
+
+
+    def _scored(self):
         """
         At this point , the ball has collided with
         either the right or left wall
         """
+        # Set state to 'score' state
         self._state = self.ST_SCORE
-        return False # tell pymunk to ignore the collision
 
+        # Wait for 3 seconds before unfreezing the board
+        # If one of the players has reached max score, then switch
+        # to set state, otherwise, go back to round state
+        pyglet.clock.schedule_once(self._round_goback, 3)
+
+    def _round_goback(self, dt):
+        if any([player.score == spot_get('sv_score_max')  for player in self._players.values()]):
+            self._state = self.ST_GAME_SET
+        else:
+            self._state = self.ST_PLAYING
 
     @property
     def state(self):
@@ -137,10 +169,11 @@ class Scene(ming.Server):
                 port = player.port
 
                 if self._state == self.ST_PLAYING \
+                or self.state == self.ST_SCORE \
                 or self.state == self.ST_BEGIN:
                     # Set player information
                     response.set_player_info(
-                        name='you', score=0,
+                        name='you', score=player_me.score, number=player_me.number,
                         position=(int(player_me.position.x),
                                   int(player_me.position.y)),
                         velocity=(int(player_me.velocity.x),
@@ -153,7 +186,7 @@ class Scene(ming.Server):
                         player_foe = self._players[player.foe]
 
                         response.set_player_info(
-                            name='foe', score=0,
+                            name='foe', score=player_foe.score, number=player_foe.number,
                             position=(int(player_foe.position.x),
                                       int(player_foe.position.y)),
                             velocity=(int(player_foe.velocity.x),
@@ -185,11 +218,17 @@ class Scene(ming.Server):
         # Set initial position for this player
         player.position = player_position_x, player_position_y
 
-        # Reset score
-        player.score = 0
 
-        # Ready state for this player
-        player.ready = False
+        # Reset physics on this player
+        # player.reset_forces()
+        player.velocity = (0, 0)
+
+        if self._state == self.ST_BEGIN:
+            # Reset score
+            player.score = 0
+
+            # Ready state for this player
+            player.ready = False
 
 
     def reset_players(self):
@@ -203,6 +242,8 @@ class Scene(ming.Server):
         """Reset ball position"""
 
         # Set initial position for this ball
+        # self._ball.reset_forces()
+        self._ball.velocity = (0, 0)
         self._ball.position = spot_get('ball_position_start')
 
         #FIXME: do something better
@@ -303,7 +344,10 @@ class Scene(ming.Server):
         # Process incoming user commands
         self.pump()
 
+        #################################
         # Run a physical simulation step:
+        #################################
+
         if self._state == self.ST_PLAYING:
             # FIXME: This is working, it caps the velocity to 0 in x
             # so it won't move sideways no matter what
