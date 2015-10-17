@@ -37,13 +37,12 @@ class BeginState(State):
         # Call my parent
         super().__init__(machine=machine)
 
-        # Get client a server
+        # Get client and server
         self._server = spot_get('game_server')
         self._client = spot_get('game_client')
 
         # Server label
         self._wait_label = pyglet.text.Label(
-            "Press any key when you are READY ...",
             font_name='8-bit Operator+', font_size=20,
             x=machine.window.width//2, y=48,
             anchor_x='center', anchor_y='center'
@@ -55,6 +54,7 @@ class BeginState(State):
 
 
     def on_begin(self):
+        self._wait_label.text = "Press any key when you are READY ..."
         if self._server is not None:
             self._server.reset_players()
             self._server.reset_ball()
