@@ -43,7 +43,7 @@ class PlayerClient(ming.Client):
         self._id = None
 
         # base image
-        self._img = pyglet.image.load('assets/images/glasspaddle2.png')
+        self._img = pyglet.image.load('assets/images/sprites.png')
 
         # paddle image region
         paddle_width, paddle_height = spot_get('paddle_size')
@@ -55,7 +55,7 @@ class PlayerClient(ming.Client):
 
         # ball image region
         ball_width, ball_height = spot_get('ball_size')
-        self._ball_region = self._img.get_region(0, 0, ball_width, ball_height)
+        self._ball_region = self._img.get_region(32, 0, ball_width, ball_height)
 
         # centered anchor as required by pymunk bodies at the server side
         self._ball_region.anchor_x = self._ball_region.width // 2
