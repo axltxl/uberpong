@@ -15,7 +15,7 @@ import sys
 import traceback
 import os
 from docopt import docopt
-
+from os import path
 from engine.state import State, StateMachine
 from engine.spot import spot_set, spot_get
 from engine.sorcerer import Sorcerer
@@ -94,8 +94,10 @@ class Game(StateMachine):
         self._server = None
         self.create_client(self.create_server())
 
-        # sourcere a.k.a. resource manager
-        self.sorcerer = Sorcerer()
+        # sourcerer a.k.a. resource manager
+        self.sorcerer = Sorcerer(
+            root_dir=path.join(path.dirname(__file__), '../assets')
+        )
 
 
     def _spot_init(self):
@@ -104,8 +106,8 @@ class Game(StateMachine):
         #
         # Common
         #
-        spot_set('game_name', "PONG!")
-        spot_set('game_version', "0.1a")
+        spot_set('game_name', "Uber Pong!")
+        spot_set('game_version', "0.1")
 
         # Network protocol codec to be used
         spot_set('net_codec', 'json')
