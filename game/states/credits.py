@@ -17,6 +17,8 @@ See LICENSE for more details.
 import pyglet
 from .base import BaseState
 from engine.spot import spot_set, spot_get
+from .. import colors
+
 
 class CreditsState(BaseState):
     """Game start state"""
@@ -35,10 +37,10 @@ class CreditsState(BaseState):
         self._title_label = self.create_label('Axel Texel', font_size=18)
         self._presents_label = self.create_label('- presents -',
                 font_size=12, y=((self.window.height//2) - 20))
-        self._title_label.set_style('color', (240, 240, 240, 255))
+        self._title_label.set_style('color', colors.GRAY1 + (255,) )
 
         # set the background color
-        self.set_background_color(31, 31, 31)
+        self.set_background_color(*colors.GRAY0)
 
 
     #
