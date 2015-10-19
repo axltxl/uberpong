@@ -31,6 +31,9 @@ class Sorcerer:
         # fonts root directory
         self._root_fonts = path.join(self._root, 'fonts')
 
+        # sounds root directory
+        self._root_sounds = path.join(self._root, 'sounds')
+
 
     def get_resource(self, key):
         """Get a resource
@@ -56,3 +59,14 @@ class Sorcerer:
         """
         pyglet.font.add_file('{}/{}'.format(self._root_fonts, file_name))
         self._push_resource(key, pyglet.font.load(key))
+
+
+    def create_sound(self, key, *, file_name):
+        """Create a pyglet sound
+
+        Kwargs:
+            file_name(str): audio file to use
+        """
+        snd = pyglet.media.load('{}/{}'.format(self._root_sounds, file_name))
+        self._push_resource(key, snd)
+        return snd

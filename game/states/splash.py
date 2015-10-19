@@ -36,12 +36,11 @@ class SplashState(BaseState):
         self._show_press_start = True  # This is used for _comp_label animation
         self._key_pressed = False  # has been a key pressed?
 
-        # This should be moved to another level
-        pyglet.font.add_file('assets/fonts/8bitOperatorPlus-Regular.ttf')
-        font_8bit_operator = pyglet.font.load('8-bit Operator+')
-
         # and this as well
-        self.snd_begin = pyglet.media.load('assets/sounds/begin.wav')
+        self.snd_begin = self.sorcerer.create_sound(
+                'snd_begin',
+                file_name='begin.wav'
+        )
 
         # Title label
         self._title_label = self.create_label(
@@ -60,9 +59,11 @@ class SplashState(BaseState):
         """Toggle _show_press_start flag"""
         self._show_press_start ^= True
 
+
     def _get_going(self, dt):
         """Switch to next state"""
         self.push('game_load')
+
 
     #
     # pyglet event callbacks
