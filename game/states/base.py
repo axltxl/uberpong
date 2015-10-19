@@ -20,8 +20,12 @@ from engine.spot import spot_set, spot_get
 from ..net import Scene
 
 
+FONT_PRIMARY = '8-bit Operator+'
+FONT_SECONDARY = '8-bit Operator+ 8'
+
 class BaseState(State):
     """base state"""
+
 
     def __init__(self, *, machine, fade_in=False):
         """Constructor
@@ -45,9 +49,12 @@ class BaseState(State):
         # get the sorcerer to use resources
         self.sorcerer = spot_get('game_object').sorcerer
 
-        # create the base font used throughout the entire game
-        self.sorcerer.create_font('8-bit Operator+',
+        # create the base fonts used throughout the entire game
+        self.sorcerer.create_font(FONT_SECONDARY,
+                file_name='8bitOperatorPlus8-Regular.ttf')
+        self.sorcerer.create_font(FONT_PRIMARY,
                 file_name='8bitOperatorPlus-Regular.ttf')
+
 
         #
         if fade_in:
@@ -58,6 +65,7 @@ class BaseState(State):
             font_size=15,
             x=None, y=None,
             bold=False,
+            font_name=FONT_PRIMARY,
             anchor_x='center', anchor_y='center'):
         """ Create a pyglet label easily
 
@@ -87,7 +95,7 @@ class BaseState(State):
 
         # create the actual thing
         return pyglet.text.Label(
-            text, font_name='8-bit Operator+', font_size=font_size,
+            text, font_name=font_name, font_size=font_size,
             x=pos_x, y=pos_y, bold=bold,
             anchor_x='center', anchor_y='center'
         )

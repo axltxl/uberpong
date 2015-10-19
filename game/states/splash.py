@@ -18,6 +18,7 @@ import pyglet
 from engine.spot import spot_set, spot_get
 
 from .base import BaseState
+from .base import FONT_PRIMARY, FONT_SECONDARY
 
 class SplashState(BaseState):
     """Game start state"""
@@ -50,7 +51,9 @@ class SplashState(BaseState):
 
         # Companion label
         self._comp_label = self.create_label(
-            "Press ANY KEY to play!", font_size=24,
+            "Press ANY KEY to play!",
+            font_size=24,
+            font_name=FONT_SECONDARY,
             y=machine.window.height//2 - 64,
         )
 
