@@ -15,10 +15,11 @@ See LICENSE for more details.
 
 
 import pyglet
-from engine.state import State
 from engine.spot import spot_set, spot_get
 
-class SplashState(State):
+from .base import BaseState
+
+class SplashState(BaseState):
     """Game start state"""
 
     def __init__(self, *, machine):
@@ -29,7 +30,7 @@ class SplashState(State):
         """
 
         # Call my parent
-        super().__init__(machine=machine)
+        super().__init__(machine=machine, fade_in=True)
 
         # Toggle flags
         self._show_press_start = True  # This is used for _comp_label animation
@@ -78,6 +79,9 @@ class SplashState(State):
         self._title_label.draw()
         if self._show_press_start:
             self._comp_label.draw()
+
+        # draw things on my dad
+        super().on_update()
 
 
     def on_key_press(self, sym, mod):
