@@ -23,7 +23,7 @@ from ..net import Scene
 class BaseState(State):
     """base state"""
 
-    def __init__(self, *, machine):
+    def __init__(self, *, machine, fade_in=False):
         """Constructor
 
         Kwargs:
@@ -48,6 +48,10 @@ class BaseState(State):
         # create the base font used throughout the entire game
         self.sorcerer.create_font('8-bit Operator+',
                 file_name='8bitOperatorPlus-Regular.ttf')
+
+        #
+        if fade_in:
+            self._sched_fadein(100)
 
 
     def create_label(self, text, *,
@@ -101,7 +105,7 @@ class BaseState(State):
         pyglet.gl.glClearColor(red/255, green/255, blue/255, alpha/255)
 
 
-    def _setup_fade(self, fade_func, total_time, alpha):
+    def _setup_fade(self, total_time, alpha):
         """Set up fade animation and schedule it"""
 
         # total fade animation time in seconds
@@ -115,10 +119,25 @@ class BaseState(State):
         self._fade_step = int( 255 / (self._fade_total_time/fade_interval) )
 
         # actually schedule the animation under the set interval
-        pyglet.clock.schedule_interval(fade_func, fade_interval)
+        pyglet.clock.schedule_interval(self._fade_alpha_step, fade_interval)
 
         # set initial alpha
         self._fade_alpha = alpha
+
+
+    def _sched_fadein(self, total_time):
+        self._fade_in = True
+        self._sched_fade_anim(total_time, 255)
+
+
+    def _sched_fadeout(self, total_time, state_name):
+        self._fade_out = True
+        self._trans_state_name = state_name
+        self._sched_fade_anim(total_time, 0)
+
+
+    def _sched_fade_anim(self, total_time, initial_alpha):
+        self._setup_fade(total_time, initial_alpha)
 
 
     def transition_to(self, state_name, *, total_time=100):
@@ -130,24 +149,26 @@ class BaseState(State):
             total_time(int, optional): animation total time in milliseconds
         """
 
-        self._fade_out = True
-        self._trans_state_name = state_name
-        self._setup_fade(self._fade_alpha_up, total_time, 0)
+        self._sched_fadeout(total_time, state_name)
 
 
-    def _fade_alpha_up(self, dt):
-        self._fade_alpha += self._fade_step
-
-
-    def _fade_alpha_down(self, dt):
-        self._fade_alpha -= self._fade_step
+    def _fade_alpha_step(self, dt):
+        if self._fade_out:
+            self._fade_alpha += self._fade_step
+            # make sure alpha reaches no more than its top value
+            if self._fade_alpha > 255:
+                self._fade_alpha = 255
+        if self._fade_in:
+            self._fade_alpha -= self._fade_step
+            # make sure alpha reaches no more than its bottom value
+            if self._fade_alpha < 0:
+                self._fade_alpha = 0
 
 
     def on_exit(self):
         """Clean up everyhing before exiting"""
 
-        pyglet.clock.unschedule(self._fade_alpha_up)
-        pyglet.clock.unschedule(self._fade_alpha_down)
+        pyglet.clock.unschedule(self._fade_alpha_step)
         self._fade_in = False
         self._fade_out = False
 
@@ -172,8 +193,15 @@ class BaseState(State):
             glDisable(GL_BLEND)
 
             # Stop "fade" animation
-            if self._fade_alpha >= 255:
-                self.push(self._trans_state_name)
+            if self._fade_out:
+                if self._fade_alpha >= 255:
+                    self.push(self._trans_state_name)
+
+            if self._fade_in:
+                if self._fade_alpha < 0:
+                    self._fade_in = False
+                    pyglet.clock.unschedule(self._fade_alpha_step)
+
 
 
     @property
