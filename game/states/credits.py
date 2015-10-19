@@ -32,24 +32,30 @@ class CreditsState(BaseState):
         super().__init__(machine=machine)
 
         # Title label
-        self._title_label = pyglet.text.Label(
-            spot_get('game_name'), font_name='8-bit Operator+', font_size=72,
-            x=machine.window.width//2, y=machine.window.height//2 + 16,
-            anchor_x='center', anchor_y='center'
-        )
+        self._title_label = self.create_label('Axel Texel', font_size=18)
+        self._presents_label = self.create_label('- presents -',
+                font_size=12, y=((self.window.height//2) - 20))
+        self._title_label.set_style('color', (240, 240, 240, 255))
 
+        #
+        self.set_background_color(31, 31, 31)
 
-    def _get_going(self, dt):
-        """Switch to next state"""
-        self.push('game_load')
 
     #
     # pyglet event callbacks
     #
 
+    def on_begin(self):
+        pyglet.clock.schedule_once(self._trans_splash, 2)
+
+
+    def _trans_splash(self, dt):
+        self.transition_to('game_splash')
+
+
     def on_update(self):
         # Draw labels
         self._title_label.draw()
-        if self._show_press_start:
-            self._comp_label.draw()
+        self._presents_label.draw()
+        super().on_update()
 
