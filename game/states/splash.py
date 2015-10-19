@@ -44,17 +44,15 @@ class SplashState(BaseState):
         self.snd_begin = pyglet.media.load('assets/sounds/begin.wav')
 
         # Title label
-        self._title_label = pyglet.text.Label(
-            spot_get('game_name'), font_name='8-bit Operator+', font_size=72,
-            x=machine.window.width//2, y=machine.window.height//2 + 16,
-            anchor_x='center', anchor_y='center'
+        self._title_label = self.create_label(
+            spot_get('game_name'), font_size=72,
+            y=machine.window.height//2 + 16,
         )
 
         # Companion label
-        self._comp_label = pyglet.text.Label(
-            "Press ANY KEY to play!", font_name='8-bit Operator+', font_size=24,
-            x=machine.window.width//2, y=machine.window.height//2 - 64,
-            anchor_x='center', anchor_y='center'
+        self._comp_label = self.create_label(
+            "Press ANY KEY to play!", font_size=24,
+            y=machine.window.height//2 - 64,
         )
 
 
