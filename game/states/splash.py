@@ -19,6 +19,8 @@ from engine.spot import spot_set, spot_get
 
 from .base import BaseState
 from .base import FONT_PRIMARY, FONT_SECONDARY
+from .. import colors
+
 
 class SplashState(BaseState):
     """Game start state"""
@@ -33,6 +35,20 @@ class SplashState(BaseState):
         # Call my parent
         super().__init__(machine=machine, fade_in=True)
 
+        # base image
+        # TODO: replace with soe\mething better!
+        self._img = pyglet.image.load('assets/images/sprites.png')
+
+        # logo sprite
+        _logo_region = self._img.get_region(96, 0, 464, 256)
+        _logo_region.anchor_x = _logo_region.width // 2
+        _logo_region.anchor_y = _logo_region.height // 2
+        self._logo_sprite = pyglet.sprite.Sprite(_logo_region)
+        self._logo_sprite.set_position(
+            self.window.width // 2,
+            self.window.height // 2
+        )
+
         # Toggle flags
         self._show_press_start = True  # This is used for _comp_label animation
         self._key_pressed = False  # has been a key pressed?
@@ -43,19 +59,28 @@ class SplashState(BaseState):
                 file_name='begin.wav'
         )
 
-        # Title label
-        self._title_label = self.create_label(
-            spot_get('game_name'), font_size=72,
-            y=machine.window.height//2 + 16,
-        )
-
         # Companion label
         self._comp_label = self.create_label(
             "Press ANY KEY to play!",
             font_size=24,
             font_name=FONT_SECONDARY,
-            y=machine.window.height//2 - 64,
+            y=32,
+            anchor_y='baseline'
         )
+        self._comp_label.set_style('color', colors.GRAY0 + (255,))
+
+        # Github label
+        self._github_label = self.create_label(
+            "github.com/axltxl/pong",
+            font_size=18,
+            font_name=FONT_SECONDARY,
+            anchor_x='right', anchor_y='top',
+            y = self.window.height - 8, x = self.window.width - 8
+        )
+        self._github_label.set_style('color', colors.GRAY0 + (255,))
+
+        # set the background color
+        self.set_background_color(*colors.LIGHT_BLUE)
 
 
     def _toggle_press_start(self, dt):
@@ -65,7 +90,7 @@ class SplashState(BaseState):
 
     def _get_going(self, dt):
         """Switch to next state"""
-        self.push('game_load')
+        self.transition_to('game_load')
 
 
     #
@@ -78,7 +103,8 @@ class SplashState(BaseState):
 
     def on_update(self):
         # Draw labels
-        self._title_label.draw()
+        self._github_label.draw()
+        self._logo_sprite.draw()
         if self._show_press_start:
             self._comp_label.draw()
 
