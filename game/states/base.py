@@ -97,7 +97,7 @@ class BaseState(State):
         return pyglet.text.Label(
             text, font_name=font_name, font_size=font_size,
             x=pos_x, y=pos_y, bold=bold,
-            anchor_x='center', anchor_y='center'
+            anchor_x=anchor_x, anchor_y=anchor_y
         )
 
 
@@ -173,7 +173,7 @@ class BaseState(State):
                 self._fade_alpha = 0
 
 
-    def on_exit(self):
+    def _fade_cleanup(self):
         """Clean up everyhing before exiting"""
 
         pyglet.clock.unschedule(self._fade_alpha_step)
@@ -202,14 +202,13 @@ class BaseState(State):
 
             # Stop "fade" animation
             if self._fade_out:
-                if self._fade_alpha >= 255:
+                if self._fade_alpha == 255:
+                    self._fade_cleanup()
                     self.push(self._trans_state_name)
 
             if self._fade_in:
-                if self._fade_alpha < 0:
-                    self._fade_in = False
-                    pyglet.clock.unschedule(self._fade_alpha_step)
-
+                if not self._fade_alpha:
+                    self._fade_cleanup()
 
 
     @property
