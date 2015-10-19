@@ -18,10 +18,12 @@ from docopt import docopt
 
 from engine.state import State, StateMachine
 from engine.spot import spot_set, spot_get
+from engine.sorcerer import Sorcerer
 
 from .net import PlayerClient, Scene
 
 from .states import (
+    CreditsState,
     SplashState,
     RoundState,
     LoadState,
@@ -63,6 +65,7 @@ class Game(StateMachine):
         super().__init__(window=self._window)
 
         # Register states
+        self.register_state('game_credits', CreditsState)
         self.register_state('game_splash', SplashState)
         self.register_state('game_round', RoundState)
         self.register_state('game_load', LoadState)
@@ -90,6 +93,9 @@ class Game(StateMachine):
         self._client = None
         self._server = None
         self.create_client(self.create_server())
+
+        # sourcere a.k.a. resource manager
+        self.sorcerer = Sorcerer()
 
 
     def _spot_init(self):
@@ -253,7 +259,7 @@ class Game(StateMachine):
         """Main entry point"""
         try:
             # Push first State
-            self.push_state('game_splash')
+            self.push_state('game_credits')
 
             # Run the thing!
             while not self._shutdown:
