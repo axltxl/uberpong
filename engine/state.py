@@ -23,6 +23,12 @@ class State:
         """
         self._machine = machine
 
+
+    @property
+    def window(self):
+        return self._machine.window
+
+
     #
     # Operations done on parent machine
     #
