@@ -132,6 +132,10 @@ class SplashState(BaseState):
 
 
     def on_key_press(self, sym, mod):
+        # ignore F12
+        if sym == pyglet.window.key.F12:
+            return
+
         # Evade key redundancy
         if self._key_pressed:
             return
