@@ -65,6 +65,10 @@ class CreditsState(BaseState):
         # schedule a transition to the next state
         pyglet.clock.schedule_once(self._trans_splash, 2)
 
+    def on_exit(self):
+        # schedules cleanup
+        pyglet.clock.unschedule(self._trans_splash)
+
 
     def _trans_splash(self, dt):
         # trigger a transition to the splash state
