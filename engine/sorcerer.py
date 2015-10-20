@@ -59,7 +59,11 @@ class Sorcerer:
         """Create a pyglet font
 
         Kwargs:
+            key(str): resource key name
             file_name(str): font file to use
+
+        Returns:
+            A new (if not existent) pyglet Font
         """
         pyglet.font.add_file('{}/{}'.format(self._root_fonts, file_name))
         self._push_resource(key, pyglet.font.load(key))
@@ -88,8 +92,17 @@ class Sorcerer:
         """Create a pyglet sound
 
         Kwargs:
-            file_name(str): audio file to use
+            key(str): resource key name
+            file_name(str): sound file to use
+
+        Returns:
+            A new (if not existent) pyglet Sound
         """
-        snd = pyglet.media.load('{}/{}'.format(self._root_sounds, file_name))
-        self._push_resource(key, snd)
-        return snd
+
+        return self._push_resource(
+                key,
+                pyglet.media.load('{}/{}'.format(
+                    self._root_sounds,
+                    file_name)
+                    )
+                )
