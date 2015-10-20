@@ -15,10 +15,14 @@ See LICENSE for more details.
 
 
 import pyglet
-from engine.state import State
 from engine.spot import spot_set, spot_get
 
-class SplashState(State):
+from .base import BaseState
+from .base import FONT_PRIMARY, FONT_SECONDARY
+from .. import colors
+
+
+class SplashState(BaseState):
     """Game start state"""
 
     def __init__(self, *, machine):
@@ -29,41 +33,78 @@ class SplashState(State):
         """
 
         # Call my parent
-        super().__init__(machine=machine)
+        super().__init__(machine=machine, fade_in=True)
+
+        # sprite sheet is allocated at this point
+        self._img = self.sorcerer.create_image('sprite_sheet', file_name='sprites.png')
+
+        # logo sprite
+        _logo_region = self._img.get_region(96, 0, 464, 256)
+        _logo_region.anchor_x = _logo_region.width // 2
+        _logo_region.anchor_y = _logo_region.height // 2
+        self._logo_sprite = pyglet.sprite.Sprite(_logo_region)
+        self._logo_sprite.set_position(
+            self.window.width // 2,
+            self.window.height // 2
+        )
+
+        # ball sprite
+        _ball_region = self._img.get_region(32, 32, 64, 64)
+        _ball_region.anchor_x = _ball_region.width // 2
+        _ball_region.anchor_y = _ball_region.height // 2
+        self._ball_sprite = pyglet.sprite.Sprite(_ball_region)
+        self._ball_sprite.set_position(
+            self._logo_sprite.x + _logo_region.width//2 - 16,
+            self.window.height//2 - _logo_region.height//2 + 36
+        )
 
         # Toggle flags
         self._show_press_start = True  # This is used for _comp_label animation
         self._key_pressed = False  # has been a key pressed?
 
-        # This should be moved to another level
-        pyglet.font.add_file('assets/fonts/8bitOperatorPlus-Regular.ttf')
-        font_8bit_operator = pyglet.font.load('8-bit Operator+')
-
         # and this as well
-        self.snd_begin = pyglet.media.load('assets/sounds/begin.wav')
-
-        # Title label
-        self._title_label = pyglet.text.Label(
-            spot_get('game_name'), font_name='8-bit Operator+', font_size=72,
-            x=machine.window.width//2, y=machine.window.height//2 + 16,
-            anchor_x='center', anchor_y='center'
+        self.snd_begin = self.sorcerer.create_sound(
+                'snd_begin',
+                file_name='begin.wav'
         )
 
         # Companion label
-        self._comp_label = pyglet.text.Label(
-            "Press ANY KEY to play!", font_name='8-bit Operator+', font_size=24,
-            x=machine.window.width//2, y=machine.window.height//2 - 64,
-            anchor_x='center', anchor_y='center'
+        self._comp_label = self.create_label(
+            "Press ANY KEY to play!",
+            font_size=24,
+            font_name=FONT_SECONDARY,
+            y=32,
+            anchor_y='baseline'
         )
+        self._comp_label.set_style('color', colors.GRAY0 + (255,))
+
+        # Github label
+        self._github_label = self.create_label(
+            "github.com/axltxl/pong",
+            font_size=16,
+            font_name=FONT_SECONDARY,
+            anchor_x='right', anchor_y='top',
+            y = self.window.height - 8, x = self.window.width - 8
+        )
+        self._github_label.set_style('color', colors.GRAY0 + (255,))
+
+        # set the background color
+        self.set_background_color(*colors.LIGHT_BLUE)
 
 
     def _toggle_press_start(self, dt):
         """Toggle _show_press_start flag"""
         self._show_press_start ^= True
 
+
     def _get_going(self, dt):
         """Switch to next state"""
-        self.push('game_load')
+        self.transition_to('game_load')
+
+
+    def _rotate_ball(self, dt):
+        """Rotate the ball"""
+        self._ball_sprite.rotation += 2
 
     #
     # pyglet event callbacks
@@ -71,22 +112,38 @@ class SplashState(State):
 
     def on_begin(self):
         pyglet.clock.schedule_interval(self._toggle_press_start, 0.5)
+        pyglet.clock.schedule_interval(self._rotate_ball, 1/60)
+
+
+    def on_exit(self):
+        pyglet.clock.unschedule(self._rotate_ball)
 
 
     def on_update(self):
         # Draw labels
-        self._title_label.draw()
+        self._github_label.draw()
+        self._logo_sprite.draw()
+        self._ball_sprite.draw()
         if self._show_press_start:
             self._comp_label.draw()
 
+        # draw things on my dad
+        super().on_update()
+
 
     def on_key_press(self, sym, mod):
+        # ignore F12
+        if sym == pyglet.window.key.F12:
+            return
+
         # Evade key redundancy
         if self._key_pressed:
             return
 
-        # Stop "press start" animation
+        # Stop text animation
         pyglet.clock.unschedule(self._toggle_press_start)
+
+        # set flags
         self._key_pressed = True
         self._show_press_start = False
 
