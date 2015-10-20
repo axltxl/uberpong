@@ -48,6 +48,9 @@ class CreditsState(BaseState):
         # set the background color
         self.set_background_color(*colors.GRAY0)
 
+        # a player to have better sound playback
+        self._player = pyglet.media.Player()
+
 
     #
     # pyglet event callbacks
@@ -55,7 +58,9 @@ class CreditsState(BaseState):
 
     def on_begin(self):
         #play the sound!
-        self.snd_credits.play()
+        if not self._player.playing:
+           self._player.queue(self._snd_credits)
+           self._player.play()
 
         # schedule a transition to the next state
         pyglet.clock.schedule_once(self._trans_splash, 2)
