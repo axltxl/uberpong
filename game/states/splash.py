@@ -36,7 +36,7 @@ class SplashState(BaseState):
         super().__init__(machine=machine, fade_in=True)
 
         # base image
-        # TODO: replace with soe\mething better!
+        # TODO: replace with something better!
         self._img = pyglet.image.load('assets/images/sprites.png')
 
         # logo sprite
@@ -47,6 +47,16 @@ class SplashState(BaseState):
         self._logo_sprite.set_position(
             self.window.width // 2,
             self.window.height // 2
+        )
+
+        # ball sprite
+        _ball_region = self._img.get_region(32, 32, 64, 64)
+        _ball_region.anchor_x = _ball_region.width // 2
+        _ball_region.anchor_y = _ball_region.height // 2
+        self._ball_sprite = pyglet.sprite.Sprite(_ball_region)
+        self._ball_sprite.set_position(
+            self._logo_sprite.x + _logo_region.width//2 - 16,
+            self.window.height//2 - _logo_region.height//2 + 36
         )
 
         # Toggle flags
@@ -72,7 +82,7 @@ class SplashState(BaseState):
         # Github label
         self._github_label = self.create_label(
             "github.com/axltxl/pong",
-            font_size=18,
+            font_size=16,
             font_name=FONT_SECONDARY,
             anchor_x='right', anchor_y='top',
             y = self.window.height - 8, x = self.window.width - 8
@@ -92,6 +102,9 @@ class SplashState(BaseState):
         """Switch to next state"""
         self.transition_to('game_load')
 
+    def _rotate_ball(self, dt):
+        """Rotate the ball"""
+        self._ball_sprite.rotation += 2
 
     #
     # pyglet event callbacks
@@ -99,12 +112,18 @@ class SplashState(BaseState):
 
     def on_begin(self):
         pyglet.clock.schedule_interval(self._toggle_press_start, 0.5)
+        pyglet.clock.schedule_interval(self._rotate_ball, 1/60)
+
+
+    def on_exit(self):
+        pyglet.clock.unschedule(self._rotate_ball)
 
 
     def on_update(self):
         # Draw labels
         self._github_label.draw()
         self._logo_sprite.draw()
+        self._ball_sprite.draw()
         if self._show_press_start:
             self._comp_label.draw()
 
@@ -117,8 +136,10 @@ class SplashState(BaseState):
         if self._key_pressed:
             return
 
-        # Stop "press start" animation
+        # Stop text animation
         pyglet.clock.unschedule(self._toggle_press_start)
+
+        # set flags
         self._key_pressed = True
         self._show_press_start = False
 
