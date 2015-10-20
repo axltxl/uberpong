@@ -33,8 +33,8 @@ class CreditsState(BaseState):
         # Call my parent
         super().__init__(machine=machine)
 
-        # and this as well
-        self.snd_credits = self.sorcerer.create_sound(
+        # create the basic splash sound
+        self._snd_credits = self.sorcerer.create_sound(
                 'snd_credits',
                 file_name='credits.wav'
         )
