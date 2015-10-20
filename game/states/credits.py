@@ -33,6 +33,12 @@ class CreditsState(BaseState):
         # Call my parent
         super().__init__(machine=machine)
 
+        # and this as well
+        self.snd_credits = self.sorcerer.create_sound(
+                'snd_credits',
+                file_name='credits.wav'
+        )
+
         # Title label
         self._title_label = self.create_label('Axel Texel', font_size=18)
         self._presents_label = self.create_label('- presents -',
@@ -48,6 +54,9 @@ class CreditsState(BaseState):
     #
 
     def on_begin(self):
+        #play the sound!
+        self.snd_credits.play()
+
         # schedule a transition to the next state
         pyglet.clock.schedule_once(self._trans_splash, 2)
 
