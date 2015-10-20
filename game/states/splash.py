@@ -35,9 +35,8 @@ class SplashState(BaseState):
         # Call my parent
         super().__init__(machine=machine, fade_in=True)
 
-        # base image
-        # TODO: replace with something better!
-        self._img = pyglet.image.load('assets/images/sprites.png')
+        # sprite sheet is allocated at this point
+        self._img = self.sorcerer.create_image('sprite_sheet', file_name='sprites.png')
 
         # logo sprite
         _logo_region = self._img.get_region(96, 0, 464, 256)
@@ -101,6 +100,7 @@ class SplashState(BaseState):
     def _get_going(self, dt):
         """Switch to next state"""
         self.transition_to('game_load')
+
 
     def _rotate_ball(self, dt):
         """Rotate the ball"""
