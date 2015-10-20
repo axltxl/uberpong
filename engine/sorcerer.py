@@ -52,6 +52,7 @@ class Sorcerer:
     def _push_resource(self, key, r):
         if key not in self._resources:
             self._resources[key] = r
+        return r
 
 
     def create_font(self, key, *, file_name):
