@@ -17,6 +17,7 @@ from pyglet.gl import *
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
+from .. import colors
 from ..net import Scene
 
 
@@ -94,11 +95,15 @@ class BaseState(State):
             pos_y = y
 
         # create the actual thing
-        return pyglet.text.Label(
+        label =  pyglet.text.Label(
             text, font_name=font_name, font_size=font_size,
             x=pos_x, y=pos_y, bold=bold,
             anchor_x=anchor_x, anchor_y=anchor_y
         )
+        label.set_style('color', colors.GRAY0 + (255,))
+
+        # give the label
+        return label
 
 
     def set_background_color(self, red, green, blue, alpha=255):

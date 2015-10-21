@@ -76,7 +76,6 @@ class SplashState(BaseState):
             y=32,
             anchor_y='baseline'
         )
-        self._comp_label.set_style('color', colors.GRAY0 + (255,))
 
         # Github label
         self._github_label = self.create_label(
@@ -86,7 +85,6 @@ class SplashState(BaseState):
             anchor_x='right', anchor_y='top',
             y = self.window.height - 8, x = self.window.width - 8
         )
-        self._github_label.set_style('color', colors.GRAY0 + (255,))
 
         # set the background color
         self.set_background_color(*colors.LIGHT_BLUE)
@@ -122,10 +120,12 @@ class SplashState(BaseState):
     def on_update(self):
         # Draw labels
         self._github_label.draw()
-        self._logo_sprite.draw()
-        self._ball_sprite.draw()
         if self._show_press_start:
             self._comp_label.draw()
+
+        # Draw sprites
+        self._logo_sprite.draw()
+        self._ball_sprite.draw()
 
         # draw things on my dad
         super().on_update()

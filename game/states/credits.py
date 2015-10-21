@@ -44,6 +44,7 @@ class CreditsState(BaseState):
         self._presents_label = self.create_label('- presents -',
                 font_size=12, y=((self.window.height//2) - 20))
         self._title_label.set_style('color', colors.GRAY1 + (255,) )
+        self._presents_label.set_style('color', colors.GRAY1 + (255,) )
 
         # set the background color
         self.set_background_color(*colors.GRAY0)
