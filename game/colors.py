@@ -12,3 +12,4 @@ See LICENSE for more details.
 GRAY0 = (31, 31, 31)
 GRAY1 = (240, 240, 240)
 LIGHT_BLUE = (81, 180, 243)
+YELLOW = (234, 244, 82)
