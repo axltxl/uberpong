@@ -133,6 +133,19 @@ class PlayerClient(ming.Client):
         self._score_me = 0
         self._score_foe = 0
 
+        # get the sorcerer to use resources
+        self._sorcerer = spot_get('game_object').sorcerer
+
+        # a player to have better sound playback
+        self._ball_player = pyglet.media.Player()
+
+        # collision sound
+        self._snd_bounce = self._sorcerer.create_sound(
+                'snd_bounce',
+                file_name='bounce.wav'
+        )
+
+
     @property
     def connected(self):
         return self._me_connected
@@ -266,12 +279,49 @@ class PlayerClient(ming.Client):
         self._scores_label.text = scores_label_format
         self._scores_label.draw()
 
+
+
+    def _get_rect(self, sprite):
+        sw = sprite.width // 2
+        sh = sprite.height // 2
+        return (sprite.x - sw, sprite.y - sh, sprite.x + sw, sprite.y + sh)
+
+
+    def _rect_intersect(self, rect0, rect1):
+        return not (rect0[2] < rect1[0] or rect1[2] < rect0[0] \
+                or rect0[3] < rect1[1] or rect1[3] < rect0[1])
+
+
+    def _ball_out_of_bounds(self):
+        return False
+
+
+    def _ball_collided(self):
+        rect_paddle_me = self._get_rect(self._paddle_me_sprite)
+        rect_paddle_foe = self._get_rect(self._paddle_foe_sprite)
+        rect_ball = self._get_rect(self._ball_sprite)
+        return self._rect_intersect(rect_ball, rect_paddle_me) \
+            or self._rect_intersect(rect_ball, rect_paddle_foe)
+
+
+    def _snd_play_ball_bounce(self):
+        if not self._ball_player.playing:
+            self._ball_player.queue(self._snd_bounce)
+            self._ball_player.play()
+
+
     def draw_ball(self):
         """Render the ball"""
 
         # Draw the thing onto the screen
         self._ball_sprite.draw()
 
+        # TODO: should this be here?
+        if self._ball_out_of_bounds():
+            self._snd_play_ball_bounce()
+
+        if self._ball_collided():
+            self._snd_play_ball_bounce()
 
     def draw_paddles(self):
         """Render paddles"""

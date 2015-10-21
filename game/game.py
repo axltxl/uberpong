@@ -87,6 +87,11 @@ class Game(StateMachine):
         spot_set('ball_size', (32, 32))
         spot_set('scores_position', (self._window.width // 2, self._window.height - 24))
 
+        # sourcerer a.k.a. resource manager
+        self.sorcerer = Sorcerer(
+            root_dir=path.join(path.dirname(__file__), '../assets')
+        )
+
         #
         # Create server and client
         #
@@ -94,10 +99,6 @@ class Game(StateMachine):
         self._server = None
         self.create_client(self.create_server())
 
-        # sourcerer a.k.a. resource manager
-        self.sorcerer = Sorcerer(
-            root_dir=path.join(path.dirname(__file__), '../assets')
-        )
 
 
     def _spot_init(self):
