@@ -75,9 +75,6 @@ class LoadState(BaseState):
         """Rotate the ball"""
         self._ball_sprite.rotation += 2
 
-    def _get_going(self, dt):
-        # Push next state
-        self.push('game_wait')
 
     def _attempt_connection(self, dt):
         # Attempt to connect to server
@@ -110,14 +107,14 @@ class LoadState(BaseState):
         if self._client.connected:
             if not self._push_schedule:
 
-                # Schedule a new state onto the stack after the sound has been played
-                pyglet.clock.schedule_once(self._get_going, 1)
-
                 # Tear down connection attempt
                 pyglet.clock.unschedule(self._attempt_connection)
 
                 # A flag to control this code block
                 self._push_schedule = True
+
+                # get going to next state
+                self.transition_to('game_wait')
 
             # change text on label
             self._server_label.text = 'connected!'
@@ -125,3 +122,6 @@ class LoadState(BaseState):
         # Draw labels
         self._conn_label.draw()
         self._server_label.draw()
+
+        # draw things on my dad
+        super().on_update()
