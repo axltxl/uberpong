@@ -17,12 +17,14 @@ See LICENSE for more details.
 
 import pyglet
 
-from engine.state import State
 from engine.spot import spot_set, spot_get
 
+from .base import BaseState
+from .base import FONT_PRIMARY, FONT_SECONDARY
+from .. import colors
 from ..net import Scene
 
-class WaitState(State):
+class WaitState(BaseState):
     """Game wait state"""
 
     def __init__(self, *, machine):
@@ -33,18 +35,17 @@ class WaitState(State):
         """
 
         # Call my parent
-        super().__init__(machine=machine)
-
-        # Get client
-        self._client = spot_get('game_client')
+        super().__init__(machine=machine, fade_in=False)
 
         # Server label
-        self._wait_label = pyglet.text.Label(
-            "Waiting for players to join ...",
-            font_name='8-bit Operator+', font_size=14,
-            x=machine.window.width//2, y=machine.window.height - 48,
-            anchor_x='center', anchor_y='center'
+        self._wait_label = self.create_label(
+            "Waiting for your opponent ...",
+            font_size=24,
         )
+        self._wait_label.set_style('color', colors.GRAY1 + (255,))
+
+        # set the background color
+        self.set_background_color(*colors.PURPLE)
 
     #
     # pyglet event callbacks
@@ -57,3 +58,6 @@ class WaitState(State):
         # Go to begin state
         if self._client.server_state == Scene.ST_BEGIN:
             self.push('game_begin')
+
+        # draw things on my dad
+        super().on_update()
