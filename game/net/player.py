@@ -264,6 +264,7 @@ class PlayerClient(ming.Client):
             # Set paddle position
             self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
 
+
     def draw_scores(self):
         base_str_format = "{}   {}"
         if self._number_me == 1:
@@ -280,7 +281,6 @@ class PlayerClient(ming.Client):
         self._scores_label.draw()
 
 
-
     def _get_rect(self, sprite):
         sw = sprite.width // 2
         sh = sprite.height // 2
@@ -288,8 +288,12 @@ class PlayerClient(ming.Client):
 
 
     def _rect_intersect(self, rect0, rect1):
-        return not (rect0[2] < rect1[0] or rect1[2] < rect0[0] \
-                or rect0[3] < rect1[1] or rect1[3] < rect0[1])
+        return not (\
+                rect0[2] < rect1[0] \
+                or rect1[2] < rect0[0] \
+                or rect0[3] < rect1[1] or \
+                rect1[3] < rect0[1] \
+                )
 
 
     def _ball_out_of_bounds(self):
@@ -322,6 +326,7 @@ class PlayerClient(ming.Client):
 
         if self._ball_collided():
             self._snd_play_ball_bounce()
+
 
     def draw_paddles(self):
         """Render paddles"""
