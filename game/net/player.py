@@ -42,8 +42,11 @@ class PlayerClient(ming.Client):
         # and used on further requests
         self._id = None
 
-        # base image
-        self._img = pyglet.image.load('assets/images/sprites.png')
+        # get the sorcerer to use resources
+        self._sorcerer = spot_get('game_object').sorcerer
+
+        # sprite sheet is allocated at this point
+        self._img = self._sorcerer.create_image('sprite_sheet', file_name='sprites.png')
 
         # paddle image region
         paddle_width, paddle_height = spot_get('paddle_size')
@@ -133,8 +136,6 @@ class PlayerClient(ming.Client):
         self._score_me = 0
         self._score_foe = 0
 
-        # get the sorcerer to use resources
-        self._sorcerer = spot_get('game_object').sorcerer
 
         # a player to have better sound playback
         self._ball_player = pyglet.media.Player()
@@ -150,10 +151,12 @@ class PlayerClient(ming.Client):
     def connected(self):
         return self._me_connected
 
+
     @property
     def server_state(self):
         """Get current state in server"""
         return self._server_state
+
 
     def connect(self):
         """Connect to server
@@ -222,6 +225,7 @@ class PlayerClient(ming.Client):
         # Unleash the kraken!
         self._update_lock = False
 
+
     def tick(self):
         """Run simulation on client"""
 
@@ -264,6 +268,7 @@ class PlayerClient(ming.Client):
             # Set paddle position
             self._paddle_foe_sprite.set_position(self._paddle_foe_x, self._paddle_foe_y)
 
+
     def draw_scores(self):
         base_str_format = "{}   {}"
         if self._number_me == 1:
@@ -278,7 +283,6 @@ class PlayerClient(ming.Client):
                     )
         self._scores_label.text = scores_label_format
         self._scores_label.draw()
-
 
 
     def _get_rect(self, sprite):
@@ -323,6 +327,7 @@ class PlayerClient(ming.Client):
         if self._ball_collided():
             self._snd_play_ball_bounce()
 
+
     def draw_paddles(self):
         """Render paddles"""
 
@@ -341,7 +346,6 @@ class PlayerClient(ming.Client):
 
             # Draw foe sprite
             self._paddle_foe_sprite.draw()
-
 
 
     def on_data_received(self, data, host, port):
@@ -451,7 +455,6 @@ class PlayerClient(ming.Client):
                 # position and current velocity of the ball
                 self._ball_x, self._ball_y = ball['position']
                 self._ball_vx, self._ball_vy = ball['velocity']
-
 
 
     def on_key_press(self, symbol, modifiers):

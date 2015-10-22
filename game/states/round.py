@@ -41,13 +41,10 @@ class RoundState(BaseState):
     #
 
     def on_begin(self):
-        pyglet.gl.glClearColor(65/255,97/255,1,1)
         if self.server is not None:
             self.server.reset_players()
             self.server.reset_ball()
 
-    def on_exit(self):
-        pyglet.gl.glClearColor(0,0,0,255)
 
     def on_update(self):
         # Update client!
