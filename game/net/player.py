@@ -292,8 +292,12 @@ class PlayerClient(ming.Client):
 
 
     def _rect_intersect(self, rect0, rect1):
-        return not (rect0[2] < rect1[0] or rect1[2] < rect0[0] \
-                or rect0[3] < rect1[1] or rect1[3] < rect0[1])
+        return not (\
+                rect0[2] < rect1[0] \
+                or rect1[2] < rect0[0] \
+                or rect0[3] < rect1[1] or \
+                rect1[3] < rect0[1] \
+                )
 
 
     def _ball_out_of_bounds(self):
