@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-game.states.game
+game.states.round
 ~~~~~~~~
 Round state
 
@@ -18,7 +18,7 @@ import pyglet
 from engine.spot import spot_set, spot_get
 
 from .base import BaseState
-from .base import FONT_PRIMARY, FONT_SECONDARY
+from ..utils import FONT_PRIMARY, FONT_SECONDARY
 from .. import colors
 from ..net import Scene
 

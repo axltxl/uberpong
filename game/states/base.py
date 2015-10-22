@@ -17,12 +17,11 @@ from pyglet.gl import *
 from engine.state import State
 from engine.spot import spot_set, spot_get
 
+from .. import utils
 from .. import colors
 from ..net import Scene
 
 
-FONT_PRIMARY = '8-bit Operator+'
-FONT_SECONDARY = '8-bit Operator+ 8'
 
 class BaseState(State):
     """base state"""
@@ -51,60 +50,28 @@ class BaseState(State):
         self.sorcerer = spot_get('game_object').sorcerer
 
         # create the base fonts used throughout the entire game
-        self.sorcerer.create_font(FONT_SECONDARY,
+        self.sorcerer.create_font(utils.FONT_SECONDARY,
                 file_name='8bitOperatorPlus8-Regular.ttf')
-        self.sorcerer.create_font(FONT_PRIMARY,
+        self.sorcerer.create_font(utils.FONT_PRIMARY,
                 file_name='8bitOperatorPlus-Regular.ttf')
 
 
-        #
+        # TODO: give more flexibility about this
         if fade_in:
             self._sched_fadein(100)
 
 
-    def create_label(self, text, *,
-            font_size=15,
-            x=None, y=None,
-            bold=False,
-            font_name=FONT_PRIMARY,
-            anchor_x='center', anchor_y='center'):
+    def create_label(self, text, **kwargs):
         """ Create a pyglet label easily
 
         Args:
             text(str): Initial text for this resource
 
         Kwargs:
-            font_size(int, optional): font size
-            x(int, optional): horizontal position
-            y(int, optional): vertical position
-            bold(bool, optional): whether or not this label is going to be rendered as bold text
-            anchor_x(int, optional): horizontal anchor for this label
-            anchor_y(int), optional: vertical anchor for this label
+            kwargs(dict, optional): optional keyword arguments
         """
 
-        # by default, a label created under this method
-        # is going to be centered if no position has been specified
-        if x is None:
-            pos_x = self.window.width // 2
-        else:
-            pos_x = x
-
-        if y is None:
-            pos_y = self.window.height // 2
-        else:
-            pos_y = y
-
-        # create the actual thing
-        label =  pyglet.text.Label(
-            text, font_name=font_name, font_size=font_size,
-            x=pos_x, y=pos_y, bold=bold,
-            anchor_x=anchor_x, anchor_y=anchor_y
-        )
-        label.set_style('color', colors.GRAY0 + (255,))
-
-        # give the label
-        return label
-
+        return utils.create_label(text, window=self.window, **kwargs)
 
     def set_background_color(self, red, green, blue, alpha=255):
         """ Set background color
