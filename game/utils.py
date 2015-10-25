@@ -16,7 +16,7 @@ FONT_PRIMARY = '8-bit Operator+'
 FONT_SECONDARY = '8-bit Operator+ 8'
 
 def create_label(
-    text, *,
+    text='', *,
     window,
     font_size=15,
     x=None, y=None,
