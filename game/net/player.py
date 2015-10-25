@@ -20,14 +20,15 @@ from . import (
     Request,
     Response
 )
-
+from .. import utils
+from .. import colors
 
 class PlayerClient(ming.Client):
     """
     Player client implementation
     """
 
-    def __init__(self, *, ball_position, **kwargs):
+    def __init__(self, *, window, ball_position, **kwargs):
         """Constructor
 
         Kwargs:
@@ -55,6 +56,15 @@ class PlayerClient(ming.Client):
         # centered anchor as required by pymunk bodies at the server side
         self._paddle_region.anchor_x = self._paddle_region.width // 2
         self._paddle_region.anchor_y = self._paddle_region.height // 2
+
+        # board image region
+        self._board_region = self._img.get_region(0, 256, 800, 600)
+        self._board_region.anchor_x = 0
+        self._board_region.anchor_y = 0
+
+        # board sprite
+        self._board_sprite = pyglet.sprite.Sprite(self._board_region)
+        self._board_sprite.set_position(0,0)
 
         # ball image region
         ball_width, ball_height = spot_get('ball_size')
@@ -124,14 +134,16 @@ class PlayerClient(ming.Client):
         # Ready the player?
         self._key_ready = False
 
+        # game window
+        self._window = window
+
         # scores label
         scores_x, scores_y = spot_get('scores_position')
-        self._scores_label = pyglet.text.Label(
-            font_name='8-bit Operator+',
+        self._scores_label = utils.create_label(
+            window=self._window,
             x=scores_x, y=scores_y,font_size=32,
-            anchor_x='center', anchor_y='center'
         )
-
+        self._scores_label.set_style('color', colors.GRAY1 + (255,))
         # scores themselves
         self._score_me = 0
         self._score_foe = 0
@@ -145,6 +157,11 @@ class PlayerClient(ming.Client):
                 'snd_bounce',
                 file_name='bounce.wav'
         )
+
+
+    def draw_board(self):
+        """ Draw the board sprite """
+        self._board_sprite.draw()
 
 
     @property
