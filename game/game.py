@@ -142,6 +142,9 @@ class Game(StateMachine):
             spot_set('sv_ball_max_velocity', 800)
             spot_set('sv_score_max', 10)
 
+        # Default server port for either server or client
+        spot_set( 'sv_port', int(self._options['--port']) )
+
     def _parse_args(self, argv):
         """pong
 
@@ -153,7 +156,7 @@ class Game(StateMachine):
         Options:
           -z --lz4                    Use LZ4 compression algorithm
           -H --host <ip_address>      Server to connect to
-          -p --port <port>            Port to connect to
+          -p --port <port>            Port to connect to [default: 6000]
           -h --help                   Show this screen.
           --version                   Show version.
         """
@@ -183,8 +186,8 @@ class Game(StateMachine):
             #
             server_addr = 'localhost'
 
-            #
-            self._server = Scene(port=5000,
+            # Create the actual server
+            self._server = Scene(port=spot_get('sv_port'),
                                 width=self._window.width,
                                 height=self._window.height,
                                 codec=spot_get('net_codec'))
@@ -216,9 +219,10 @@ class Game(StateMachine):
         # Create client
         #
         self._client = PlayerClient(
+            window=self._window,
             ball_position=spot_get('ball_position_start'),
             address=server_addr,
-            port=5000,
+            port=spot_get('sv_port'),
             codec=spot_get('net_codec')
         )
 
