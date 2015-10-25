@@ -17,14 +17,15 @@ See LICENSE for more details.
 
 
 import pyglet
-
-from engine.state import State
 from engine.spot import spot_set, spot_get
 
 from ..net import Scene
+from .base import BaseState
+from .. import utils
+from .. import colors
 
 
-class BeginState(State):
+class BeginState(BaseState):
     """Game begin state"""
 
     def __init__(self, *, machine):
@@ -37,15 +38,12 @@ class BeginState(State):
         # Call my parent
         super().__init__(machine=machine)
 
-        # Get client and server
-        self._server = spot_get('game_server')
-        self._client = spot_get('game_client')
-
         # Server label
-        self._wait_label = pyglet.text.Label(
-            font_name='8-bit Operator+', font_size=20,
-            x=machine.window.width//2, y=48,
-            anchor_x='center', anchor_y='center'
+        self._wait_label = self.create_label(
+            '',
+            font_size=20,
+            x=machine.window.width//2, y=16,
+            anchor_y='baseline'
         )
 
     #
@@ -63,14 +61,15 @@ class BeginState(State):
     def on_update(self):
         """Draw all the things!"""
 
+        self.client.tick()
+        self.client.draw_board()
+        self.client.draw_ball()
+        self.client.draw_paddles()
         self._wait_label.draw()
-        self._client.tick()
-        self._client.draw_ball()
-        self._client.draw_paddles()
 
         # Check for a state change, at anytime is expected
         # from the server to change to "playing" state
-        if self._client.server_state == Scene.ST_PLAYING:
+        if self.client.server_state == Scene.ST_PLAYING:
             self.push('game_round')
 
     #######################################################
@@ -83,4 +82,4 @@ class BeginState(State):
         self._wait_label.text = "Ready!"
 
         # Update data on client
-        self._client.on_key_press(symbol, modifiers)
+        self.client.on_key_press(symbol, modifiers)

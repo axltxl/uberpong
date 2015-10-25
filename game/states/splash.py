@@ -18,7 +18,7 @@ import pyglet
 from engine.spot import spot_set, spot_get
 
 from .base import BaseState
-from .base import FONT_PRIMARY, FONT_SECONDARY
+from ..utils import FONT_PRIMARY, FONT_SECONDARY
 from .. import colors
 
 
@@ -35,8 +35,8 @@ class SplashState(BaseState):
         # Call my parent
         super().__init__(machine=machine, fade_in=True)
 
-        # sprite sheet is allocated at this point
-        self._img = self.sorcerer.create_image('sprite_sheet', file_name='sprites.png')
+        # base image
+        self._img = self.sorcerer.get_resource('sprite_sheet')
 
         # logo sprite
         _logo_region = self._img.get_region(96, 0, 464, 256)
