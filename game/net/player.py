@@ -138,10 +138,10 @@ class PlayerClient(ming.Client):
         self._window = window
 
         # scores label
-        scores_x, scores_y = spot_get('scores_position')
+        scores_x, scores_y = spot_get('cl_scores_position')
         self._scores_label = utils.create_label(
             window=self._window,
-            x=scores_x, y=scores_y,font_size=32,
+            x=scores_x, y=scores_y,font_size=48,
         )
         self._scores_label.set_style('color', colors.GRAY1 + (255,))
         # scores themselves

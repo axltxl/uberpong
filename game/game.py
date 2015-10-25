@@ -85,7 +85,7 @@ class Game(StateMachine):
         spot_set('paddle_size', (32, 64))
         spot_set('ball_position_start', (self._window.width // 2, self._window.height // 2))
         spot_set('ball_size', (32, 32))
-        spot_set('scores_position', (self._window.width // 2, self._window.height - 24))
+        spot_set('cl_scores_position', (self._window.width // 2, self._window.height - 32))
 
         # sourcerer a.k.a. resource manager
         self.sorcerer = Sorcerer(
