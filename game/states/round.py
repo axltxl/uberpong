@@ -51,6 +51,7 @@ class RoundState(BaseState):
         self.client.tick()
 
         # Draw all the things in the client!
+        self.client.draw_board()
         self.client.draw_scores()
         self.client.draw_paddles()
         self.client.draw_ball()
