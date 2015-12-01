@@ -16,7 +16,6 @@ import ming
 from engine.spot import spot_set, spot_get
 from .scene import Scene
 from . import (
-    Packet,
     Request,
     Response
 )
@@ -64,7 +63,7 @@ class PlayerClient(ming.Client):
 
         # board sprite
         self._board_sprite = pyglet.sprite.Sprite(self._board_region)
-        self._board_sprite.set_position(0,0)
+        self._board_sprite.set_position(0, 0)
 
         # ball image region
         ball_width, ball_height = spot_get('ball_size')
@@ -124,7 +123,7 @@ class PlayerClient(ming.Client):
 
         # Updates frequence
         # Set up updates interval on client
-        self._update_lock = False # if True, this client will ignore any incoming data
+        self._update_lock = False  # if True, this client will ignore any incoming data
         self._update_rate = 1.0 / spot_get('cl_updaterate')
         pyglet.clock.schedule_interval(self.update_from_server, self._update_rate)
 
@@ -141,22 +140,12 @@ class PlayerClient(ming.Client):
         scores_x, scores_y = spot_get('cl_scores_position')
         self._scores_label = utils.create_label(
             window=self._window,
-            x=scores_x, y=scores_y,font_size=48,
+            x=scores_x, y=scores_y, font_size=48,
         )
         self._scores_label.set_style('color', colors.GRAY1 + (255,))
         # scores themselves
         self._score_me = 0
         self._score_foe = 0
-
-
-        # a player to have better sound playback
-        self._ball_player = pyglet.media.Player()
-
-        # collision sound
-        self._snd_bounce = self._sorcerer.create_sound(
-                'snd_bounce',
-                file_name='bounce.wav'
-        )
 
 
     def draw_board(self):
@@ -186,13 +175,6 @@ class PlayerClient(ming.Client):
         """Connect to server
 
         Send a connect request to start handshaking with the server
-
-        =>
-            {
-                'version': 1,
-                'cmd': '+connect'
-            }
-
         """
         self.send(Request(command=Request.CMD_CONNECT))
 
@@ -201,14 +183,6 @@ class PlayerClient(ming.Client):
         """Disconnect from server
 
         Send a connect request to start handshaking with the server
-
-        =>
-            {
-                'version': 1,
-                'cmd': '-connect',
-                'player_id': '25aee061a5f34977bf672d4ff59fdc36'
-            }
-
         """
         self.send(Request(command=Request.CMD_DISCONNECT))
 
@@ -336,24 +310,11 @@ class PlayerClient(ming.Client):
             or self._rect_intersect(rect_ball, rect_paddle_foe)
 
 
-    def _snd_play_ball_bounce(self):
-        if not self._ball_player.playing:
-            self._ball_player.queue(self._snd_bounce)
-            self._ball_player.play()
-
-
     def draw_ball(self):
         """Render the ball"""
 
         # Draw the thing onto the screen
         self._ball_sprite.draw()
-
-        # TODO: should this be here?
-        if self._ball_out_of_bounds():
-            self._snd_play_ball_bounce()
-
-        if self._ball_collided():
-            self._snd_play_ball_bounce()
 
 
     def draw_paddles(self):
