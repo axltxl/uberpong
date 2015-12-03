@@ -14,9 +14,10 @@ See LICENSE for more details.
 """
 
 
+import pyglet
 from .base import BaseState
 from engine.spot import spot_set, spot_get
-
+from .. import colors
 from ..net import Scene
 
 
@@ -33,19 +34,43 @@ class ScoreState(BaseState):
         # Call my parent
         super().__init__(machine=machine)
 
+        # score sound
+        self._snd_score = self.sorcerer.create_sound(
+                'snd_score',
+                file_name='Jingle_Achievement_00.wav'
+        )
+
+        # toggle flags
+        self._show_scores = True
+
+        # a player to have better sound playback
+        self._player = pyglet.media.Player()
+
     #
     # pyglet event callbacks
     #
 
+    def _toggle_show_scores(self, dt):
+        self._show_scores ^= True
+
+
     def on_begin(self):
-        self.set_background_color(127, 0, 0)
+        pyglet.clock.schedule_interval(self._toggle_show_scores, 0.1)
+        self.set_background_color(*colors.CRIMSON)
+
+        #play the sound!
+        if not self._player.playing:
+           self._player.queue(self._snd_score)
+           self._player.play()
+
 
     def on_exit(self):
-        pass
+        pyglet.clock.unschedule(self._toggle_show_scores)
 
     def on_update(self):
         # Draw all the things but the ball in the client!
-        self.client.draw_scores()
+        if self._show_scores:
+            self.client.draw_scores()
         self.client.draw_paddles()
 
         # Switch to previous state
