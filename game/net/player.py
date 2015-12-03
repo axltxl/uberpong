@@ -268,6 +268,9 @@ class PlayerClient(ming.Client):
 
 
     def draw_scores(self):
+        """Draw scores"""
+
+        # the scores are shown according to players
         base_str_format = "{}   {}"
         if self._number_me == 1:
             scores_label_format = base_str_format.format(
@@ -279,7 +282,21 @@ class PlayerClient(ming.Client):
                     self._score_foe,
                     self._score_me
                     )
+
+        # Set up size and position of scores label
+        if self._server_state == Scene.ST_SCORE:
+            font_size = 100
+            scores_y = self._window.height // 2
+        else:
+            font_size = 48
+            scores_y = spot_get('cl_scores_position')[1]
+
+        # set properties on label
+        self._scores_label.y = scores_y
+        self._scores_label.font_size = font_size
         self._scores_label.text = scores_label_format
+
+        # draw the scores label
         self._scores_label.draw()
 
 

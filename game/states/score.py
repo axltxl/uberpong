@@ -15,13 +15,13 @@ See LICENSE for more details.
 
 
 import pyglet
-
-from engine.state import State
+from .base import BaseState
 from engine.spot import spot_set, spot_get
-
+from .. import colors
 from ..net import Scene
 
-class ScoreState(State):
+
+class ScoreState(BaseState):
     """Game score state"""
 
     def __init__(self, *, machine):
@@ -34,28 +34,47 @@ class ScoreState(State):
         # Call my parent
         super().__init__(machine=machine)
 
-        # TODO: document this!
-        self._server = spot_get('game_server')
-        self._client = spot_get('game_client')
+        # score sound
+        self._snd_score = self.sorcerer.create_sound(
+                'snd_score',
+                file_name='Jingle_Achievement_00.wav'
+        )
+
+        # toggle flags
+        self._show_scores = True
+
+        # a player to have better sound playback
+        self._player = pyglet.media.Player()
 
     #
     # pyglet event callbacks
     #
 
+    def _toggle_show_scores(self, dt):
+        self._show_scores ^= True
+
+
     def on_begin(self):
-        # Mark score for winning player
-        pass
+        pyglet.clock.schedule_interval(self._toggle_show_scores, 0.1)
+        self.set_background_color(*colors.CRIMSON)
+
+        #play the sound!
+        if not self._player.playing:
+           self._player.queue(self._snd_score)
+           self._player.play()
+
 
     def on_exit(self):
-        pass
+        pyglet.clock.unschedule(self._toggle_show_scores)
 
     def on_update(self):
         # Draw all the things but the ball in the client!
-        self._client.draw_scores()
-        self._client.draw_paddles()
+        if self._show_scores:
+            self.client.draw_scores()
+        self.client.draw_paddles()
 
         # Switch to previous state
-        if self._client.server_state == Scene.ST_PLAYING:
+        if self.client.server_state == Scene.ST_PLAYING:
             self.pop()
-        elif self._client.server_state == Scene.ST_GAME_SET:
+        elif self.client.server_state == Scene.ST_GAME_SET:
             self.push('game_set')

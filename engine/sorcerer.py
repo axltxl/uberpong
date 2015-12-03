@@ -65,8 +65,11 @@ class Sorcerer:
         Returns:
             A new (if not existent) pyglet Font
         """
-        pyglet.font.add_file('{}/{}'.format(self._root_fonts, file_name))
-        self._push_resource(key, pyglet.font.load(key))
+        # don't even bother to load if it's
+        # already present on this sorcerer
+        if key not in self._resources:
+            pyglet.font.add_file('{}/{}'.format(self._root_fonts, file_name))
+            self._push_resource(key, pyglet.font.load(key))
 
 
     def create_image(self, key, *, file_name):
