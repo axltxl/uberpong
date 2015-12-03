@@ -33,17 +33,12 @@ class ScoreState(BaseState):
         # Call my parent
         super().__init__(machine=machine)
 
-        # TODO: document this!
-        self._server = spot_get('game_server')
-        self._client = spot_get('game_client')
-
     #
     # pyglet event callbacks
     #
 
     def on_begin(self):
-        # Mark score for winning player
-        pass
+        self.set_background_color(127, 0, 0)
 
     def on_exit(self):
         pass
@@ -54,7 +49,7 @@ class ScoreState(BaseState):
         self.client.draw_paddles()
 
         # Switch to previous state
-        if self._client.server_state == Scene.ST_PLAYING:
+        if self.client.server_state == Scene.ST_PLAYING:
             self.pop()
-        elif self._client.server_state == Scene.ST_GAME_SET:
+        elif self.client.server_state == Scene.ST_GAME_SET:
             self.push('game_set')
