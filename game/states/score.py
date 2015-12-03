@@ -14,14 +14,13 @@ See LICENSE for more details.
 """
 
 
-import pyglet
-
-from engine.state import State
+from .base import BaseState
 from engine.spot import spot_set, spot_get
 
 from ..net import Scene
 
-class ScoreState(State):
+
+class ScoreState(BaseState):
     """Game score state"""
 
     def __init__(self, *, machine):
@@ -51,8 +50,8 @@ class ScoreState(State):
 
     def on_update(self):
         # Draw all the things but the ball in the client!
-        self._client.draw_scores()
-        self._client.draw_paddles()
+        self.client.draw_scores()
+        self.client.draw_paddles()
 
         # Switch to previous state
         if self._client.server_state == Scene.ST_PLAYING:
