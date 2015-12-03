@@ -114,6 +114,7 @@ class SplashState(BaseState):
 
 
     def on_exit(self):
+        pyglet.clock.unschedule(self._toggle_press_start)
         pyglet.clock.unschedule(self._rotate_ball)
 
 
