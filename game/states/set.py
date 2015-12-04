@@ -36,7 +36,7 @@ class GameSetState(BaseState):
         super().__init__(machine=machine)
 
         # Title label
-        self._gameset_label = self.create_label('Game set!', font_size=110)
+        self._gameset_label = self.create_label('Game set!', font_size=100)
         self._gameset_label.set_style('color', colors.GRAY1 + (255,) )
 
         # score sound
