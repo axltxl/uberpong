@@ -99,7 +99,7 @@ class Game(StateMachine):
         ########################################
         assets_path = os.getenv('ASPATH')
         if assets_path is None:
-            assets_path = path.join(sys.prefix, 'share/{}'.format(pkg_name))
+            assets_path = path.join(sys.prefix, 'share/{}/assets'.format(pkg_name))
 
         # sourcerer a.k.a. resource manager
         self._sorcerer = Sorcerer( root_dir=path.join(assets_path))

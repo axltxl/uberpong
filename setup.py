@@ -19,6 +19,11 @@ from uberpong import __name__ as pkg_name
 # parse_requirements() returns generator of pip.req.InstallRequirement objects
 install_reqs = parse_requirements('requirements.txt', session=pip.download.PipSession())
 
+# this is the way assets are distributed
+sys_prefix = os.path.join(sys.prefix, "share/{}".format(pkg_name))
+datadir = 'assets'
+data_files = [ (os.path.join(sys_prefix, d), [os.path.join(d, f) for f in files]) for d,folders,files in os.walk(datadir)]
+
 # reqs is a list of requirement
 # e.g. ['django==1.5.1', 'mezzanine==1.4.6']
 reqs = [str(ir.req) for ir in install_reqs]
@@ -46,6 +51,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.3',
     ],
+    data_files=data_files, # assets
     entry_points={
         'gui_scripts': [
             'uberpong = uberpong.__main__:main',
