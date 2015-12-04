@@ -70,4 +70,4 @@ class GameSetState(BaseState):
 
 
     def on_update(self):
-        pass
+        self._gameset_label.draw()
