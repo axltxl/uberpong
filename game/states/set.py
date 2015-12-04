@@ -17,13 +17,12 @@ See LICENSE for more details.
 
 
 import pyglet
-
-from engine.state import State
+from .. import colors
+from .base import BaseState
 from engine.spot import spot_set, spot_get
-
 from ..net import Scene
 
-class GameSetState(State):
+class GameSetState(BaseState):
     """Game begin state"""
 
     def __init__(self, *, machine):
@@ -36,9 +35,18 @@ class GameSetState(State):
         # Call my parent
         super().__init__(machine=machine)
 
-        # TODO: document this!
-        self._server = spot_get('game_server')
-        self._client = spot_get('game_client')
+        # Title label
+        self._gameset_label = self.create_label('Game set!', font_size=110)
+        self._gameset_label.set_style('color', colors.GRAY1 + (255,) )
+
+        # score sound
+        self._snd_gameset = self.sorcerer.create_sound(
+                'snd_gameset',
+                file_name='Jingle_Win_00.wav'
+        )
+
+        # a player to have better sound playback
+        self._player = pyglet.media.Player()
 
     #
     # pyglet event callbacks
@@ -50,11 +58,16 @@ class GameSetState(State):
             self._server._state = Scene.ST_BEGIN
         self.pop_until('game_begin')
 
-    def on_begin(self):
-        pyglet.clock.schedule_once(self._go_back, 3)
 
-    def on_exit(self):
-        pass
+    def on_begin(self):
+        # play the damn sound!
+        if not self._player.playing:
+           self._player.queue(self._snd_gameset)
+           self._player.play()
+
+        self.set_background_color(0, 100, 100)
+        pyglet.clock.schedule_once(self._go_back, self._snd_gameset.duration + 2)
+
 
     def on_update(self):
         pass
