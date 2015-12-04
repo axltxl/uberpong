@@ -92,10 +92,17 @@ class Game(StateMachine):
         spot_set('ball_size', (32, 32))
         spot_set('cl_scores_position', (self._window.width // 2, self._window.height - 32))
 
+        ########################################
+        # assets will be looked up at sys.prefix
+        # by default, that is unless ASPATH environment
+        # variable has been specified
+        ########################################
+        assets_path = os.getenv('ASPATH')
+        if assets_path is None:
+            assets_path = path.join(sys.prefix, 'share/{}'.format(pkg_name))
+
         # sourcerer a.k.a. resource manager
-        self.sorcerer = Sorcerer(
-            root_dir=path.join(path.dirname(__file__), '../assets')
-        )
+        self._sorcerer = Sorcerer( root_dir=path.join(assets_path))
 
         #
         # Create server and client
