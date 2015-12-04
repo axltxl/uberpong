@@ -14,8 +14,8 @@ See LICENSE for more details.
 
 import pyglet
 from pyglet.gl import *
-from engine.state import State
-from engine.spot import spot_set, spot_get
+from uberpong.engine.state import State
+from uberpong.engine.spot import spot_set, spot_get
 
 from .. import utils
 from .. import colors

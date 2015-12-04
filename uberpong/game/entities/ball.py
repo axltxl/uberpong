@@ -9,8 +9,8 @@ Ball as an entity
 See LICENSE for more details.
 """
 
-from engine.spot import spot_get
-from engine.entity import Entity
+from uberpong.engine.spot import spot_get
+from uberpong.engine.entity import Entity
 
 class Ball(Entity):
     """Ball as an entity"""

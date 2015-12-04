@@ -16,9 +16,9 @@ import traceback
 import os
 from docopt import docopt
 from os import path
-from engine.state import State, StateMachine
-from engine.spot import spot_set, spot_get
-from engine.sorcerer import Sorcerer
+from uberpong.engine.state import State, StateMachine
+from uberpong.engine.spot import spot_set, spot_get
+from uberpong.engine.sorcerer import Sorcerer
 
 from .net import PlayerClient, Scene
 

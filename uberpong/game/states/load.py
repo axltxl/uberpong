@@ -15,7 +15,7 @@ See LICENSE for more details.
 
 
 import pyglet
-from engine.spot import spot_set, spot_get
+from uberpong.engine.spot import spot_set, spot_get
 from ..utils import FONT_PRIMARY, FONT_SECONDARY
 from .base import BaseState
 from .. import colors

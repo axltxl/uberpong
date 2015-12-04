@@ -8,8 +8,8 @@ game.entities.player
 See LICENSE for more details.
 """
 
-from engine.spot import spot_get
-from engine.entity import Entity
+from uberpong.engine.spot import spot_get
+from uberpong.engine.entity import Entity
 
 class PlayerPaddle(Entity):
     """Paddle as an entity"""

@@ -17,7 +17,7 @@ See LICENSE for more details.
 
 
 import pyglet
-from engine.spot import spot_set, spot_get
+from uberpong.engine.spot import spot_set, spot_get
 
 from ..net import Scene
 from .base import BaseState

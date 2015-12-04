@@ -13,7 +13,7 @@ import pyglet
 import time
 import ming
 
-from engine.spot import spot_set, spot_get
+from uberpong.engine.spot import spot_set, spot_get
 from .scene import Scene
 from . import (
     Request,
