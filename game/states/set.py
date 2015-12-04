@@ -65,7 +65,7 @@ class GameSetState(BaseState):
            self._player.queue(self._snd_gameset)
            self._player.play()
 
-        self.set_background_color(0, 100, 100)
+        self.set_background_color(*colors.TURQUOISE)
         pyglet.clock.schedule_once(self._go_back, self._snd_gameset.duration + 2)
 
 
