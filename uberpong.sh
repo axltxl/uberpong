@@ -3,5 +3,5 @@
 # uberpong wrapper
 ##################
 
-PYTHONPATH=. ASPATH=./assets bin/uberpong "$@"
+ASPATH=./assets python3 -m uberpong "$@"
 

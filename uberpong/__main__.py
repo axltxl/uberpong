@@ -1,5 +1,13 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+"""
+uberpong.__main__
+~~~~~~~~
+Game main entry point
+
+(c) 2015 by Alejandro Ricoveri
+See LICENSE for more details.
+"""
 
 import sys
 from uberpong.game.game import Game
