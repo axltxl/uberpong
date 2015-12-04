@@ -19,6 +19,11 @@ from os import path
 from uberpong.engine.state import State, StateMachine
 from uberpong.engine.spot import spot_set, spot_get
 from uberpong.engine.sorcerer import Sorcerer
+from uberpong import (
+    __name__ as pkg_name,
+    __author__ as pkg_author,
+    __version__ as pkg_version,
+)
 
 from .net import PlayerClient, Scene
 
@@ -108,7 +113,7 @@ class Game(StateMachine):
         # Common
         #
         spot_set('game_name', "Uber Pong!")
-        spot_set('game_version', "0.1")
+        spot_set('game_version', pkg_version)
 
         # Network protocol codec to be used
         spot_set('net_codec', 'json')
@@ -307,3 +312,8 @@ class Game(StateMachine):
 
         #TODO: document this
         self.purge_stack()
+
+
+    @property
+    def sorcerer(self):
+        return self._sorcerer
