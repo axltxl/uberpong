@@ -28,14 +28,17 @@ data_files = [ (os.path.join(sys_prefix, d), [os.path.join(d, f) for f in files]
 # e.g. ['django==1.5.1', 'mezzanine==1.4.6']
 reqs = [str(ir.req) for ir in install_reqs]
 
+# description
+desc = "An Uber-engineered PONG clone"
+
 setup(
     name=pkg_name,
     version=version,
     packages=find_packages(),
     author=author,
     author_email="alejandroricoveri@gmail.com",
-    description="An Uber-engineered PONG clone",
-    long_description=open('README.rst').read(),
+    description=desc,
+    long_description=desc,
     url=pkg_url,
     license='MIT',
     download_url="{url}/tarball/{version}".format(url=pkg_url, version=version),
