@@ -1,9 +1,13 @@
 /////////////////////////////////////////////////////////////
-Images: assets/source/*
-        assets/images/*
+Images: assets/images/*
+Assets source files: assets_source/*
+Sounds: assets/sounds/game.wav
+        assets/sounds/begin.wav
+        assets/sounds/credits.wav
+        assets/sounds/bounce.wav
 License: CC 4.0 Attribution
 /////////////////////////////////////////////////////////////
-Pong Sprites (c) by Alejandro Ricoveri
+Uber Pong Assets(c) by Alejandro Ricoveri
 axltxl.github.io
 
 Pong Sprites is licensed under a
