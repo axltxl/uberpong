@@ -1,17 +1,28 @@
-UberPong
-========
+Uber Pong!
+==========
 
-An Uber-engineered overthought multiplayer implementation of a classic game
+An Uber-engineered overthought multiplayer implementation of a classic game,
+or *How I Stopped Worrying about and Learned Python The Right Way*.
 
 the image goes here
+
+##Requirements
+* [pyglet](http://pyglet.org)
+* [pymunk](http://pymunk.org)
+* [docopt](http://docopt.org)
+* [lz4](http://lz4.org)
+* [simpleubjson](http://simpleubjson.org)
+* [bson](http://bson.org)
 
 ## Features
 * You already know how to play
 * Multiplayer support out of the box
+* Powered by pymunk physics and pyglet
+* Painless installation
 
 ##Installation
 
-There are a bunch of ways to install **uberong**:
+There are a bunch of ways you can install **uberpong**:
 
 ### The pip way
 ```
@@ -20,20 +31,40 @@ uberpong
 ```
 
 ###The git way
+First of all, you must clone the repo ...
 ```
 git clone https://github.com/axltxl/uberpong.git
 cd uberpong
-# you could at this point do the following inside a pyvenv
-# pyvenv .pyvenv && .pyvenv/bin/activate
+```
+
+From this point you could either, run it stand-alone
+```
 pip3 install -r requirements.txt
 ./uberpong.sh
 ```
 
+or just install it
+```
+# you could at this point do the following inside a pyvenv
+# pyvenv .pyvenv && .pyvenv/bin/activate
+pip3 install .
+uberpong
+```
+
+###BTW: you need a companion to play
+By default, uberpong run as a server, if you or your partner wish
+to join an existing uberpong session, you can do it like so:
+
+
+```
+uberpong -H <server ip address>
+
 ##Usage
 ```
 uberpong [options]
---host ADDRESS, -H ADDRESS  Server address to join
---port NUMBER, -p NUMBER Server port
+--host ADDRESS, -H ADDRESS  Server address to join [default: localhost]
+--port NUMBER, -p NUMBER Server port [default: 6000]
+--lz4, -z Enforce LZ4 compression on network traffic (experimental)
 ```
 
 
@@ -50,9 +81,9 @@ We also welcome feedback, bug reports, feature requests, documentation improveme
 advertisement and testing.
 
 ##Third party assets
-Sounds by *Morten Barfod Søegaard, Little Robot Sound Factory*
+Some sounds were made by *Morten Barfod Søegaard, Little Robot Sound Factory*
 ![](http://www.littlerobotsoundfactory.com/img/LittleRobotSoundFactory_Logo_00.png)
 
 ##Licensing
-Please see LICENSE
+Please read the LICENSE file bundled with this distribution
 
