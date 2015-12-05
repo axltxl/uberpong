@@ -16,9 +16,14 @@ import traceback
 import os
 from docopt import docopt
 from os import path
-from engine.state import State, StateMachine
-from engine.spot import spot_set, spot_get
-from engine.sorcerer import Sorcerer
+from uberpong.engine.state import State, StateMachine
+from uberpong.engine.spot import spot_set, spot_get
+from uberpong.engine.sorcerer import Sorcerer
+from uberpong import (
+    __name__ as pkg_name,
+    __author__ as pkg_author,
+    __version__ as pkg_version,
+)
 
 from .net import PlayerClient, Scene
 
@@ -87,10 +92,17 @@ class Game(StateMachine):
         spot_set('ball_size', (32, 32))
         spot_set('cl_scores_position', (self._window.width // 2, self._window.height - 32))
 
+        ########################################
+        # assets will be looked up at sys.prefix
+        # by default, that is unless ASPATH environment
+        # variable has been specified
+        ########################################
+        assets_path = os.getenv('ASPATH')
+        if assets_path is None:
+            assets_path = path.join(sys.prefix, 'share/{}/assets'.format(pkg_name))
+
         # sourcerer a.k.a. resource manager
-        self.sorcerer = Sorcerer(
-            root_dir=path.join(path.dirname(__file__), '../assets')
-        )
+        self._sorcerer = Sorcerer( root_dir=path.join(assets_path))
 
         #
         # Create server and client
@@ -108,7 +120,7 @@ class Game(StateMachine):
         # Common
         #
         spot_set('game_name', "Uber Pong!")
-        spot_set('game_version', "0.1")
+        spot_set('game_version', pkg_version)
 
         # Network protocol codec to be used
         spot_set('net_codec', 'json')
@@ -307,3 +319,8 @@ class Game(StateMachine):
 
         #TODO: document this
         self.purge_stack()
+
+
+    @property
+    def sorcerer(self):
+        return self._sorcerer

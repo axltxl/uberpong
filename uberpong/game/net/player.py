@@ -11,9 +11,10 @@ See LICENSE for more details.
 
 import pyglet
 import time
-import ming
 
-from engine.spot import spot_set, spot_get
+import uberpong.ming as ming
+from uberpong.engine.spot import spot_set, spot_get
+
 from .scene import Scene
 from . import (
     Request,

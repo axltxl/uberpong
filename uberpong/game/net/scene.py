@@ -10,10 +10,10 @@ See LICENSE for more details.
 """
 
 import pyglet
-import ming
 
-from engine.spot import spot_set, spot_get
-from engine.entity import EntityManager
+import uberpong.ming as ming
+from uberpong.engine.spot import spot_set, spot_get
+from uberpong.engine.entity import EntityManager
 
 from . import (
     Packet,

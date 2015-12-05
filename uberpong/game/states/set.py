@@ -19,7 +19,7 @@ See LICENSE for more details.
 import pyglet
 from .. import colors
 from .base import BaseState
-from engine.spot import spot_set, spot_get
+from uberpong.engine.spot import spot_set, spot_get
 from ..net import Scene
 
 class GameSetState(BaseState):
