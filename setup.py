@@ -45,8 +45,7 @@ setup(
     keywords=['games', 'pong'],
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Environment :: GUI',
-        'Topic :: Games',
+        'Topic :: Games/Entertainment :: Arcade',
         'Natural Language :: English',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
