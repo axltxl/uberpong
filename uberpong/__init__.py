@@ -11,6 +11,6 @@ The very basics
 
 PKG_URL = 'https://github.com/axltxl/uberpong'
 __author__ = 'Alejandro Ricoveri'
-__version__ = '0.1.0'
+__version__ = '0.1.0a1'
 __licence__ = 'MIT'
 __copyright__ = 'Copyright (c) Alejandro Ricoveri'
