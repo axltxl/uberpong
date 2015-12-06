@@ -16,8 +16,11 @@ See LICENSE for more details.
 
 import pyglet
 from uberpong.engine.spot import spot_set, spot_get
+from uberpong import __version__ as pkg_version
+from uberpong import PKG_URL as pkg_url
 
 from .base import BaseState
+from ..net import Packet
 from ..utils import FONT_PRIMARY, FONT_SECONDARY
 from .. import colors
 
@@ -86,6 +89,15 @@ class SplashState(BaseState):
             y = self.window.height - 8, x = self.window.width - 8
         )
 
+        # Version label
+        self._version_label = self.create_label(
+            "{} (proto:{})".format(pkg_version, Packet.PROTO_VERSION),
+            font_size=14,
+            font_name=FONT_SECONDARY,
+            anchor_x='left', anchor_y='top',
+            y = self.window.height - 8, x = 8
+        )
+
         # set the background color
         self.set_background_color(*colors.LIGHT_BLUE)
 
@@ -121,6 +133,7 @@ class SplashState(BaseState):
     def on_update(self):
         # Draw labels
         self._github_label.draw()
+        self._version_label.draw()
         if self._show_press_start:
             self._comp_label.draw()
 
