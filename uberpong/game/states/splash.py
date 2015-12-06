@@ -82,7 +82,7 @@ class SplashState(BaseState):
 
         # Github label
         self._github_label = self.create_label(
-            "github.com/axltxl/pong",
+            pkg_url,
             font_size=16,
             font_name=FONT_SECONDARY,
             anchor_x='right', anchor_y='top',
