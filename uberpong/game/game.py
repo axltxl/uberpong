@@ -10,10 +10,11 @@ See LICENSE for more details.
 """
 
 
-import pyglet
-import sys
 import traceback
 import os
+import sys
+import pyglet
+
 from docopt import docopt
 from os import path
 from uberpong.engine.state import State, StateMachine
@@ -37,6 +38,7 @@ from .states import (
     GameSetState,
     WaitState
 )
+
 
 class Game(StateMachine):
     """Game class"""
@@ -88,9 +90,15 @@ class Game(StateMachine):
         # Game-specific SPOT vars
         spot_set('paddle_position_start', (32, self._window.height // 2))
         spot_set('paddle_size', (32, 64))
-        spot_set('ball_position_start', (self._window.width // 2, self._window.height // 2))
+        spot_set(
+            'ball_position_start',
+            (self._window.width // 2, self._window.height // 2)
+        )
         spot_set('ball_size', (32, 32))
-        spot_set('cl_scores_position', (self._window.width // 2, self._window.height - 32))
+        spot_set(
+            'cl_scores_position',
+            (self._window.width // 2, self._window.height - 32)
+        )
 
         ########################################
         # assets will be looked up at sys.prefix
@@ -99,10 +107,11 @@ class Game(StateMachine):
         ########################################
         assets_path = os.getenv('ASPATH')
         if assets_path is None:
-            assets_path = path.join(sys.prefix, 'share/{}/assets'.format(pkg_name))
+            assets_path = path.join(sys.prefix,
+                                    'share/{}/assets'.format(pkg_name))
 
         # sourcerer a.k.a. resource manager
-        self._sorcerer = Sorcerer( root_dir=path.join(assets_path))
+        self._sorcerer = Sorcerer(root_dir=path.join(assets_path))
 
         #
         # Create server and client
@@ -110,8 +119,6 @@ class Game(StateMachine):
         self._client = None
         self._server = None
         self.create_client(self.create_server())
-
-
 
     def _spot_init(self):
         """Set initial SPOT values"""
@@ -155,7 +162,7 @@ class Game(StateMachine):
             spot_set('sv_score_max', 10)
 
         # Default server port for either server or client
-        spot_set( 'sv_port', int(self._options['--port']) )
+        spot_set('sv_port', int(self._options['--port']))
 
     def _parse_args(self, argv):
         """pong
@@ -189,20 +196,19 @@ class Game(StateMachine):
         #
         options = spot_get('argv')
 
-
         #
         # Initialise server
         #
         if options['--host'] is None:
 
-            #
+            # set server address
             server_addr = 'localhost'
 
             # Create the actual server
             self._server = Scene(port=spot_get('sv_port'),
-                                width=self._window.width,
-                                height=self._window.height,
-                                codec=spot_get('net_codec'))
+                                 width=self._window.width,
+                                 height=self._window.height,
+                                 codec=spot_get('net_codec'))
 
             # Activate LZ4 compression on client
             if options['--lz4']:
@@ -214,10 +220,8 @@ class Game(StateMachine):
         else:
             server_addr = options["--host"]
 
-
-        #
+        # return server address
         return server_addr
-
 
     def create_client(self, server_addr):
         """Create the client"""
@@ -247,17 +251,14 @@ class Game(StateMachine):
         # Set it on SPOT
         spot_set('game_client', self._client)
 
-
     def on_draw(self):
         self._window.clear()
         self.update_state()
-
 
     def on_key_press(self, sym, mod):
         """Exit the game if F12 has been pressed"""
         if sym == pyglet.window.key.F12:
             self.exit()
-
 
     def _handle_except(self, e):
         """Exception handler"""
@@ -265,14 +266,12 @@ class Game(StateMachine):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("Unhandled {e} at {file}:{line}: '{msg}'"
               .format(e=exc_type.__name__, file=fname,
-              line=exc_tb.tb_lineno,  msg=e))
+                      line=exc_tb.tb_lineno,  msg=e))
         print(traceback.format_exc())
-
 
     def exit(self):
         """Exit the game"""
         self._shutdown = True
-
 
     def go(self):
         """Main entry point"""
@@ -304,7 +303,6 @@ class Game(StateMachine):
 
         return 0
 
-
     def _cleanup(self):
         """House keeping after all's been done"""
 
@@ -317,9 +315,8 @@ class Game(StateMachine):
         if self._server is not None:
             self._server.close()
 
-        #TODO: document this
+        # TODO: document this
         self.purge_stack()
-
 
     @property
     def sorcerer(self):
