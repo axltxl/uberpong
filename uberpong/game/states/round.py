@@ -13,14 +13,9 @@ See LICENSE for more details.
 """
 
 
-import pyglet
-
-from uberpong.engine.spot import spot_set, spot_get
-
 from .base import BaseState
-from ..utils import FONT_PRIMARY, FONT_SECONDARY
-from .. import colors
 from ..net import Scene
+
 
 class RoundState(BaseState):
     """Game round state"""
@@ -35,7 +30,6 @@ class RoundState(BaseState):
         # Call my parent
         super().__init__(machine=machine)
 
-
     #
     # pyglet event callbacks
     #
@@ -47,7 +41,6 @@ class RoundState(BaseState):
         if self.server is not None:
             self.server.reset_players()
             self.server.reset_ball()
-
 
     def on_update(self):
         # Update client!
@@ -63,7 +56,6 @@ class RoundState(BaseState):
         # from the server to change to "score" state
         if self.client.server_state == Scene.ST_SCORE:
             self.push('game_score')
-
 
     #######################################################
     # All input events are handled directly by the client

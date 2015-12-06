@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-engine.system
+engine.state
 ~~~~~~~~
 A simple state system
 
@@ -23,11 +23,9 @@ class State:
         """
         self._machine = machine
 
-
     @property
     def window(self):
         return self._machine.window
-
 
     #
     # Operations done on parent machine
@@ -112,6 +110,15 @@ class StateMachine(pyglet.event.EventDispatcher):
         # window
         self._window = window
 
+        # Set keyboard+mouse callbacks
+        self._state_on_key_press = None
+        self._state_on_key_release = None
+        self._state_on_mouse_motion = None
+        self._state_on_mouse_drag = None
+        self._state_on_mouse_press = None
+        self._state_on_mouse_release = None
+        self._state_on_mouse_scroll = None
+
         # Attach pyglet.window input events to this state machine
         self._window.on_key_press = self._window_on_key_press
         self._window.on_key_release = self._window_on_key_release
@@ -157,11 +164,14 @@ class StateMachine(pyglet.event.EventDispatcher):
         """Pop states from the class until the first occurrence
         of an instance of class_id"""
 
-        if not class_id in self._states:
+        if class_id not in self._states:
             return
 
         while len(self._states) \
-        and not isinstance(self.get_current_state(), self._states[class_id]):
+            and not isinstance(
+                self.get_current_state(),
+                self._states[class_id]
+            ):
             self.pop_state()
 
     def pop_state(self):

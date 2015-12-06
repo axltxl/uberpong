@@ -11,17 +11,19 @@ See LICENSE for more details.
 from uberpong.engine.spot import spot_get
 from uberpong.engine.entity import Entity
 
+
 class PlayerPaddle(Entity):
     """Paddle as an entity"""
 
     CTYPE = 50  # collision type
 
-    def __init__(self, uuid,
-                host=None,
-                port=None,
-                number=None,
-                foe=None,
-                **kwargs):
+    def __init__(self,
+                 uuid,
+                 host=None,
+                 port=None,
+                 number=None,
+                 foe=None,
+                 **kwargs):
         """Constructor
 
         Kwargs:
@@ -54,16 +56,6 @@ class PlayerPaddle(Entity):
         # This player's opponent
         self.foe = foe
 
-        #
+        # Initial flags for this player
         self.ready = False
         self.score = 0
-        # TODO: to be used later
-    #     self.manager.add_collision_handler(self.CTYPE,
-    #         Ball.CTYPE, separate=self._volley)
-    #
-    # def _volley(self, space, arbiter, *args, **kwargs):
-    #     ball = [b for b in arbiter.shapes if b.collision_type == Ball.CTYPE][0].body
-        #import ipdb; ipdb.set_trace()
-        #arbiter.elasticity = 4.0
-        #ball.apply_impulse((50000000000 * ball.velocity.x, 50000000000 * ball.velocity.y))
-        #return True

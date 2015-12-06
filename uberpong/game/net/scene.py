@@ -12,11 +12,10 @@ See LICENSE for more details.
 import pyglet
 
 import uberpong.ming as ming
-from uberpong.engine.spot import spot_set, spot_get
+from uberpong.engine.spot import spot_get
 from uberpong.engine.entity import EntityManager
 
 from . import (
-    Packet,
     Request,
     Response
 )
@@ -96,30 +95,27 @@ class Scene(ming.Server):
         # collides with either the left or the right boundary
         # on the board
         self._ent_mgr.add_collision_handler(
-                Ball.CTYPE, Board.BOUNDARY_CTYPE_LEFT,
-                begin=self._scored_left
-                )
+            Ball.CTYPE, Board.BOUNDARY_CTYPE_LEFT,
+            begin=self._scored_left
+        )
         self._ent_mgr.add_collision_handler(
-                Ball.CTYPE, Board.BOUNDARY_CTYPE_RIGHT,
-                begin=self._scored_right
-                )
-
+            Ball.CTYPE, Board.BOUNDARY_CTYPE_RIGHT,
+            begin=self._scored_right
+        )
 
     def _scored_left(self, space, arbiter, *args, **kwargs):
         """ the ball has collided with the left boundary """
         player = [p for p in self._players.values() if p.number == 2][0]
-        player.score += 1 # bump the score
+        player.score += 1  # bump the score
         self._scored()
-        return False # tell pymunk to ignore the collision
-
+        return False  # tell pymunk to ignore the collision
 
     def _scored_right(self, space, arbiter, *args, **kwargs):
         """ the ball has collided with the right boundary """
         player = [p for p in self._players.values() if p.number == 1][0]
-        player.score += 1 # bump the score
+        player.score += 1  # bump the score
         self._scored()
-        return False # tell pymunk to ignore the collision
-
+        return False  # tell pymunk to ignore the collision
 
     def _scored(self):
         """
@@ -135,7 +131,8 @@ class Scene(ming.Server):
         pyglet.clock.schedule_once(self._round_goback, 3)
 
     def _round_goback(self, dt):
-        if any([player.score == spot_get('sv_score_max')  for player in self._players.values()]):
+        if any([player.score == spot_get('sv_score_max')
+               for player in self._players.values()]):
             self._state = self.ST_GAME_SET
         else:
             self._state = self.ST_PLAYING
@@ -145,12 +142,11 @@ class Scene(ming.Server):
         """Get current state in server"""
         return self._state
 
-
     def broadcast_update(self):
         """Send an update to all clients"""
 
         if len(self._players):
-            #The actual response
+            # The actual response
             response = Response()
 
             # Set the answer as accepted
@@ -173,7 +169,9 @@ class Scene(ming.Server):
                 or self.state == self.ST_BEGIN:
                     # Set player information
                     response.set_player_info(
-                        name='you', score=player_me.score, number=player_me.number,
+                        name='you',
+                        score=player_me.score,
+                        number=player_me.number,
                         position=(int(player_me.position.x),
                                   int(player_me.position.y)),
                         velocity=(int(player_me.velocity.x),
@@ -186,7 +184,9 @@ class Scene(ming.Server):
                         player_foe = self._players[player.foe]
 
                         response.set_player_info(
-                            name='foe', score=player_foe.score, number=player_foe.number,
+                            name='foe',
+                            score=player_foe.score,
+                            number=player_foe.number,
                             position=(int(player_foe.position.x),
                                       int(player_foe.position.y)),
                             velocity=(int(player_foe.velocity.x),
@@ -204,7 +204,6 @@ class Scene(ming.Server):
                 # Send the packet to the client
                 self.send(response.data, host, port)
 
-
     def _reset_player(self, player):
         """Reset values on a player"""
 
@@ -218,7 +217,6 @@ class Scene(ming.Server):
         # Set initial position for this player
         player.position = player_position_x, player_position_y
 
-
         # Reset physics on this player
         # player.reset_forces()
         player.velocity = (0, 0)
@@ -230,13 +228,11 @@ class Scene(ming.Server):
             # Ready state for this player
             player.ready = False
 
-
     def reset_players(self):
         """Reset values on players"""
 
         for player in self._players.values():
             self._reset_player(player)
-
 
     def reset_ball(self):
         """Reset ball position"""
@@ -246,10 +242,9 @@ class Scene(ming.Server):
         self._ball.velocity = (0, 0)
         self._ball.position = spot_get('ball_position_start')
 
-        #FIXME: do something better
+        # FIXME: do something better
         # Set initial impulse on the ball
         self._ball.apply_impulse((-1500, 0))
-
 
     def create_ball(self):
         """Create a ball to play"""
@@ -263,7 +258,6 @@ class Scene(ming.Server):
         # TODO: move this to tick()
         pyglet.clock.schedule_interval(self.increase_ball_velocity, 1.0)
 
-
     def create_player(self, host, port):
         """Create a PlayerPaddle for a client
 
@@ -274,11 +268,11 @@ class Scene(ming.Server):
 
         # New PlayerPaddle for a client
         player = self._ent_mgr.create_entity(
-                'ent_player',
-                host=host,
-                port=port,
-                number=len(self._players) + 1,
-            )
+            'ent_player',
+            host=host,
+            port=port,
+            number=len(self._players) + 1,
+        )
 
         # Add this player to the server
         self._players[player.uuid] = player
@@ -289,11 +283,9 @@ class Scene(ming.Server):
         # Return the entity
         return player
 
-
     def destroy_player(self, player_id):
         """Get rid of a player"""
         del self._players[player_id]
-
 
     def update_players(self):
         """Update information on players"""
@@ -311,7 +303,6 @@ class Scene(ming.Server):
                 player.foe = foes[0]
             else:
                 player.foe = None
-
 
     def increase_ball_velocity(self, dt):
         """Increase/maintain a constant velocity for the ball"""
@@ -331,7 +322,6 @@ class Scene(ming.Server):
                     self._ball.apply_impulse((200, self._ball.velocity.y))
                 elif self._ball.velocity.x < 0:
                     self._ball.apply_impulse((-200, self._ball.velocity.y))
-
 
     def tick(self, dt):
         """Run simulation on server and broadcast an update to all clients
@@ -357,7 +347,9 @@ class Scene(ming.Server):
                 player.velocity = 0, player.velocity.y
 
                 # artificial friction maybe?
-                player.apply_impulse((0, - self._paddle_friction * player.velocity.y))
+                player.apply_impulse(
+                    (0, - self._paddle_friction * player.velocity.y)
+                )
 
             # Physics are performed based on a fixed time step
             # or time scale from which all bodies on a scene
@@ -376,7 +368,6 @@ class Scene(ming.Server):
 
         # Broadcast latest snapshot to all clients
         self.broadcast_update()
-
 
     def on_data_received(self, data, host, port):
         """Pump network requests from clients
@@ -445,7 +436,7 @@ class Scene(ming.Server):
 
                     # +move command
                     if command == Request.CMD_MV_UP:
-                        player_me.apply_impulse((0 , self._paddle_impulse))
+                        player_me.apply_impulse((0, self._paddle_impulse))
 
                     # -move command
                     elif command == Request.CMD_MV_DN:

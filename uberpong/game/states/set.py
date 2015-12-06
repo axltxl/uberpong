@@ -17,10 +17,11 @@ See LICENSE for more details.
 
 
 import pyglet
+
 from .. import colors
 from .base import BaseState
-from uberpong.engine.spot import spot_set, spot_get
 from ..net import Scene
+
 
 class GameSetState(BaseState):
     """Game begin state"""
@@ -37,12 +38,12 @@ class GameSetState(BaseState):
 
         # Title label
         self._gameset_label = self.create_label('Game set!', font_size=100)
-        self._gameset_label.set_style('color', colors.GRAY1 + (255,) )
+        self._gameset_label.set_style('color', colors.GRAY1 + (255,))
 
         # score sound
         self._snd_gameset = self.sorcerer.create_sound(
-                'snd_gameset',
-                file_name='Jingle_Win_00.wav'
+            'snd_gameset',
+            file_name='Jingle_Win_00.wav'
         )
 
         # a player to have better sound playback
@@ -58,16 +59,16 @@ class GameSetState(BaseState):
             self._server._state = Scene.ST_BEGIN
         self.pop_until('game_begin')
 
-
     def on_begin(self):
         # play the damn sound!
         if not self._player.playing:
-           self._player.queue(self._snd_gameset)
-           self._player.play()
+            self._player.queue(self._snd_gameset)
+            self._player.play()
 
         self.set_background_color(*colors.TURQUOISE)
-        pyglet.clock.schedule_once(self._go_back, self._snd_gameset.duration + 2)
-
+        pyglet.clock.schedule_once(
+            self._go_back, self._snd_gameset.duration + 2
+        )
 
     def on_update(self):
         self._gameset_label.draw()

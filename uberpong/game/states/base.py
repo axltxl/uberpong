@@ -13,19 +13,16 @@ See LICENSE for more details.
 
 
 import pyglet
-from pyglet.gl import *
+import pyglet.gl
+
 from uberpong.engine.state import State
-from uberpong.engine.spot import spot_set, spot_get
+from uberpong.engine.spot import spot_get
 
 from .. import utils
-from .. import colors
-from ..net import Scene
-
 
 
 class BaseState(State):
     """base state"""
-
 
     def __init__(self, *, machine, fade_in=False):
         """Constructor
@@ -43,23 +40,30 @@ class BaseState(State):
 
         # initial values for fade animation flags and alpha
         self._fade_out = False
-        self._fade_in  = False
+        self._fade_in = False
         self._fade_alpha = 0
 
         # get the sorcerer to use resources
         self.sorcerer = spot_get('game_object').sorcerer
 
         # create the base fonts used throughout the entire game
-        self.sorcerer.create_font(utils.FONT_SECONDARY,
-                file_name='8bitOperatorPlus8-Regular.ttf')
-        self.sorcerer.create_font(utils.FONT_PRIMARY,
-                file_name='8bitOperatorPlus-Regular.ttf')
+        self.sorcerer.create_font(
+            utils.FONT_SECONDARY,
+            file_name='8bitOperatorPlus8-Regular.ttf'
+        )
+        self.sorcerer.create_font(
+            utils.FONT_PRIMARY,
+            file_name='8bitOperatorPlus-Regular.ttf'
+        )
 
+        # fade attributes
+        self._fade_step = None
+        self._fade_total_time = None
+        self._trans_state_name = None
 
         # TODO: give more flexibility about this
         if fade_in:
             self._sched_fadein(100)
-
 
     def create_label(self, text, **kwargs):
         """ Create a pyglet label easily
@@ -84,7 +88,6 @@ class BaseState(State):
         """
         pyglet.gl.glClearColor(red/255, green/255, blue/255, alpha/255)
 
-
     def _setup_fade(self, total_time, alpha):
         """Set up fade animation and schedule it"""
 
@@ -96,7 +99,7 @@ class BaseState(State):
 
         # the amount of alpha applied to the fade polygon is relative to both
         # the total time of the animation and its interval time
-        self._fade_step = int( 255 / (self._fade_total_time/fade_interval) )
+        self._fade_step = int(255 / (self._fade_total_time/fade_interval))
 
         # actually schedule the animation under the set interval
         pyglet.clock.schedule_interval(self._fade_alpha_step, fade_interval)
@@ -104,21 +107,17 @@ class BaseState(State):
         # set initial alpha
         self._fade_alpha = alpha
 
-
     def _sched_fadein(self, total_time):
         self._fade_in = True
         self._sched_fade_anim(total_time, 255)
-
 
     def _sched_fadeout(self, total_time, state_name):
         self._fade_out = True
         self._trans_state_name = state_name
         self._sched_fade_anim(total_time, 0)
 
-
     def _sched_fade_anim(self, total_time, initial_alpha):
         self._setup_fade(total_time, initial_alpha)
-
 
     def transition_to(self, state_name, *, total_time=100):
         """ Trigger animated transition to state_name
@@ -130,7 +129,6 @@ class BaseState(State):
         """
 
         self._sched_fadeout(total_time, state_name)
-
 
     def _fade_alpha_step(self, dt):
         if self._fade_out:
@@ -144,7 +142,6 @@ class BaseState(State):
             if self._fade_alpha < 0:
                 self._fade_alpha = 0
 
-
     def _fade_cleanup(self):
         """Clean up everyhing before exiting"""
 
@@ -152,25 +149,24 @@ class BaseState(State):
         self._fade_in = False
         self._fade_out = False
 
-
     def on_update(self):
         if self._fade_out or self._fade_in:
-            glEnable(GL_BLEND)
+            pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
             # draw the polygon depending on set alpha
             width = self.window.width
             height = self.window.height
-            pyglet.graphics.draw(6, GL_TRIANGLES,
-                    ('v2i',(0, height,
-                            0, 0,
-                            width, 0,
+            pyglet.graphics.draw(
+                6, pyglet.gl.GL_TRIANGLES,
+                ('v2i', (0, height,
+                         0, 0,
+                         width, 0,
 
-                            width, 0,
-                            width, height,
-                            0, height)
-                    ),
-                    ('c4B', (0, 0, 0, self._fade_alpha) * 6)
-                )
-            glDisable(GL_BLEND)
+                         width, 0,
+                         width, height,
+                         0, height)),
+                ('c4B', (0, 0, 0, self._fade_alpha) * 6)
+            )
+            pyglet.gl.glDisable(pyglet.gl.GL_BLEND)
 
             # Stop "fade" animation
             if self._fade_out:
@@ -182,16 +178,12 @@ class BaseState(State):
                 if not self._fade_alpha:
                     self._fade_cleanup()
 
-
     @property
     def server(self):
         """Get the running server"""
         return self._server
 
-
     @property
     def client(self):
         """Get the running client"""
         return self._client
-
-

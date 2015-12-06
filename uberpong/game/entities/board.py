@@ -10,13 +10,13 @@ See LICENSE for more details.
 """
 
 import pymunk
-from .ball import Ball
+
 
 class Board:
     """The game board itself"""
 
-    BOUNDARY_CTYPE_LEFT = 80 # collision type for left wall
-    BOUNDARY_CTYPE_RIGHT = 81 # collision type for right wall
+    BOUNDARY_CTYPE_LEFT = 80  # collision type for left wall
+    BOUNDARY_CTYPE_RIGHT = 81  # collision type for right wall
 
     def __init__(self, width, height, space):
         """Constructor
@@ -36,7 +36,7 @@ class Board:
 
         # Create a static body from which static segments (lines)
         # will be made and put onto the space
-        self._body = pymunk.Body() # static body
+        self._body = pymunk.Body()  # static body
         self._body.position = 0, 0
 
         # Coordinates used to create segments
@@ -44,7 +44,7 @@ class Board:
         top = height - 1
         right = width - 1
         bottom = 0
-        thick = 200 # thickness of walls
+        thick = 200  # thickness of walls
 
         # Create the actual static boundaries
         # everything inside these boundaries will collide with them
@@ -62,31 +62,31 @@ class Board:
         #
         boundaries = {
             'up': pymunk.Poly(self._body, [
-            (left - thick, top),
-            (right + thick, top),
-            (right + thick, top + thick),
-            (left - thick, top + thick),
+                (left - thick, top),
+                (right + thick, top),
+                (right + thick, top + thick),
+                (left - thick, top + thick),
             ]),
 
             'down': pymunk.Poly(self._body, [
-            (left - thick, bottom - thick),
-            (right + thick, bottom - thick),
-            (right + thick, bottom),
-            (left - thick, bottom),
+                (left - thick, bottom - thick),
+                (right + thick, bottom - thick),
+                (right + thick, bottom),
+                (left - thick, bottom),
             ]),
 
             'left': pymunk.Poly(self._body, [
-            (left - thick, bottom),
-            (left, bottom),
-            (left, top),
-            (left - thick, top),
+                (left - thick, bottom),
+                (left, bottom),
+                (left, top),
+                (left - thick, top),
             ]),
 
             'right': pymunk.Poly(self._body, [
-            (right, bottom),
-            (right + thick, bottom),
-            (right + thick, top),
-            (right, top),
+                (right, bottom),
+                (right + thick, bottom),
+                (right + thick, top),
+                (right, top),
             ])
         }
 

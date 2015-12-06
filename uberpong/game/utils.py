@@ -15,14 +15,15 @@ from . import colors
 FONT_PRIMARY = '8-bit Operator+'
 FONT_SECONDARY = '8-bit Operator+ 8'
 
-def create_label(
-    text='', *,
-    window,
-    font_size=15,
-    x=None, y=None,
-    bold=False,
-    font_name=FONT_PRIMARY,
-    anchor_x='center', anchor_y='center'):
+
+def create_label(text='', *,
+                 window,
+                 font_size=15,
+                 x=None, y=None,
+                 bold=False,
+                 font_name=FONT_PRIMARY,
+                 anchor_x='center',
+                 anchor_y='center'):
     """ Create a pyglet label easily
 
     Args:
@@ -50,7 +51,7 @@ def create_label(
         pos_y = y
 
     # create the actual thing
-    label =  pyglet.text.Label(
+    label = pyglet.text.Label(
         text, font_name=font_name, font_size=font_size,
         x=pos_x, y=pos_y, bold=bold,
         anchor_x=anchor_x, anchor_y=anchor_y

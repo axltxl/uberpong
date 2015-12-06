@@ -15,13 +15,13 @@ See LICENSE for more details.
 
 
 import pyglet
-from uberpong.engine.spot import spot_set, spot_get
+
 from uberpong import __version__ as pkg_version
 from uberpong import PKG_URL as pkg_url
 
 from .base import BaseState
 from ..net import Packet
-from ..utils import FONT_PRIMARY, FONT_SECONDARY
+from ..utils import FONT_SECONDARY
 from .. import colors
 
 
@@ -67,8 +67,8 @@ class SplashState(BaseState):
 
         # and this as well
         self.snd_begin = self.sorcerer.create_sound(
-                'snd_begin',
-                file_name='begin.wav'
+            'snd_begin',
+            file_name='begin.wav'
         )
 
         # Companion label
@@ -85,8 +85,10 @@ class SplashState(BaseState):
             pkg_url,
             font_size=16,
             font_name=FONT_SECONDARY,
-            anchor_x='right', anchor_y='top',
-            y = self.window.height - 8, x = self.window.width - 8
+            anchor_x='right',
+            anchor_y='top',
+            y=self.window.height-8,
+            x=self.window.width-8
         )
 
         # Version label
@@ -94,23 +96,22 @@ class SplashState(BaseState):
             "{} (proto:{})".format(pkg_version, Packet.PROTO_VERSION),
             font_size=14,
             font_name=FONT_SECONDARY,
-            anchor_x='left', anchor_y='top',
-            y = self.window.height - 8, x = 8
+            anchor_x='left',
+            anchor_y='top',
+            y=self.window.height-8,
+            x=8
         )
 
         # set the background color
         self.set_background_color(*colors.LIGHT_BLUE)
 
-
     def _toggle_press_start(self, dt):
         """Toggle _show_press_start flag"""
         self._show_press_start ^= True
 
-
     def _get_going(self, dt):
         """Switch to next state"""
         self.transition_to('game_load')
-
 
     def _rotate_ball(self, dt):
         """Rotate the ball"""
@@ -124,11 +125,9 @@ class SplashState(BaseState):
         pyglet.clock.schedule_interval(self._toggle_press_start, 0.5)
         pyglet.clock.schedule_interval(self._rotate_ball, 1/60)
 
-
     def on_exit(self):
         pyglet.clock.unschedule(self._toggle_press_start)
         pyglet.clock.unschedule(self._rotate_ball)
-
 
     def on_update(self):
         # Draw labels
@@ -143,7 +142,6 @@ class SplashState(BaseState):
 
         # draw things on my dad
         super().on_update()
-
 
     def on_key_press(self, sym, mod):
         # ignore F12
@@ -165,4 +163,7 @@ class SplashState(BaseState):
         self.snd_begin.play()
 
         # Schedule a new state onto the stack after the sound has been played
-        pyglet.clock.schedule_once(self._get_going, self.snd_begin.duration + 1)
+        pyglet.clock.schedule_once(
+            self._get_going,
+            self.snd_begin.duration + 1
+        )

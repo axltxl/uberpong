@@ -15,10 +15,11 @@ See LICENSE for more details.
 
 
 import pyglet
-from uberpong.engine.spot import spot_set, spot_get
-from ..utils import FONT_PRIMARY, FONT_SECONDARY
+
+from ..utils import FONT_SECONDARY
 from .base import BaseState
 from .. import colors
+
 
 class LoadState(BaseState):
     """Game start state"""
@@ -58,11 +59,12 @@ class LoadState(BaseState):
 
         # Server label
         self._server_label = self.create_label(
-            "pong://{}:{}".format(self._client.server_address, self._client.server_port),
+            "pong://{}:{}".format(
+                self._client.server_address, self._client.server_port
+            ),
             font_name=FONT_SECONDARY, font_size=32,
             y=machine.window.height//2 - 42,
         )
-
 
         # set the background color
         self.set_background_color(*colors.YELLOW)
@@ -75,16 +77,13 @@ class LoadState(BaseState):
         """Rotate the ball"""
         self._ball_sprite.rotation += 2
 
-
     def _attempt_connection(self, dt):
         # Attempt to connect to server
         if not self._client.connected:
             self._client.connect()
 
-
     def on_exit(self):
         pyglet.clock.unschedule(self._rotate_ball)
-
 
     def on_begin(self):
         # rotate the ball
@@ -95,9 +94,7 @@ class LoadState(BaseState):
         #
         pyglet.clock.schedule_interval(self._attempt_connection, 1)
 
-
     def on_update(self):
-
         # Draw sprites
         self._ball_sprite.draw()
 

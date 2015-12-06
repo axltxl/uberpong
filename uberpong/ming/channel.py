@@ -10,7 +10,6 @@ See LICENSE for more details.
 """
 
 import socket
-import sys
 import lz4
 
 from .json import JsonCodec
@@ -64,7 +63,6 @@ class Channel:
         """Activate/deactivate use of LZ4 compression"""
         self._use_lz4 = value
 
-
     def pump(self):
         """Receive raw data from socket and decode it as a dict"""
         data = {}  # fancy data
@@ -82,14 +80,13 @@ class Channel:
             pass
 
         # on_data_received is only called if data is not empty
-        if (type(data) is dict or type(data) is list) and len(data):
+        if (isinstance(data, dict) or isinstance(data, list)) and len(data):
             self.on_data_received(data, addr[0], addr[1])
 
     def send(self, data, host, port):
         """Send raw data through a socket"""
 
-        if type(data) is not dict \
-        and type(data) is not list:
+        if not isinstance(data, dict) and not isinstance(data, list):
             raise TypeError("data must be either a list or a dictionary")
 
         # Getting raw data

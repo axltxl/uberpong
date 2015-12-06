@@ -11,10 +11,12 @@ See LICENSE for more details.
 
 from .channel import Channel
 
+
 class Client(Channel):
     """
     Network client implementation
     """
+
     def __init__(self, *, address='localhost', port, **kwargs):
         """Constructor"""
         super().__init__(**kwargs)
@@ -26,7 +28,6 @@ class Client(Channel):
     def send(self, data):
         """Send raw data to the server"""
         super().send(data, self._server_addr, self._server_port)
-
 
     @property
     def server_address(self):
