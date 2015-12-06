@@ -18,6 +18,7 @@ import pyglet
 
 from uberpong import __version__ as pkg_version
 from uberpong import PKG_URL as pkg_url
+from uberpong.engine.spot import spot_get
 
 from .base import BaseState
 from ..net import Packet
