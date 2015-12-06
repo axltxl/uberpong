@@ -91,9 +91,13 @@ class SplashState(BaseState):
             x=self.window.width-8
         )
 
+        # network text
+        net_txt =  "net-{}".format(Packet.PROTO_VERSION)
+        if spot_get("argv")['--lz4']:
+            net_txt = "{}+lz4".format(net_txt)
         # Version label
         self._version_label = self.create_label(
-            "{} (proto:{})".format(pkg_version, Packet.PROTO_VERSION),
+            "v{} ({})".format(pkg_version, net_txt),
             font_size=14,
             font_name=FONT_SECONDARY,
             anchor_x='left',
