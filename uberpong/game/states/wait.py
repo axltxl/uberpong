@@ -15,14 +15,10 @@ See LICENSE for more details.
 """
 
 
-import pyglet
-
-from uberpong.engine.spot import spot_set, spot_get
-
 from .base import BaseState
-from ..utils import FONT_PRIMARY, FONT_SECONDARY
 from .. import colors
 from ..net import Scene
+
 
 class WaitState(BaseState):
     """Game wait state"""

@@ -12,6 +12,7 @@ See LICENSE for more details.
 from uberpong.engine.spot import spot_get
 from uberpong.engine.entity import Entity
 
+
 class Ball(Entity):
     """Ball as an entity"""
 

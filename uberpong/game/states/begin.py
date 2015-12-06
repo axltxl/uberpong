@@ -16,13 +16,8 @@ See LICENSE for more details.
 """
 
 
-import pyglet
-from uberpong.engine.spot import spot_set, spot_get
-
 from ..net import Scene
 from .base import BaseState
-from .. import utils
-from .. import colors
 
 
 class BeginState(BaseState):
@@ -50,13 +45,11 @@ class BeginState(BaseState):
     # pyglet event callbacks
     #
 
-
     def on_begin(self):
         self._wait_label.text = "Press any key when you are READY ..."
         if self._server is not None:
             self._server.reset_players()
             self._server.reset_ball()
-
 
     def on_update(self):
         """Draw all the things!"""

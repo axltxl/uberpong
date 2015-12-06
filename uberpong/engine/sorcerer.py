@@ -10,8 +10,9 @@ See LICENSE for more details.
 """
 
 
-import pyglet
 from os import path
+import pyglet
+
 
 class Sorcerer:
     """ A slightly useful resource manager """
@@ -37,7 +38,6 @@ class Sorcerer:
         # images root directory
         self._root_images = path.join(self._root, 'images')
 
-
     def get_resource(self, key):
         """Get a resource
 
@@ -48,12 +48,10 @@ class Sorcerer:
             return self._resources[key]
         return None
 
-
     def _push_resource(self, key, r):
         if key not in self._resources:
             self._resources[key] = r
         return r
-
 
     def create_font(self, key, *, file_name):
         """Create a pyglet font
@@ -71,7 +69,6 @@ class Sorcerer:
             pyglet.font.add_file('{}/{}'.format(self._root_fonts, file_name))
             self._push_resource(key, pyglet.font.load(key))
 
-
     def create_image(self, key, *, file_name):
         """Create a pyglet font
 
@@ -84,12 +81,13 @@ class Sorcerer:
         """
 
         return self._push_resource(
-                key,
-                pyglet.image.load('{}/{}'.format(
-                    self._root_images, file_name)
-                    )
+            key,
+            pyglet.image.load(
+                '{}/{}'.format(
+                    self._root_images, file_name
                 )
-
+            )
+        )
 
     def create_sound(self, key, *, file_name):
         """Create a pyglet sound
@@ -103,9 +101,11 @@ class Sorcerer:
         """
 
         return self._push_resource(
-                key,
-                pyglet.media.load('{}/{}'.format(
+            key,
+            pyglet.media.load(
+                '{}/{}'.format(
                     self._root_sounds,
-                    file_name)
-                    )
+                    file_name
                 )
+            )
+        )

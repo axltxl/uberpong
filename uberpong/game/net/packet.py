@@ -152,7 +152,6 @@ class Packet:
         # types of message
         self._pi_player_id = pi_playerid
 
-
     @property
     def data(self):
         """Raw data"""
@@ -189,7 +188,6 @@ class Packet:
         if self._pi_player_id in range(len(self._data)):
             return self._data[self._pi_player_id]
         return None
-
 
     @player_id.setter
     def player_id(self, player_id):
@@ -230,7 +228,6 @@ class Request(Packet):
         if Packet.PI_COMMAND in range(len(self.data)):
             return self._data[Packet.PI_COMMAND]
         return None
-
 
     @command.setter
     def command(self, value):
@@ -278,12 +275,10 @@ class Response(Packet):
             return self._data[Packet.PI_STATUS]
         return None
 
-
     @status.setter
     def status(self, value):
         """Set status"""
         self._data[Packet.PI_STATUS] = value
-
 
     @property
     def state(self):
@@ -292,12 +287,10 @@ class Response(Packet):
             return self._data[self.PI_STATE]
         return None
 
-
     @state.setter
     def state(self, value):
         """Set state"""
         self._data[self.PI_STATE] = value
-
 
     @property
     def reason(self):
@@ -306,12 +299,10 @@ class Response(Packet):
             return self._data[self.PI_REASON]
         return None
 
-
     @reason.setter
     def reason(self, value):
         """Get reason"""
         self._data[self.PI_REASON] = value
-
 
     def set_player_info(self, *, name, number, score, position, velocity):
         """Set player information
@@ -334,7 +325,7 @@ class Response(Packet):
 
         # In this part, player information is set linearly
         # in the array
-        self._data[self.PI_PLAYER_INFO][player_index] = [ number, score ]
+        self._data[self.PI_PLAYER_INFO][player_index] = [number, score]
         self._data[self.PI_PLAYER_INFO][player_index].extend(list(position))
         self._data[self.PI_PLAYER_INFO][player_index].extend(list(velocity))
 
@@ -353,13 +344,12 @@ class Response(Packet):
         self._data[self.PI_BALL_INFO] = list(position)
         self._data[self.PI_BALL_INFO].extend(list(velocity))
 
-
     def get_player_info(self, *, name):
         """Get information regarding a specific player"""
 
         try:
             if name == 'you':
-                player_info =  self._data[self.PI_PLAYER_INFO][0]
+                player_info = self._data[self.PI_PLAYER_INFO][0]
             else:
                 player_info = self._data[self.PI_PLAYER_INFO][1]
         except IndexError:
