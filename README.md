@@ -49,15 +49,6 @@ pip3 install -r requirements.txt
 ./uberpong.sh -H 43.21.2.4 # Connect to someone else's session
 ```
 
-.. or just install it
-```bash
-# you could at this point do the following inside a pyvenv
-# pyvenv .pyvenv && .pyvenv/bin/activate
-pip3 install .
-uberpong # Create a session
-uberpong -H 43.21.2.4 # Connect to someone else's session
-```
-
 ###BTW: you need an opponent to play
 By default, *uberpong* runs in server mode, if your opponent wishes
 to join an existing *uberpong* session, he/she must do in client mode, like so:
