@@ -1,0 +1,6 @@
+lz4 == 0.7.0
+bson == 0.4.0
+simpleubjson == 0.7.0
+pyglet == 1.2.3
+docopt == 0.6.2
+pymunk == 4.0.0
