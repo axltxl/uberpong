@@ -42,7 +42,7 @@ git clone https://github.com/axltxl/uberpong.git
 cd uberpong
 ```
 
-From this point you could either run it standalone ...
+From this point you can run it standalone ...
 ```bash
 pip3 install -r requirements.txt
 ./uberpong.sh # Create a session
