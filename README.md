@@ -3,7 +3,7 @@ Uber Pong!
 
 An *Uber-engineered* and somewhat overthought multiplayer implementation of a classic game.
 
-![](http://i.imgur.com/pXfkge0.jpg) ![](http://i.imgur.com/K5IpCPr.jpg)
+![](http://i.imgur.com/gSYqI2q.jpg) ![](http://i.imgur.com/K5IpCPr.jpg)
 
 **NOTE: Uber Pong! is currently on its first alpha state, meaning that everything
 is subject to change!**
