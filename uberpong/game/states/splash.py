@@ -96,6 +96,7 @@ class SplashState(BaseState):
         net_txt =  "net-{}".format(Packet.PROTO_VERSION)
         if spot_get("argv")['--lz4']:
             net_txt = "{}+lz4".format(net_txt)
+
         # Version label
         self._version_label = self.create_label(
             "v{} ({})".format(pkg_version, net_txt),
