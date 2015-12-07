@@ -38,7 +38,7 @@ setup(
     author=author,
     author_email="alejandroricoveri@gmail.com",
     description=desc,
-    long_description=desc,
+    long_description=open('README.md').read(),
     url=pkg_url,
     license='MIT',
     download_url="{url}/tarball/{version}".format(url=pkg_url, version=version),

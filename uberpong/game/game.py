@@ -175,7 +175,7 @@ class Game(StateMachine):
         Options:
           -z --lz4                    Use LZ4 compression algorithm
           -H --host <ip_address>      Server to connect to
-          -p --port <port>            Port to connect to [default: 6000]
+          -p --port <port>            Port to connect to [default: 54212]
           -h --help                   Show this screen.
           --version                   Show version.
         """
